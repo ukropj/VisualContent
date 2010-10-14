@@ -19,14 +19,12 @@
 #include <QLinkedList>
 
 #include "Viewer/PerlinNoiseTextureGenerator.h"
-#include "Viewer/CameraManipulator.h"
 #include "Viewer/DataHelper.h"
 #include "Viewer/SkyTransform.h"
 #include "Viewer/TextureWrapper.h"
 #include "Viewer/EdgeGroup.h"
 #include "Viewer/NodeGroup.h"
 
-#include "Layout/Layout.h"
 #include "Util/ApplicationConfig.h"
 #include "Data/Edge.h"
 #include "Data/Node.h"

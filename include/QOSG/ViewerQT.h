@@ -8,11 +8,10 @@
 #include "QOSG/AdapterWidget.h"
 #include <osgViewer/ViewerBase>
 
-#include "Viewer/CameraManipulator.h"
 #include "Util/ApplicationConfig.h"
 #include "Viewer/PickHandler.h"
 
-#include "Viewer/CameraManipulator.h"
+#include <osgGA/TrackballManipulator>
 
 /*!
 * \brief
@@ -75,7 +74,7 @@ namespace QOSG
 			  getCamera()->setGraphicsContext(getGraphicsWindow());
 			  getCamera()->setComputeNearFarMode(osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
 
-			  manipulator = new Vwr::CameraManipulator();
+                          manipulator = new osgGA::TrackballManipulator();
 			  pickHandler = new Vwr::PickHandler(manipulator, cg);
 
 			  addEventHandler(new osgViewer::StatsHandler);
@@ -103,9 +102,9 @@ namespace QOSG
 		  /**
 		  *  \fn inline public constant  getCameraManipulator
 		  *  \brief Returns camera manipulator
-		  *  \return Vwr::CameraManipulator * camera manipulator
+                  *  \return osgGA::TrackballManipulator * camera manipulator
 		  */
-		  Vwr::CameraManipulator * getCameraManipulator() const {return manipulator;}
+                  osgGA::TrackballManipulator * getCameraManipulator() const {return manipulator;}
 
 
 		  /**
@@ -114,7 +113,7 @@ namespace QOSG
 		  */
 		  void reloadConfig()
 	  {
-		  manipulator->setMaxSpeed(appConf->getValue("Viewer.CameraManipulator.MaxSpeed").toFloat());
+                  //manipulator->setMaxSpeed(appConf->getValue("Viewer.CameraManipulator.MaxSpeed").toFloat());
 		  manipulator->setTrackballSize(appConf->getValue("Viewer.CameraManipulator.Sensitivity").toFloat());
 
 		  osg::DisplaySettings::instance()->setStereo(appConf->getValue("Viewer.Display.Stereoscopic").toInt());
@@ -149,10 +148,10 @@ namespace QOSG
 	private:
 
 		/**
-		*  Vwr::CameraManipulator * manipulator
+                *  osgGA::TrackballManipulator * manipulator
 		*  \brief camera manipulator
 		*/
-		Vwr::CameraManipulator * manipulator;
+                osgGA::TrackballManipulator * manipulator;
 
 		/**
 		*  Vwr::PickHandler * pickHandler

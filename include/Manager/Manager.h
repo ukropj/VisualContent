@@ -88,7 +88,7 @@ namespace Manager
              * \fn getActiveGraph
              * \brief Returns active graphs. (imeplemnted as workaround for working with only one graph for now).
              */
-            Data::Graph* getActiveGraph() { return activeGraph; };           
+            Data::Graph* getActiveGraph() { return activeGraph; }
 
             /**
              * \fn getInstance

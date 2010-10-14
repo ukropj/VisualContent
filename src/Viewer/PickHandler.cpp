@@ -7,7 +7,7 @@
 
 using namespace Vwr;
 
-PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator, Vwr::CoreGraph * coreGraph)
+PickHandler::PickHandler(osgGA::TrackballManipulator * cameraManipulator, Vwr::CoreGraph * coreGraph)
 {
 	//vytvorenie timera a vynulovanie premennych
 	timer = new QTimer();

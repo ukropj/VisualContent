@@ -43,22 +43,22 @@ void AppCore::Core::restartLayout()
     this->cw->setLayoutThread(thr);
     this->cg->reload(Manager::GraphManager::getInstance()->getActiveGraph());
     this->thr->start();
-	this->thr->play();
+    this->thr->play();
     this->messageWindows->closeLoadingDialog();
 }
 
 AppCore::Core * AppCore::Core::getInstance(QApplication * app)
 {
-        if(core == NULL)
+    if(core == NULL)
+    {
+        if (app != NULL)
+            core = new AppCore::Core(app);
+        else
         {
-                if (app != NULL)
-					core = new AppCore::Core(app);
-                else
-                {
-                        qDebug() << "Internal error.";
-                        return NULL;
-                }
+            qDebug() << "Internal error.";
+            return NULL;
         }
+    }
 
-        return core;
+    return core;
 }

@@ -352,7 +352,7 @@ void CoreWindow::loadFile()
 		tr("Open GraphML"), ".", tr("GraphML Files (*.graphml)"));
     Manager::GraphManager::getInstance()->loadGraph(fileName);
 
-	viewerWidget->getCameraManipulator()->home();
+        viewerWidget->getCameraManipulator()->home(0);
 }
 
 void CoreWindow::labelOnOff(bool)

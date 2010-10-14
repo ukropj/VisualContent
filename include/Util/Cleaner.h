@@ -23,12 +23,12 @@
 */
 class Cleaner : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 
 		public slots:
 
-			/**
+    /**
 			*  \fn clean
 			*  
 			*  \brief Slot function that is called befoure application atempts to quit	
@@ -37,11 +37,11 @@ class Cleaner : public QObject
 			*
 			*  \date 27. 4. 2010
 			*/
-			void clean();
+    void clean();
 
 public:
 
-	/**
+    /**
 	*  \fn Cleaner(QApplication * app)
 	*  
 	*  \brief Constructor
@@ -52,7 +52,7 @@ public:
 	*
 	*  \date 27. 4. 2010
 	*/
-	Cleaner(QApplication * app);
+    Cleaner(QApplication * app);
 
 
 };

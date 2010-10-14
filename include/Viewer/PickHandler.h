@@ -8,6 +8,7 @@
 #include <osgGA/GUIEventHandler>
 #include <osgGA/GUIEventAdapter>
 #include <osgGA/GUIActionAdapter>
+#include <osgGa/TrackballManipulator>
 #include <osgViewer/Viewer>
 #include <osg/ref_ptr>
 #include <osg/Geode>
@@ -16,7 +17,6 @@
 
 #include "Data/Node.h"
 #include "Data/Edge.h"
-#include "Viewer/CameraManipulator.h"
 #include "Viewer/CoreGraph.h"
 
 #include <QLinkedList>
@@ -95,12 +95,12 @@ namespace Vwr
 
 
 		/**
-		*  \fn public constructor  PickHandler(Vwr::CameraManipulator * cameraManipulator, Vwr::CoreGraph * coreGraph)
+                *  \fn public constructor  PickHandler(osgGA::TrackballManipulator * cameraManipulator, Vwr::CoreGraph * coreGraph)
 		*  \brief Creates picking handler
 		*  \param  cameraManipulator    camera manipulator
 		*  \param  coreGraph     core graph
 		*/
-		PickHandler(Vwr::CameraManipulator * cameraManipulator, Vwr::CoreGraph * coreGraph); 
+                PickHandler(osgGA::TrackballManipulator * cameraManipulator, Vwr::CoreGraph * coreGraph);
 
 
 		/**
@@ -184,10 +184,10 @@ namespace Vwr
 	private:
 
 		/**
-		*  Vwr::CameraManipulator * cameraManipulator
+                *  osgGA::TrackballManipulator * cameraManipulator
 		*  \brief camera manipulator
 		*/
-		Vwr::CameraManipulator * cameraManipulator;
+                osgGA::TrackballManipulator * cameraManipulator;
 
 		/**
 		*  Vwr::CoreGraph * coreGraph
