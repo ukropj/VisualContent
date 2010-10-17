@@ -6,8 +6,6 @@
 #ifndef DATA_TYPE_DEF
 #define DATA_TYPE_DEF 1
 
-//#include "Data/Graph.h"
-
 #include <string>
 #include <QString>
 #include <QTextStream>

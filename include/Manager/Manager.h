@@ -12,7 +12,6 @@
 #include <QFile>
 
 #include "Core/Core.h"
-#include "Model/DB.h"
 #include "Data/Graph.h"
 #include "Layout/FRAlgorithm.h"
 #include "Layout/LayoutThread.h"
@@ -35,12 +34,6 @@ namespace Manager
 	{
 	public:
             ~GraphManager();
-
-            /**
-             * \fn getAvaliableGraphs
-             * \brief Returns map of availiable graphs (partialy implemented, nowadays, it returns only one graph - active graph).
-             */
-            QMap<qlonglong, Data::Graph*> getAvaliableGraphs(){ return graphs; }
 
             /**
              * \fn loadGraph
@@ -71,12 +64,6 @@ namespace Manager
              * \brief Creates empty graph, puts it into the working graphs and returns it.
              */
             Data::Graph* createGraph(QString graphname);
-
-            /**
-             * \fn removeGraph
-             * \brief Removes graph from working graphs and also from DB (if connected).
-             */
-            void removeGraph(Data::Graph* graph);
 
             /**
              * \fn closeGraph
@@ -125,19 +112,6 @@ namespace Manager
                 *  \brief singleton object
                 */
                 static GraphManager * manager;
-
-                /**
-                *  QMap<qlonglong,Data::Graph*> graphs
-                *  \brief map of working graphs
-                */
-                QMap<qlonglong, Data::Graph*> graphs;
-
-                /**
-                *  Model::DB * db
-                *  \brief connection to DB
-                */
-                Model::DB *db;
-
 
                /**
                 *  Data::Graph * activeGraph

@@ -15,7 +15,6 @@ Data::Edge::Edge(qlonglong id, QString name, Data::Graph* graph, osg::ref_ptr<Da
     this->oriented = isOriented;
     this->camera = camera;
     this->selected = false;
-	this->inDB = false;
 
     float r = type->getSettings()->value("color.R").toFloat();
     float g = type->getSettings()->value("color.G").toFloat();

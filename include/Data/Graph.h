@@ -11,14 +11,6 @@
 #include "Data/Node.h"
 #include "Data/Type.h"
 #include "Data/Edge.h"
-#include "Data/MetaType.h"
-#include "Data/GraphLayout.h"
-#include "Model/GraphDAO.h"
-#include "Model/GraphLayoutDAO.h"
-#include "Model/TypeDAO.h"
-#include "Model/NodeDAO.h"
-#include "Model/EdgeDAO.h"
-
 
 #include <QString>
 #include <QTextStream>
@@ -52,24 +44,7 @@ namespace Data
     {
     public:
         
-		/**
-		*  \fn public overloaded constructor  Graph(qlonglong graph_id, QString name, QSqlDatabase* conn, QMap<qlonglong,osg::ref_ptr<Data::Node> > *nodes, QMap<qlonglong,osg::ref_ptr<Data::Edge> > *edges,QMap<qlonglong,osg::ref_ptr<Data::Node> > *metaNodes, QMap<qlonglong,osg::ref_ptr<Data::Edge> > *metaEdges, QMap<qlonglong,Data::Type*> *types)
-		*  \brief Creates new Graph Object from provided nodes, edges, types, metaNodes and metaEdges
-		*
-		*	This constructor is obsolete, use Graph(qlonglong graph_id, QString name, qlonglong layout_id_counter, qlonglong ele_id_counter, QSqlDatabase* conn) instead
-		*
-		*  \param   graph_id     ID of the graph
-		*  \param   name     name of the graph
-		*  \param   conn    connection to DB
-		*  \param   nodes   provided nodes
-		*  \param   edges    provided edges
-		*  \param   metaNodes   provided  metaNodes
-		*  \param   metaEdges     provided metaEdges
-		*  \param   types   provided types
-		*/
-		Graph(qlonglong graph_id, QString name, QSqlDatabase* conn, QMap<qlonglong,osg::ref_ptr<Data::Node> > *nodes, QMap<qlonglong,osg::ref_ptr<Data::Edge> > *edges,QMap<qlonglong,osg::ref_ptr<Data::Node> > *metaNodes, QMap<qlonglong,osg::ref_ptr<Data::Edge> > *metaEdges, QMap<qlonglong,Data::Type*> *types);
-    
-		/**
+                /**
 		*  \fn public overloaded constructor  Graph(qlonglong graph_id, QString name, qlonglong layout_id_counter, qlonglong ele_id_counter, QSqlDatabase* conn)
 		*  \brief Creates new Graph Object
 		*  \param   graph_id     ID of the graph
@@ -78,7 +53,7 @@ namespace Data
 		*  \param   ele_id_counter     current maximum element (Node, Type, Edge) ID (for empty graph use 1)
 		*  \param   conn     connection to DB
 		*/
-		Graph(qlonglong graph_id, QString name, qlonglong layout_id_counter, qlonglong ele_id_counter, QSqlDatabase* conn);
+                Graph(QString name, qlonglong ele_id_counter);
 
 		/**
 		*  \fn public destructor  ~Graph
@@ -93,23 +68,6 @@ namespace Data
 		*  \return float strength of the meta-element
 		*/
 		float static getMetaStrength() { return (float) METASTRENGTH; }
-        
-
-		/**
-		*  \fn inline public  getId
-		*  \brief Returns ID of the Graph
-		*  \return qlonglong ID of the Graph
-		*/
-		qlonglong getId() { return graph_id; } 
-
-        /**
-        * \fn qlonglong setId(qlonglong graph_id)
-        * \brief Sets new ID of Graph unless it is already in DB
-        * \param 		graph_id    new ID of the Graph. 
-        * \return qlonglong resultant ID of Graph
-        */
-        qlonglong setId(qlonglong graph_id) { if(!inDB) this->graph_id = graph_id; return this->graph_id; } 
-        
 
 		/**
 		*  \fn public  setName(QString name)
@@ -133,60 +91,7 @@ namespace Data
 		*  \return qlonglong current value of element ID counter
 		*/
 		qlonglong getEleIdCounter() { return ele_id_counter; } 
-
-		/**
-		*  \fn inline public  getLayoutIdCounter
-		*  \brief Returns current value of graphLayout ID counter
-		*  \return qlonglong current value of graphLayout ID counter
-		*/
-		qlonglong getLayoutIdCounter() { return layout_id_counter; } 
         
-        
-
-		/**
-		*  \fn public  getLayouts(bool* error)
-		*  \brief Returns QMap of graphLayouts belonging to the Graph
-		*  \param   error  error flag, will be set true, if the method encounters an error
-		*  \return QMap<qlonglong,Data::GraphLayout*> graphLayouts belonging to the Graph
-		*/
-		QMap<qlonglong, Data::GraphLayout*> getLayouts(bool* error); 
-
-		/**
-		*  \fn public  addLayout(QString layout_name)
-		*  \brief Creates new GraphLayout and adds it to the Graph
-		*  \param       layout_name    name of the new GraphLayout 
-		*  \return Data::GraphLayout * new GraphLayout
-		*/
-		Data::GraphLayout* addLayout(QString layout_name); 
-
-		/**
-		*  \fn public  removeLayout(Data::GraphLayout* layout)
-		*  \brief Deletes an GraphLayout belonging to the Graph
-		*
-		*	Does not perform delete on the GraphLayout
-		*
-		*  \param  layout    GraphLayout to be deleted
-		*  \return bool true, if the GraphLayout was successfully deleted
-		*/
-		bool removeLayout(Data::GraphLayout* layout);
-        
-
-		/**
-		*  \fn inline public  getSelectedLayout
-		*  \brief Returns currently selected GraphLayout (used by all MetaTypes)
-		*  \return Data::GraphLayout * currently selected GraphLayout
-		*/
-		Data::GraphLayout* getSelectedLayout() { return selectedLayout; } 
-
-		/**
-		*  \fn public  selectLayout(Data::GraphLayout* layout)
-		*  \brief Selects GraphLayout
-		*  \param  layout    GraphLayout that should be selected
-		*  \return Data::GraphLayout * resulting selected GraphLayout
-		*/
-		Data::GraphLayout* selectLayout(Data::GraphLayout* layout); 
-        
-
 		/**
 		*  \fn public  addNode(QString name, Data::Type* type, osg::Vec3f position = osg::Vec3f(0,0,0))
 		*  \brief Creates new Node and adds it to the Graph
@@ -221,16 +126,6 @@ namespace Data
 		Data::Type* addType(QString name, QMap <QString, QString> *settings = 0); //implemented
 
 		/**
-		*  \fn public  addMetaType(QString name, QMap <QString, QString> *settings = 0)
-		*  \brief Creates new MetaType and adds it to the Graph
-		*  \param   name     name of the MetaType
-		*  \param settings     settings of the MetaType
-		*  \return Data::MetaType * the added MetaType
-		*/
-        Data::MetaType* addMetaType(QString name, QMap <QString, QString> *settings = 0); //implemented
-        
-
-		/**
 		*  \fn public  removeNode(osg::ref_ptr<Data::Node> node)
 		*  \brief Removes a Node from the Graph
 		*  \param      node   the Node to be removed from the Graph
@@ -253,17 +148,6 @@ namespace Data
 		*/
 		void removeType(Data::Type* type);
         
-
-		/**
-		*  \fn inline public  saveGraphToDB
-		*  \brief Saves Graph to the database
-		* 
-		*	Dummy function - not yet implemented
-		* 
-		*  \return bool true, if the Graph was successfully saved
-		*/
-		bool saveGraphToDB(){return false;}
-
 
 		/**
 		*  \fn inline public constant  getNodes
@@ -320,22 +204,7 @@ namespace Data
 		void setFrozen(bool val) { frozen = val; } 
         
 
-		/**
-		*  \fn inline public  isInDB
-		*  \brief Returns true, if the Graph Object is in database
-		*
-		*	Returns true if the Graph Object (not counting it's nodes, egdes, types, layouts, ...) is in database.
-		*
-		*  \return bool true, if the Graph is in DB
-		*/
-		bool isInDB() { return inDB; } 
 
-		/**
-		*  \fn inline public  setIsInDB
-		*  \brief Sets the inDB flag of the Graph to true
-		*/
-		void setIsInDB() { inDB = true; }; 
-        
 
 		/**
 		*  \fn public  getTypesByName(QString name)
@@ -377,13 +246,6 @@ namespace Data
 		qlonglong incEleIdCounter() { return ++ele_id_counter; } 
 
 		/**
-		*  \fn inline private  incLayoutIdCounter
-		*  \brief Increments and returns the incremented value of GraphLayout ID counter
-		*  \return qlonglong 
-		*/
-		qlonglong incLayoutIdCounter() { return ++layout_id_counter; } 
-
-		/**
 		* \fn	private removeAllEdgesOfType(Data::Type* type)
 		* \brief Removes all Edges that are of type
 		*  \param      type   Type
@@ -404,12 +266,6 @@ namespace Data
 		*  \return qlonglong returns maximum ID value of elements
 		*/
 		qlonglong getMaxEleIdFromElements();
-
-		/**
-		*  qlonglong graph_id
-		*  \brief ID of the Graph
-		*/
-        qlonglong graph_id;
         
 		/**
 		*  QString name
@@ -422,40 +278,6 @@ namespace Data
 		*  \brief Element ID counter
 		*/
         qlonglong ele_id_counter;
-        
-		/**
-		*  qlonglong layout_id_counter
-		*  \brief GraphLayout ID counter
-		*/
-        qlonglong layout_id_counter;
-        
-		/**
-		*  bool inDB
-		*  \brief flag if the Graph is frozen or not (used by layout algorithm)
-		*/
-        bool inDB;
-        
-
-		/**
-		*  Data::GraphLayout * selectedLayout
-		*  \brief Currently selected GraphLayout
-		*/
-		Data::GraphLayout* selectedLayout;
-        
-
-		/**
-		*  QSqlDatabase * conn
-		*  \brief Connection to database
-		*/
-		QSqlDatabase* conn;
-        
-
-		/**
-		*  QMap<qlonglong,Data::GraphLayout*> layouts
-		*  \brief GraphLayouts of the Graph
-		*/
-		QMap<qlonglong, Data::GraphLayout*> layouts;
-        
 
 		/**
 		*  QMultiMap<QString,Data::Type*> * typesByName

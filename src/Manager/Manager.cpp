@@ -4,7 +4,6 @@
  */
 
 #include "Manager/Manager.h"
-#include "Model/GraphDAO.h"
 #include "Util/ApplicationConfig.h"
 
 
@@ -15,17 +14,12 @@ Manager::GraphManager::GraphManager()
     manager = this;
 
     this->activeGraph = NULL;
-    this->db = new Model::DB();
-    bool error;
-    this->graphs = Model::GraphDAO::getGraphs(db->tmpGetConn(), &error);
     
     //runTestCase(1);
 }
 
 Manager::GraphManager::~GraphManager()
 {
-    delete this->db;
-    this->db = NULL;
 }
 
 Data::Graph* Manager::GraphManager::loadGraph(QString filepath)
@@ -296,10 +290,6 @@ Data::Graph* Manager::GraphManager::loadGraph(QString filepath)
             this->closeGraph(this->activeGraph);
         }
         this->activeGraph = newGraph;
-
-        // pridame layout grafu
-        Data::GraphLayout* gLay = newGraph->addLayout("new Layout");
-        newGraph->selectLayout(gLay);
         AppCore::Core::getInstance()->messageWindows->closeProgressBar();
 
         // robime zakladnu proceduru pre restartovanie layoutu
@@ -315,7 +305,7 @@ Data::Graph* Manager::GraphManager::loadGraph(QString filepath)
 
 void Manager::GraphManager::saveGraph(Data::Graph* graph)
 {
-    graph->saveGraphToDB();
+    // TODO
 }
 
 void Manager::GraphManager::exportGraph(Data::Graph* graph, QString filepath)
@@ -326,42 +316,26 @@ void Manager::GraphManager::exportGraph(Data::Graph* graph, QString filepath)
 Data::Graph* Manager::GraphManager::createGraph(QString graphname)
 {
     Data::Graph* g;
-    if(!this->db->tmpGetConn()->isOpen()){
+
         g = this->emptyGraph();
-    } else {
-        g = Model::GraphDAO::addGraph(graphname, this->db->tmpGetConn());
-    }
-
-    this->graphs.insert(g->getId(), g);
     return g;
-}
-
-void Manager::GraphManager::removeGraph(Data::Graph* graph)
-{
-    this->closeGraph(graph);
-    // odstranime graf z DB
-    Model::GraphDAO::removeGraph(graph, db->tmpGetConn());
 }
 
 void Manager::GraphManager::closeGraph(Data::Graph* graph)
 {
-	// odstranime graf z working grafov
-	this->graphs.remove(graph->getId());
-	// TODO zatial pracujeme len s aktivnym grafom, takze deletujeme len jeho, inak treba deletnut dany graf
-
 	this->activeGraph = NULL;
 }
 
 Data::Graph* Manager::GraphManager::emptyGraph()
 {
-	Data::Graph *newGraph = new Data::Graph(1, "simple", 0, 0, NULL);
+        Data::Graph *newGraph = new Data::Graph("simple", 0);
 
 	return newGraph;
 }
 
 Data::Graph* Manager::GraphManager::simpleGraph()
 {
-	Data::Graph *newGraph = new Data::Graph(1, "simple", 0, 0, NULL);
+        Data::Graph *newGraph = new Data::Graph("simple", 0);
 	Data::Type *type = newGraph->addType("default");
 	Data::Type *type2 = newGraph->addType("default2");
 
@@ -389,7 +363,7 @@ Manager::GraphManager* Manager::GraphManager::getInstance()
 }
 
 void Manager::GraphManager::runTestCase( qint32 action )
-{
+{/*
 	switch(action) {
 		case 1:
 		case 2: {
@@ -596,5 +570,5 @@ void Manager::GraphManager::runTestCase( qint32 action )
 			qDebug() << "graph deleted";
 			break;
 		}
-	}
+        }*/
 }

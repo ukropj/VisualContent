@@ -272,21 +272,6 @@ namespace Data
 		*/
 		osg::ref_ptr<osg::Drawable> createLabel(QString name);
 
-
-		/**
-		*  \fn inline public  isInDB
-		*  \brief Returns true, if the Edge is already in database
-		*  \return bool 
-		*/
-		bool isInDB() { return inDB; }
-
-		/**
-		*  \fn inline public  setIsInDB
-		*  \brief Sets the inDB flag of the Edge to true (meaning that the Edge is in database)
-		*/
-		void setIsInDB() { inDB = true; };
-
-
 		/**
 		*  \fn inline public  getGraph
 		*  \brief Returns the Graph to which is the Edge assigned
@@ -315,12 +300,6 @@ namespace Data
 		*  \brief Graph to which the Edge belongs
 		*/
 		Data::Graph* graph;
-
-		/**
-		*  bool inDB
-		*  \brief Flag if the Edge is already added to database or not
-		*/
-		bool inDB;
 
 		/**
 		*  qlonglong id
