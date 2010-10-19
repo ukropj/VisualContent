@@ -1,8 +1,9 @@
 #include "Viewer/EdgeGroup.h"
 
 using namespace Vwr;
+using namespace Model;
 
-EdgeGroup::EdgeGroup(QMap<qlonglong, osg::ref_ptr<Data::Edge> > *edges, float scale)
+EdgeGroup::EdgeGroup(QMap<qlonglong, osg::ref_ptr<Edge> > *edges, float scale)
 {
 	this->edges = edges;
 	this->scale = scale;
@@ -39,7 +40,7 @@ void EdgeGroup::initEdges()
 	geometry = new osg::Geometry;
 	orientedGeometry = new osg::Geometry;
 
-    QMap<qlonglong, osg::ref_ptr<Data::Edge> >::iterator i = edges->begin();
+    QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i = edges->begin();
 
 	int edgePos = 0;
 
@@ -87,7 +88,7 @@ void EdgeGroup::updateEdgeCoords()
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	osg::ref_ptr<osg::Vec4Array> orientedEdgeColors = new osg::Vec4Array;
 
-	QMap<qlonglong, osg::ref_ptr<Data::Edge> >::iterator i = edges->begin();
+	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i = edges->begin();
 
 	int edgePos = 0;
 
@@ -107,7 +108,7 @@ void EdgeGroup::updateEdgeCoords()
 	orientedGeometry->setColorArray(orientedEdgeColors);
 }
 
-void EdgeGroup::getEdgeCoordinatesAndColors(osg::ref_ptr<Data::Edge> edge, int first, 
+void EdgeGroup::getEdgeCoordinatesAndColors(osg::ref_ptr<Edge> edge, int first,
 											osg::ref_ptr<osg::Vec3Array> coordinates, 
 											osg::ref_ptr<osg::Vec2Array> edgeTexCoords,
 											osg::ref_ptr<osg::Vec4Array> colors,
@@ -146,7 +147,7 @@ void EdgeGroup::synchronizeEdges()
 
 		for (unsigned int x = 0; x < primitives.size() ; x++)
 		{
-			Data::Edge * e = dynamic_cast<Data::Edge * >(primitives.at(x).get());
+			Edge * e = dynamic_cast<Edge * >(primitives.at(x).get());
 
 			if (!edgeKeys.contains(e->getId()))
 			{
@@ -155,7 +156,7 @@ void EdgeGroup::synchronizeEdges()
 		}
 	}
 
-	QMap<qlonglong, osg::ref_ptr<Data::Edge> >::iterator ie = edges->begin();
+	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator ie = edges->begin();
 
 	while (ie != edges->end()) 
 	{

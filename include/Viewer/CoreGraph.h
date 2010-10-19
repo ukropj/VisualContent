@@ -18,17 +18,16 @@
 #include <QMap>
 #include <QLinkedList>
 
-#include "Viewer/PerlinNoiseTextureGenerator.h"
 #include "Viewer/DataHelper.h"
 #include "Viewer/SkyTransform.h"
 #include "Viewer/TextureWrapper.h"
 #include "Viewer/EdgeGroup.h"
 #include "Viewer/NodeGroup.h"
 
-#include "Util/ApplicationConfig.h"
-#include "Data/Edge.h"
-#include "Data/Node.h"
-#include "Data/Graph.h"
+#include "Util/Config.h"
+#include "Model/Edge.h"
+#include "Model/Node.h"
+#include "Model/Graph.h"
 
 namespace Vwr
 {
@@ -60,7 +59,7 @@ namespace Vwr
 		 * Konstruktor triedy.
 		 * 
 		 */
-        CoreGraph(Data::Graph * graph = 0, osg::ref_ptr<osg::Camera> camera = 0);
+        CoreGraph(Model::Graph * graph = 0, osg::ref_ptr<osg::Camera> camera = 0);
 		/*!
 		 * 
 		 * 
@@ -71,11 +70,11 @@ namespace Vwr
 
 
 		/**
-		*  \fn public  reload(Data::Graph * graph = 0)
+		*  \fn public  reload(Model::Graph * graph = 0)
 		*  \brief
 		*  \param   graph  
 		*/
-		void reload(Data::Graph * graph = 0);
+		void reload(Model::Graph * graph = 0);
 
 		/**
 		*  \fn public  reloadConfig
@@ -121,7 +120,7 @@ namespace Vwr
 		{ 
 			this->camera = camera; 
 
-			QMapIterator<qlonglong, osg::ref_ptr<Data::Edge> > i(*in_edges);
+			QMapIterator<qlonglong, osg::ref_ptr<Model::Edge> > i(*in_edges);
 
 			while (i.hasNext()) 
 			{
@@ -194,42 +193,34 @@ namespace Vwr
 	
 
 		/**
-		*  Data::Graph * graph
+		*  Model::Graph * graph
 		*  \brief current graph
 		*/
-		Data::Graph * graph;
+		Model::Graph * graph;
 
 		/**
-		*  QMap<qlonglong,osg::ref_ptr<Data::Node> > * in_nodes
+		*  QMap<qlonglong,osg::ref_ptr<Model::Node> > * in_nodes
 		*  \brief graph nodes map
 		*/
-		QMap<qlonglong, osg::ref_ptr<Data::Node> > *in_nodes;
+		QMap<qlonglong, osg::ref_ptr<Model::Node> > *in_nodes;
 
 		/**
-		*  QMap<qlonglong,osg::ref_ptr<Data::Edge> > * in_edges
+		*  QMap<qlonglong,osg::ref_ptr<Model::Edge> > * in_edges
 		*  \brief graph edges map
 		*/
-		QMap<qlonglong, osg::ref_ptr<Data::Edge> > *in_edges;
+		QMap<qlonglong, osg::ref_ptr<Model::Edge> > *in_edges;
 
 		/**
-		*  QMap<qlonglong,osg::ref_ptr<Data::Node> > * qmetaNodes
+		*  QMap<qlonglong,osg::ref_ptr<Model::Node> > * qmetaNodes
 		*  \brief graph metanodes map
 		*/
-		QMap<qlonglong, osg::ref_ptr<Data::Node> > *qmetaNodes;
+		QMap<qlonglong, osg::ref_ptr<Model::Node> > *qmetaNodes;
 
 		/**
-		*  QMap<qlonglong,osg::ref_ptr<Data::Edge> > * qmetaEdges
+		*  QMap<qlonglong,osg::ref_ptr<Model::Edge> > * qmetaEdges
 		*  \brief graph metaedges map
 		*/
-		QMap<qlonglong, osg::ref_ptr<Data::Edge> > *qmetaEdges;
-		
-
-		/**
-		*  Util::ApplicationConfig * appConf
-		*  \brief application configuration
-		*/
-		Util::ApplicationConfig* appConf;
-
+		QMap<qlonglong, osg::ref_ptr<Model::Edge> > *qmetaEdges;
 
 		/**
 		*  \fn private  initEdgeLabels

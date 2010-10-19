@@ -2,7 +2,7 @@
 #include <QLinkedList>
 
 using namespace Vwr;
-using namespace Data;
+using namespace Model;
 
 osg::ref_ptr<osg::Geode> DataHelper::getSphereGeode(osg::Vec3 center, float radius)
 {
@@ -46,7 +46,7 @@ int DataHelper::getRandomNumber(int lowest, int highest)
 	return lowest + int(range * rand() / (RAND_MAX + 1.0));
 }
 
-osg::ref_ptr<osg::Vec3Array> DataHelper::getEdgeVectors(osg::ref_ptr<Data::Node> inNode, osg::ref_ptr<Data::Node> outNode)
+osg::ref_ptr<osg::Vec3Array> DataHelper::getEdgeVectors(osg::ref_ptr<Node> inNode, osg::ref_ptr<Node> outNode)
 {
 	osg::ref_ptr<osg::Vec3Array> edgeVectors = new osg::Vec3Array;
 
@@ -58,7 +58,7 @@ osg::ref_ptr<osg::Vec3Array> DataHelper::getEdgeVectors(osg::ref_ptr<Data::Node>
 	return edgeVectors;
 }
 /*
-void DataHelper::generateTestingGraph(std::vector<Data::Node*> *nodes, std::vector<Data::Edge*> *edges,std::vector<Data::Type*> *types)
+void DataHelper::generateTestingGraph(std::vector<Node*> *nodes, std::vector<Edge*> *edges,std::vector<Type*> *types)
 {
 
     generateCylinder(nodes, edges, types, 15, 1);
@@ -74,13 +74,13 @@ void DataHelper::generateTestingGraph(std::vector<Data::Node*> *nodes, std::vect
     generateCylinder(nodes, edges, types, 20, 3);
 
 }
-void DataHelper::generatePyramid(std::vector<Data::Node*> *nodes, std::vector<Data::Edge*> *edges,std::vector<Data::Type*> *types)
+void DataHelper::generatePyramid(std::vector<Node*> *nodes, std::vector<Edge*> *edges,std::vector<Type*> *types)
 {
         // budeme pridavat oba typy objektov - hrany aj vrcholy
         std::string tVStr ("vrchol");
         std::string tEStr ("hrana");
-        Data::Type* vType = new Data::Type(0,tVStr);
-        Data::Type* eType = new Data::Type(1,tEStr);
+        Type* vType = new Type(0,tVStr);
+        Type* eType = new Type(1,tEStr);
         types->insert(types->end(),vType);
         types->insert(types->end(),eType);
 
@@ -90,33 +90,33 @@ void DataHelper::generatePyramid(std::vector<Data::Node*> *nodes, std::vector<Da
                 // ziskame meno uzla
                 std::stringstream out; out << i;
                 // kazdy uzol ma na zaciatku prazdnu mnozinu hran
-                std::vector<Data::Edge*> edges;
+                std::vector<Edge*> edges;
                 // vytvorime novy uzol a pridame ho medzi ostatne
-                Data::Node* node = new Data::Node(i, out.str(), types->at(0), new osg::Vec3f(0,0,0), edges);
+                Node* node = new Node(i, out.str(), types->at(0), new osg::Vec3f(0,0,0), edges);
                 nodes->insert(nodes->end(), node);
         }
 
         // pridame hranu
-        Data::Edge* edge0 = new Data::Edge(0,"a", nodes->at(0), nodes->at(1), types->at(1), true);
+        Edge* edge0 = new Edge(0,"a", nodes->at(0), nodes->at(1), types->at(1), true);
         // prepojime ju s uzlami a pridame do struktury
         edge0->linkNodes(edges);
 
         // to iste pre ostatne hrany
-        Data::Edge* edge1 = new Data::Edge(0,"b", nodes->at(1), nodes->at(2), types->at(1), true);
+        Edge* edge1 = new Edge(0,"b", nodes->at(1), nodes->at(2), types->at(1), true);
         edge1->linkNodes(edges);
-        Data::Edge* edge2 = new Data::Edge(0,"c", nodes->at(2), nodes->at(0), types->at(1), true);
+        Edge* edge2 = new Edge(0,"c", nodes->at(2), nodes->at(0), types->at(1), true);
         edge2->linkNodes(edges);
 
-        Data::Edge* edge9 = new Data::Edge(0,"d", nodes->at(3), nodes->at(1), types->at(1), true);
+        Edge* edge9 = new Edge(0,"d", nodes->at(3), nodes->at(1), types->at(1), true);
         edge9->linkNodes(edges);
-        Data::Edge* edge10 = new Data::Edge(0,"e", nodes->at(3), nodes->at(2), types->at(1), true);
+        Edge* edge10 = new Edge(0,"e", nodes->at(3), nodes->at(2), types->at(1), true);
         edge10->linkNodes(edges);
-        Data::Edge* edge11 = new Data::Edge(0,"f", nodes->at(3), nodes->at(0), types->at(1), true);
+        Edge* edge11 = new Edge(0,"f", nodes->at(3), nodes->at(0), types->at(1), true);
         edge11->linkNodes(edges);
 
 }
 */
-void DataHelper::generateCylinder(QMap<qlonglong, osg::ref_ptr<Data::Node> > *nodes, QMap<qlonglong, osg::ref_ptr<Data::Edge> > *edges,QMap<qlonglong, Data::Type*> *types, int pocetUzlovNaPodstave, int pocetUzlovNaVysku)
+void DataHelper::generateCylinder(QMap<qlonglong, osg::ref_ptr<Node> > *nodes, QMap<qlonglong, osg::ref_ptr<Edge> > *edges,QMap<qlonglong, Type*> *types, int pocetUzlovNaPodstave, int pocetUzlovNaVysku)
 {
         int startN = nodes->count();
         int startE = edges->count();
@@ -124,8 +124,8 @@ void DataHelper::generateCylinder(QMap<qlonglong, osg::ref_ptr<Data::Node> > *no
         // budeme pridavat oba typy objektov - hrany aj vrcholy
         QString tVStr ("vrchol");
         QString tEStr ("hrana");
-        Data::Type* vType = new Data::Type(1,tVStr,0);
-        Data::Type* eType = new Data::Type(2,tEStr,0);
+        Type* vType = new Type(1,tVStr,0);
+        Type* eType = new Type(2,tEStr,0);
         types->insert(1, vType);
         types->insert(2, eType);
 
@@ -135,9 +135,9 @@ void DataHelper::generateCylinder(QMap<qlonglong, osg::ref_ptr<Data::Node> > *no
                 // ziskame meno uzla
                 std::stringstream out; out << i;
                 // kazdy uzol ma na zaciatku prazdnu mnozinu hran - toto je nejaka blbost FIXME!
-                //QMap<long, Data::Edge*> edges;
+                //QMap<long, Edge*> edges;
                 // vytvorime novy uzol a pridame ho medzi ostatne
-                osg::ref_ptr<Data::Node> node = new Data::Node(i, QString::fromStdString(out.str()), types->value(1), NULL, osg::Vec3f(0,0,0));
+                osg::ref_ptr<Node> node = new Node(i, QString::fromStdString(out.str()), types->value(1), NULL, osg::Vec3f(0,0,0));
                 //std::cout << nodes->capacity();
                 //std::cout << "\n";
                 nodes->insert(i, node);
@@ -171,13 +171,13 @@ void DataHelper::generateCylinder(QMap<qlonglong, osg::ref_ptr<Data::Node> > *no
                 //std::cout << "\n";
 
                 // spravime hranu medzi dvoma uzlami podstavy
-				osg::ref_ptr<Data::Edge> edge = new Data::Edge(id, QString::fromStdString(out.str()), NULL, nodes->value(j*pocetUzlovNaPodstave + i + startN), nodes->value(to), types->value(2), getRandomNumber(0,1));
+				osg::ref_ptr<Edge> edge = new Edge(id, QString::fromStdString(out.str()), NULL, nodes->value(j*pocetUzlovNaPodstave + i + startN), nodes->value(to), types->value(2), getRandomNumber(0,1));
                 edge->linkNodes(edges);
                 id++;
 
                 // ak nejde o spodnu podstavu, tak kazdy vrchol spojime s dalsim ktory je nizsie
                 if(j > 0){
-                    osg::ref_ptr<Data::Edge> edge0 = new Data::Edge(id, QString::fromStdString(out.str()), NULL, nodes->value(j*pocetUzlovNaPodstave + i + startN), nodes->value((j-1)*pocetUzlovNaPodstave + i + startN), types->value(2), true);
+                    osg::ref_ptr<Edge> edge0 = new Edge(id, QString::fromStdString(out.str()), NULL, nodes->value(j*pocetUzlovNaPodstave + i + startN), nodes->value((j-1)*pocetUzlovNaPodstave + i + startN), types->value(2), true);
                     edge0->linkNodes(edges);
                     id++;
                 }
@@ -185,13 +185,13 @@ void DataHelper::generateCylinder(QMap<qlonglong, osg::ref_ptr<Data::Node> > *no
         }
 }
 /*
-void DataHelper::generateCube2(std::vector<Data::Node*> *nodes, std::vector<Data::Edge*> *edges,std::vector<Data::Type*> *types)
+void DataHelper::generateCube2(std::vector<Node*> *nodes, std::vector<Edge*> *edges,std::vector<Type*> *types)
 {
         // budeme pridavat oba typy objektov - hrany aj vrcholy
         std::string tVStr ("vrchol");
         std::string tEStr ("hrana");
-        Data::Type* vType = new Data::Type(0,tVStr);
-        Data::Type* eType = new Data::Type(1,tEStr);
+        Type* vType = new Type(0,tVStr);
+        Type* eType = new Type(1,tEStr);
         types->insert(types->end(),vType);
         types->insert(types->end(),eType);
 
@@ -201,49 +201,49 @@ void DataHelper::generateCube2(std::vector<Data::Node*> *nodes, std::vector<Data
                 // ziskame meno uzla
                 std::stringstream out; out << i;
                 // kazdy uzol ma na zaciatku prazdnu mnozinu hran
-                std::vector<Data::Edge*> edges;
+                std::vector<Edge*> edges;
                 // vytvorime novy uzol a pridame ho medzi ostatne
-                Data::Node* node = new Data::Node(i, out.str(), types->at(0), new osg::Vec3f(0,0,0), edges);
+                Node* node = new Node(i, out.str(), types->at(0), new osg::Vec3f(0,0,0), edges);
                 nodes->insert(nodes->end(), node);
         }
 
         // pridame hranu
-        Data::Edge* edge0 = new Data::Edge(0,"a", nodes->at(0), nodes->at(1), types->at(1), true);
+        Edge* edge0 = new Edge(0,"a", nodes->at(0), nodes->at(1), types->at(1), true);
         // prepojime ju s uzlami a pridame do struktury
         edge0->linkNodes(edges);
 
         // to iste pre ostatne hrany
-        Data::Edge* edge1 = new Data::Edge(0,"b", nodes->at(1), nodes->at(2), types->at(1), true);
+        Edge* edge1 = new Edge(0,"b", nodes->at(1), nodes->at(2), types->at(1), true);
         edge1->linkNodes(edges);
-        Data::Edge* edge2 = new Data::Edge(0,"c", nodes->at(2), nodes->at(3), types->at(1), true);
+        Edge* edge2 = new Edge(0,"c", nodes->at(2), nodes->at(3), types->at(1), true);
         edge2->linkNodes(edges);
-        Data::Edge* edge3 = new Data::Edge(0,"d", nodes->at(3), nodes->at(0), types->at(1), true);
+        Edge* edge3 = new Edge(0,"d", nodes->at(3), nodes->at(0), types->at(1), true);
         edge3->linkNodes(edges);
-        Data::Edge* edge4 = new Data::Edge(0,"e", nodes->at(4), nodes->at(5), types->at(1), true);
+        Edge* edge4 = new Edge(0,"e", nodes->at(4), nodes->at(5), types->at(1), true);
         edge4->linkNodes(edges);
-        Data::Edge* edge5 = new Data::Edge(0,"f", nodes->at(5), nodes->at(6), types->at(1), true);
+        Edge* edge5 = new Edge(0,"f", nodes->at(5), nodes->at(6), types->at(1), true);
         edge5->linkNodes(edges);
-        Data::Edge* edge6 = new Data::Edge(0,"g", nodes->at(6), nodes->at(7), types->at(1), true);
+        Edge* edge6 = new Edge(0,"g", nodes->at(6), nodes->at(7), types->at(1), true);
         edge6->linkNodes(edges);
-        Data::Edge* edge7 = new Data::Edge(0,"h", nodes->at(7), nodes->at(4), types->at(1), true);
+        Edge* edge7 = new Edge(0,"h", nodes->at(7), nodes->at(4), types->at(1), true);
         edge7->linkNodes(edges);
-        Data::Edge* edge8 = new Data::Edge(0,"i", nodes->at(4), nodes->at(0), types->at(1), true);
+        Edge* edge8 = new Edge(0,"i", nodes->at(4), nodes->at(0), types->at(1), true);
         edge8->linkNodes(edges);
-        Data::Edge* edge9 = new Data::Edge(0,"j", nodes->at(5), nodes->at(1), types->at(1), true);
+        Edge* edge9 = new Edge(0,"j", nodes->at(5), nodes->at(1), types->at(1), true);
         edge9->linkNodes(edges);
-        Data::Edge* edge10 = new Data::Edge(0,"k", nodes->at(6), nodes->at(2), types->at(1), true);
+        Edge* edge10 = new Edge(0,"k", nodes->at(6), nodes->at(2), types->at(1), true);
         edge10->linkNodes(edges);
-        Data::Edge* edge11 = new Data::Edge(0,"l", nodes->at(7), nodes->at(3), types->at(1), true);
+        Edge* edge11 = new Edge(0,"l", nodes->at(7), nodes->at(3), types->at(1), true);
         edge11->linkNodes(edges);
 }
 
-void DataHelper::generateMultiCube(std::vector<Data::Node*> *nodes, std::vector<Data::Edge*> *edges,std::vector<Data::Type*> *types)
+void DataHelper::generateMultiCube(std::vector<Node*> *nodes, std::vector<Edge*> *edges,std::vector<Type*> *types)
 {
         // budeme pridavat oba typy objektov - hrany aj vrcholy
         std::string tVStr ("vrchol");
         std::string tEStr ("hrana");
-        Data::Type* vType = new Data::Type(0,tVStr);
-        Data::Type* eType = new Data::Type(1,tEStr);
+        Type* vType = new Type(0,tVStr);
+        Type* eType = new Type(1,tEStr);
         types->insert(types->end(),vType);
         types->insert(types->end(),eType);
 
@@ -253,134 +253,134 @@ void DataHelper::generateMultiCube(std::vector<Data::Node*> *nodes, std::vector<
                 // ziskame meno uzla
                 std::stringstream out; out << i;
                 // kazdy uzol ma na zaciatku prazdnu mnozinu hran
-                std::vector<Data::Edge*> edges;
+                std::vector<Edge*> edges;
                 // vytvorime novy uzol a pridame ho medzi ostatne
-                Data::Node* node = new Data::Node(i, out.str(), types->at(0), new osg::Vec3f(0,0,0), edges);
+                Node* node = new Node(i, out.str(), types->at(0), new osg::Vec3f(0,0,0), edges);
                 nodes->insert(nodes->end(), node);
         }
 
         // Spodna podstava
-        Data::Edge* edge0 = new Data::Edge(0,"", nodes->at(0), nodes->at(1), types->at(1), true);
+        Edge* edge0 = new Edge(0,"", nodes->at(0), nodes->at(1), types->at(1), true);
         edge0->linkNodes(edges);
-        Data::Edge* edge1 = new Data::Edge(0,"", nodes->at(1), nodes->at(2), types->at(1), true);
+        Edge* edge1 = new Edge(0,"", nodes->at(1), nodes->at(2), types->at(1), true);
         edge1->linkNodes(edges);
-        Data::Edge* edge2 = new Data::Edge(0,"", nodes->at(2), nodes->at(3), types->at(1), true);
+        Edge* edge2 = new Edge(0,"", nodes->at(2), nodes->at(3), types->at(1), true);
         edge2->linkNodes(edges);
-        Data::Edge* edge3 = new Data::Edge(0,"", nodes->at(3), nodes->at(4), types->at(1), true);
+        Edge* edge3 = new Edge(0,"", nodes->at(3), nodes->at(4), types->at(1), true);
         edge3->linkNodes(edges);
-        Data::Edge* edge4 = new Data::Edge(0,"", nodes->at(4), nodes->at(5), types->at(1), true);
+        Edge* edge4 = new Edge(0,"", nodes->at(4), nodes->at(5), types->at(1), true);
         edge4->linkNodes(edges);
-        Data::Edge* edge5 = new Data::Edge(0,"", nodes->at(5), nodes->at(6), types->at(1), true);
+        Edge* edge5 = new Edge(0,"", nodes->at(5), nodes->at(6), types->at(1), true);
         edge5->linkNodes(edges);
-        Data::Edge* edge6 = new Data::Edge(0,"", nodes->at(6), nodes->at(7), types->at(1), true);
+        Edge* edge6 = new Edge(0,"", nodes->at(6), nodes->at(7), types->at(1), true);
         edge6->linkNodes(edges);
-        Data::Edge* edge7 = new Data::Edge(0,"", nodes->at(7), nodes->at(0), types->at(1), true);
+        Edge* edge7 = new Edge(0,"", nodes->at(7), nodes->at(0), types->at(1), true);
         edge7->linkNodes(edges);
-        Data::Edge* edge8 = new Data::Edge(0,"", nodes->at(7), nodes->at(8), types->at(1), true);
+        Edge* edge8 = new Edge(0,"", nodes->at(7), nodes->at(8), types->at(1), true);
         edge8->linkNodes(edges);
-        Data::Edge* edge9 = new Data::Edge(0,"", nodes->at(5), nodes->at(8), types->at(1), true);
+        Edge* edge9 = new Edge(0,"", nodes->at(5), nodes->at(8), types->at(1), true);
         edge9->linkNodes(edges);
-        Data::Edge* edge10 = new Data::Edge(0,"", nodes->at(3), nodes->at(8), types->at(1), true);
+        Edge* edge10 = new Edge(0,"", nodes->at(3), nodes->at(8), types->at(1), true);
         edge10->linkNodes(edges);
-        Data::Edge* edge11 = new Data::Edge(0,"", nodes->at(1), nodes->at(8), types->at(1), true);
+        Edge* edge11 = new Edge(0,"", nodes->at(1), nodes->at(8), types->at(1), true);
         edge11->linkNodes(edges);
 
         // Stredna podstava
-        Data::Edge* edge12 = new Data::Edge(0,"", nodes->at(9), nodes->at(10), types->at(1), true);
+        Edge* edge12 = new Edge(0,"", nodes->at(9), nodes->at(10), types->at(1), true);
         edge12->linkNodes(edges);
-        Data::Edge* edge13 = new Data::Edge(0,"", nodes->at(10), nodes->at(11), types->at(1), true);
+        Edge* edge13 = new Edge(0,"", nodes->at(10), nodes->at(11), types->at(1), true);
         edge13->linkNodes(edges);
-        Data::Edge* edge14 = new Data::Edge(0,"", nodes->at(11), nodes->at(12), types->at(1), true);
+        Edge* edge14 = new Edge(0,"", nodes->at(11), nodes->at(12), types->at(1), true);
         edge14->linkNodes(edges);
-        Data::Edge* edge15 = new Data::Edge(0,"", nodes->at(12), nodes->at(13), types->at(1), true);
+        Edge* edge15 = new Edge(0,"", nodes->at(12), nodes->at(13), types->at(1), true);
         edge15->linkNodes(edges);
-        Data::Edge* edge16 = new Data::Edge(0,"", nodes->at(13), nodes->at(14), types->at(1), true);
+        Edge* edge16 = new Edge(0,"", nodes->at(13), nodes->at(14), types->at(1), true);
         edge16->linkNodes(edges);
-        Data::Edge* edge17 = new Data::Edge(0,"", nodes->at(14), nodes->at(15), types->at(1), true);
+        Edge* edge17 = new Edge(0,"", nodes->at(14), nodes->at(15), types->at(1), true);
         edge17->linkNodes(edges);
-        Data::Edge* edge18 = new Data::Edge(0,"", nodes->at(15), nodes->at(16), types->at(1), true);
+        Edge* edge18 = new Edge(0,"", nodes->at(15), nodes->at(16), types->at(1), true);
         edge18->linkNodes(edges);
-        Data::Edge* edge19 = new Data::Edge(0,"", nodes->at(16), nodes->at(9), types->at(1), true);
+        Edge* edge19 = new Edge(0,"", nodes->at(16), nodes->at(9), types->at(1), true);
         edge19->linkNodes(edges);
-        Data::Edge* edge20 = new Data::Edge(0,"", nodes->at(16), nodes->at(17), types->at(1), true);
+        Edge* edge20 = new Edge(0,"", nodes->at(16), nodes->at(17), types->at(1), true);
         edge20->linkNodes(edges);
-        Data::Edge* edge21 = new Data::Edge(0,"", nodes->at(14), nodes->at(17), types->at(1), true);
+        Edge* edge21 = new Edge(0,"", nodes->at(14), nodes->at(17), types->at(1), true);
         edge21->linkNodes(edges);
-        Data::Edge* edge22 = new Data::Edge(0,"", nodes->at(12), nodes->at(17), types->at(1), true);
+        Edge* edge22 = new Edge(0,"", nodes->at(12), nodes->at(17), types->at(1), true);
         edge22->linkNodes(edges);
-        Data::Edge* edge23 = new Data::Edge(0,"", nodes->at(10), nodes->at(17), types->at(1), true);
+        Edge* edge23 = new Edge(0,"", nodes->at(10), nodes->at(17), types->at(1), true);
         edge23->linkNodes(edges);
 
         // Vrchna podstava
-        Data::Edge* edge24 = new Data::Edge(0,"", nodes->at(18), nodes->at(19), types->at(1), true);
+        Edge* edge24 = new Edge(0,"", nodes->at(18), nodes->at(19), types->at(1), true);
         edge24->linkNodes(edges);
-        Data::Edge* edge25 = new Data::Edge(0,"", nodes->at(19), nodes->at(20), types->at(1), true);
+        Edge* edge25 = new Edge(0,"", nodes->at(19), nodes->at(20), types->at(1), true);
         edge25->linkNodes(edges);
-        Data::Edge* edge26 = new Data::Edge(0,"", nodes->at(20), nodes->at(21), types->at(1), true);
+        Edge* edge26 = new Edge(0,"", nodes->at(20), nodes->at(21), types->at(1), true);
         edge26->linkNodes(edges);
-        Data::Edge* edge27 = new Data::Edge(0,"", nodes->at(21), nodes->at(22), types->at(1), true);
+        Edge* edge27 = new Edge(0,"", nodes->at(21), nodes->at(22), types->at(1), true);
         edge27->linkNodes(edges);
-        Data::Edge* edge28 = new Data::Edge(0,"", nodes->at(22), nodes->at(23), types->at(1), true);
+        Edge* edge28 = new Edge(0,"", nodes->at(22), nodes->at(23), types->at(1), true);
         edge28->linkNodes(edges);
-        Data::Edge* edge29 = new Data::Edge(0,"", nodes->at(23), nodes->at(24), types->at(1), true);
+        Edge* edge29 = new Edge(0,"", nodes->at(23), nodes->at(24), types->at(1), true);
         edge29->linkNodes(edges);
-        Data::Edge* edge30 = new Data::Edge(0,"", nodes->at(24), nodes->at(25), types->at(1), true);
+        Edge* edge30 = new Edge(0,"", nodes->at(24), nodes->at(25), types->at(1), true);
         edge30->linkNodes(edges);
-        Data::Edge* edge31 = new Data::Edge(0,"", nodes->at(25), nodes->at(18), types->at(1), true);
+        Edge* edge31 = new Edge(0,"", nodes->at(25), nodes->at(18), types->at(1), true);
         edge31->linkNodes(edges);
-        Data::Edge* edge32 = new Data::Edge(0,"", nodes->at(25), nodes->at(26), types->at(1), true);
+        Edge* edge32 = new Edge(0,"", nodes->at(25), nodes->at(26), types->at(1), true);
         edge32->linkNodes(edges);
-        Data::Edge* edge33 = new Data::Edge(0,"", nodes->at(23), nodes->at(26), types->at(1), true);
+        Edge* edge33 = new Edge(0,"", nodes->at(23), nodes->at(26), types->at(1), true);
         edge33->linkNodes(edges);
-        Data::Edge* edge34 = new Data::Edge(0,"", nodes->at(21), nodes->at(26), types->at(1), true);
+        Edge* edge34 = new Edge(0,"", nodes->at(21), nodes->at(26), types->at(1), true);
         edge34->linkNodes(edges);
-        Data::Edge* edge35 = new Data::Edge(0,"", nodes->at(19), nodes->at(26), types->at(1), true);
+        Edge* edge35 = new Edge(0,"", nodes->at(19), nodes->at(26), types->at(1), true);
         edge35->linkNodes(edges);
         
         // Tri vertikalne steny zlava
         // 1
-         Data::Edge* edge36 = new Data::Edge(0,"", nodes->at(0), nodes->at(9), types->at(1), true);
+         Edge* edge36 = new Edge(0,"", nodes->at(0), nodes->at(9), types->at(1), true);
         edge36->linkNodes(edges);
-        Data::Edge* edge37 = new Data::Edge(0,"", nodes->at(7), nodes->at(16), types->at(1), true);
+        Edge* edge37 = new Edge(0,"", nodes->at(7), nodes->at(16), types->at(1), true);
         edge37->linkNodes(edges);
-        Data::Edge* edge38 = new Data::Edge(0,"", nodes->at(6), nodes->at(15), types->at(1), true);
+        Edge* edge38 = new Edge(0,"", nodes->at(6), nodes->at(15), types->at(1), true);
         edge38->linkNodes(edges);
-        Data::Edge* edge39 = new Data::Edge(0,"", nodes->at(9), nodes->at(18), types->at(1), true);
+        Edge* edge39 = new Edge(0,"", nodes->at(9), nodes->at(18), types->at(1), true);
         edge39->linkNodes(edges);
-        Data::Edge* edge40 = new Data::Edge(0,"", nodes->at(16), nodes->at(25), types->at(1), true);
+        Edge* edge40 = new Edge(0,"", nodes->at(16), nodes->at(25), types->at(1), true);
         edge40->linkNodes(edges);
-        Data::Edge* edge41 = new Data::Edge(0,"", nodes->at(15), nodes->at(24), types->at(1), true);
+        Edge* edge41 = new Edge(0,"", nodes->at(15), nodes->at(24), types->at(1), true);
         edge41->linkNodes(edges);
         // 2
-         Data::Edge* edge42 = new Data::Edge(0,"", nodes->at(1), nodes->at(10), types->at(1), true);
+         Edge* edge42 = new Edge(0,"", nodes->at(1), nodes->at(10), types->at(1), true);
         edge42->linkNodes(edges);
-        Data::Edge* edge43 = new Data::Edge(0,"", nodes->at(8), nodes->at(17), types->at(1), true);
+        Edge* edge43 = new Edge(0,"", nodes->at(8), nodes->at(17), types->at(1), true);
         edge43->linkNodes(edges);
-        Data::Edge* edge44 = new Data::Edge(0,"", nodes->at(5), nodes->at(14), types->at(1), true);
+        Edge* edge44 = new Edge(0,"", nodes->at(5), nodes->at(14), types->at(1), true);
         edge44->linkNodes(edges);
-        Data::Edge* edge45 = new Data::Edge(0,"", nodes->at(10), nodes->at(19), types->at(1), true);
+        Edge* edge45 = new Edge(0,"", nodes->at(10), nodes->at(19), types->at(1), true);
         edge45->linkNodes(edges);
-        Data::Edge* edge46 = new Data::Edge(0,"", nodes->at(17), nodes->at(26), types->at(1), true);
+        Edge* edge46 = new Edge(0,"", nodes->at(17), nodes->at(26), types->at(1), true);
         edge46->linkNodes(edges);
-        Data::Edge* edge47 = new Data::Edge(0,"", nodes->at(14), nodes->at(23), types->at(1), true);
+        Edge* edge47 = new Edge(0,"", nodes->at(14), nodes->at(23), types->at(1), true);
         edge47->linkNodes(edges);
         // 3
-         Data::Edge* edge48 = new Data::Edge(0,"", nodes->at(2), nodes->at(11), types->at(1), true);
+         Edge* edge48 = new Edge(0,"", nodes->at(2), nodes->at(11), types->at(1), true);
         edge48->linkNodes(edges);
-        Data::Edge* edge49 = new Data::Edge(0,"", nodes->at(3), nodes->at(12), types->at(1), true);
+        Edge* edge49 = new Edge(0,"", nodes->at(3), nodes->at(12), types->at(1), true);
         edge49->linkNodes(edges);
-        Data::Edge* edge50 = new Data::Edge(0,"", nodes->at(4), nodes->at(13), types->at(1), true);
+        Edge* edge50 = new Edge(0,"", nodes->at(4), nodes->at(13), types->at(1), true);
         edge50->linkNodes(edges);
-        Data::Edge* edge51 = new Data::Edge(0,"", nodes->at(11), nodes->at(20), types->at(1), true);
+        Edge* edge51 = new Edge(0,"", nodes->at(11), nodes->at(20), types->at(1), true);
         edge51->linkNodes(edges);
-        Data::Edge* edge52 = new Data::Edge(0,"", nodes->at(12), nodes->at(21), types->at(1), true);
+        Edge* edge52 = new Edge(0,"", nodes->at(12), nodes->at(21), types->at(1), true);
         edge52->linkNodes(edges);
-        Data::Edge* edge53 = new Data::Edge(0,"", nodes->at(13), nodes->at(22), types->at(1), true);
+        Edge* edge53 = new Edge(0,"", nodes->at(13), nodes->at(22), types->at(1), true);
         edge53->linkNodes(edges);
 
 }
 
-void DataHelper::generateCube(std::vector<Data::Node*> *nodes,std::vector<Data::Edge*> *edges,std::vector<Data::Type*> *types)
+void DataHelper::generateCube(std::vector<Node*> *nodes,std::vector<Edge*> *edges,std::vector<Type*> *types)
 {
 	long nVertex = 8;
 	long nEdges = 12;
@@ -390,10 +390,10 @@ void DataHelper::generateCube(std::vector<Data::Node*> *nodes,std::vector<Data::
 	std::string tVStr ("vrchol");
 	std::string tEStr ("hrana");
 	osg::Vec3f* position = new osg::Vec3f(0,0,0);
-	std::vector<Data::Edge*> edges2;
+	std::vector<Edge*> edges2;
 
-	Data::Type* vType = new Data::Type(0,tVStr);
-	Data::Type* eType = new Data::Type(1,tEStr);
+	Type* vType = new Type(0,tVStr);
+	Type* eType = new Type(1,tEStr);
 	types->insert(types->end(),vType);
 	types->insert(types->end(),eType);
 
@@ -401,23 +401,23 @@ void DataHelper::generateCube(std::vector<Data::Node*> *nodes,std::vector<Data::
 	{
 		Num << "vrchol" << i;
 		str = Num.str();		
-		Data::Node* vertex = new Data::Node(i,str,types->at(0),position,edges2);
+		Node* vertex = new Node(i,str,types->at(0),position,edges2);
 		nodes->insert(nodes->end(),vertex);
 		Num.str("");
 	}
 
-	Data::Edge* edge0 = new Data::Edge(0,"hrana0",nodes->at(0),nodes->at(1),types->at(1),true);
-	Data::Edge* edge1 = new Data::Edge(1,"hrana1",nodes->at(0),nodes->at(2),types->at(1),true);
-	Data::Edge* edge2 = new Data::Edge(2,"hrana2",nodes->at(0),nodes->at(4),types->at(1),true);
-	Data::Edge* edge3 = new Data::Edge(3,"hrana3",nodes->at(2),nodes->at(3),types->at(1),true);
-	Data::Edge* edge4 = new Data::Edge(4,"hrana4",nodes->at(2),nodes->at(6),types->at(1),true);
-	Data::Edge* edge5 = new Data::Edge(5,"hrana5",nodes->at(3),nodes->at(7),types->at(1),true);
-	Data::Edge* edge6 = new Data::Edge(6,"hrana6",nodes->at(3),nodes->at(1),types->at(1),true);
-	Data::Edge* edge7 = new Data::Edge(7,"hrana7",nodes->at(7),nodes->at(6),types->at(1),true);
-	Data::Edge* edge8 = new Data::Edge(8,"hrana8",nodes->at(1),nodes->at(5),types->at(1),true);
-	Data::Edge* edge9 = new Data::Edge(9,"hrana9",nodes->at(4),nodes->at(5),types->at(1),true);
-	Data::Edge* edge10 = new Data::Edge(10,"hrana10",nodes->at(4),nodes->at(6),types->at(1),true);
-	Data::Edge* edge11 = new Data::Edge(11,"hrana11",nodes->at(5),nodes->at(7),types->at(1),true);
+	Edge* edge0 = new Edge(0,"hrana0",nodes->at(0),nodes->at(1),types->at(1),true);
+	Edge* edge1 = new Edge(1,"hrana1",nodes->at(0),nodes->at(2),types->at(1),true);
+	Edge* edge2 = new Edge(2,"hrana2",nodes->at(0),nodes->at(4),types->at(1),true);
+	Edge* edge3 = new Edge(3,"hrana3",nodes->at(2),nodes->at(3),types->at(1),true);
+	Edge* edge4 = new Edge(4,"hrana4",nodes->at(2),nodes->at(6),types->at(1),true);
+	Edge* edge5 = new Edge(5,"hrana5",nodes->at(3),nodes->at(7),types->at(1),true);
+	Edge* edge6 = new Edge(6,"hrana6",nodes->at(3),nodes->at(1),types->at(1),true);
+	Edge* edge7 = new Edge(7,"hrana7",nodes->at(7),nodes->at(6),types->at(1),true);
+	Edge* edge8 = new Edge(8,"hrana8",nodes->at(1),nodes->at(5),types->at(1),true);
+	Edge* edge9 = new Edge(9,"hrana9",nodes->at(4),nodes->at(5),types->at(1),true);
+	Edge* edge10 = new Edge(10,"hrana10",nodes->at(4),nodes->at(6),types->at(1),true);
+	Edge* edge11 = new Edge(11,"hrana11",nodes->at(5),nodes->at(7),types->at(1),true);
 
 	edges->insert(edges->end(),edge0);	
 	edges->insert(edges->end(),edge1);

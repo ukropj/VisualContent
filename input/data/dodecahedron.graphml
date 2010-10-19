@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns ./lib/graphml.xsd">
+	<graph id="G" edgedefault="undirected" parse.nodeids="free"
+		parse.edgeids="free" parse.order="nodesfirst"><!--NODES-->
+		<node id="n25"></node>
+		<node id="n26"></node>
+		<node id="n27"></node>
+		<node id="n29"></node>
+		<node id="n28"></node>
+		<node id="n31"></node>
+		<node id="n30"></node>
+		<node id="n32"></node>
+		<node id="n33"></node>
+		<node id="n34"></node>
+		<node id="n36"></node>
+		<node id="n35"></node>
+		<node id="n38"></node>
+		<node id="n37"></node>
+		<node id="n39"></node>
+		<node id="n40"></node>
+		<node id="n41"></node>
+		<node id="n42"></node>
+		<node id="n43"></node>
+		<node id="n44"></node><!--EDGES-->
+		<edge source="n35" target="n27"></edge>
+		<edge source="n36" target="n26"></edge>
+		<edge source="n33" target="n30"></edge>
+		<edge source="n29" target="n34"></edge>
+		<edge source="n30" target="n34"></edge>
+		<edge source="n33" target="n31"></edge>
+		<edge source="n26" target="n25"></edge>
+		<edge source="n26" target="n27"></edge>
+		<edge source="n29" target="n25"></edge>
+		<edge source="n28" target="n27"></edge>
+		<edge source="n28" target="n29"></edge>
+		<edge source="n33" target="n25"></edge>
+		<edge source="n37" target="n40"></edge>
+		<edge source="n39" target="n38"></edge>
+		<edge source="n34" target="n42"></edge>
+		<edge source="n37" target="n38"></edge>
+		<edge source="n40" target="n41"></edge>
+		<edge source="n39" target="n41"></edge>
+		<edge source="n35" target="n44"></edge>
+		<edge source="n37" target="n32"></edge>
+		<edge source="n30" target="n39"></edge>
+		<edge source="n31" target="n38"></edge>
+		<edge source="n36" target="n32"></edge>
+		<edge source="n35" target="n32"></edge>
+		<edge source="n36" target="n31"></edge>
+		<edge source="n28" target="n43"></edge>
+		<edge source="n43" target="n42"></edge>
+		<edge source="n42" target="n41"></edge>
+		<edge source="n40" target="n44"></edge>
+		<edge source="n43" target="n44"></edge>
+	</graph>
+</graphml>
