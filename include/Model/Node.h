@@ -249,7 +249,7 @@ public:
 	 */
 	void setSelected(bool selected) {
 		if (selected)
-			setDrawableColor(0, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+			setDrawableColor(0, osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
 		else
 			setDrawableColor(0, color);
 
@@ -381,24 +381,6 @@ public:
 	 *  \brief Reloads node configuration
 	 */
 	void reloadConfig();
-
-	/**
-	 *  \fn inline public constant  getSettings
-	 *  \brief Returns settings of the Node
-	 *  \return QMap<QString,QString> * settings of the Node
-	 */
-	QMap<QString, QString> * getSettings() const {
-		return settings;
-	}
-
-	/**
-	 *  \fn inline public  setSettings(QMap<QString, QString> * val)
-	 *  \brief Sets (overrides) new settings of the Node
-	 *  \param   val    new settings
-	 */
-	void setSettings(QMap<QString, QString> * val) {
-		settings = val;
-	}
 
 private:
 
@@ -546,17 +528,9 @@ private:
 
 	/**
 	 *  osg::ref_ptr square
-	 *  \brief Square drawable
+	 *  \brief Square drawable - esed to mark fixed nodes
 	 */
 	osg::ref_ptr<osg::Drawable> square;
-
-protected:
-
-	/**
-	 *  QMap<QString,QString> * settings
-	 *  \brief Settings of the Node
-	 */
-	QMap<QString, QString> * settings;
 };
 }
 

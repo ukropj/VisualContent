@@ -4,11 +4,12 @@
  */
 #include "Model/Edge.h"
 
-using namespace Model ;
+using namespace Model;
 
 Edge::Edge(qlonglong id, QString name, Graph* graph,
-		osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode, Model::Type* type,
-		bool isOriented, int pos, osg::ref_ptr<osg::Camera> camera) :
+		osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode,
+		Model::Type* type, bool isOriented, int pos,
+		osg::ref_ptr<osg::Camera> camera) :
 	osg::DrawArrays(osg::PrimitiveSet::QUADS, pos, 4) {
 	this->id = id;
 	this->name = name;
@@ -20,14 +21,13 @@ Edge::Edge(qlonglong id, QString name, Graph* graph,
 	this->camera = camera;
 	this->selected = false;
 
-	float r = type->getSettings()->value("color.R").toFloat();
-	float g = type->getSettings()->value("color.G").toFloat();
-	float b = type->getSettings()->value("color.B").toFloat();
-	float a = type->getSettings()->value("color.A").toFloat();
+	float r = type->getValue("color.R").toFloat();
+	float g = type->getValue("color.G").toFloat();
+	float b = type->getValue("color.B").toFloat();
+	float a = type->getValue("color.A").toFloat();
 
 	this->edgeColor = osg::Vec4(r, g, b, a);
 
-	this->appConf = Util::Config::getInstance();
 	coordinates = new osg::Vec3Array();
 	edgeTexCoords = new osg::Vec2Array();
 
@@ -48,7 +48,6 @@ Edge::~Edge(void) {
 	}
 
 	this->type = NULL;
-	this->appConf = NULL;
 }
 
 void Edge::linkNodes(QMap<qlonglong, osg::ref_ptr<Edge> > *edges) {
@@ -90,8 +89,8 @@ void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos) {
 
 	viewVec.normalize();
 
-	float graphScale =
-			appConf->getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float graphScale = Util::Config::getValue(
+			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	osg::Vec3 x, y;
 	x.set(srcPos);
@@ -103,7 +102,7 @@ void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos) {
 	up = edgeDir ^ viewVec;
 	up.normalize();
 
-	up *= appConf->getValue("Viewer.Textures.EdgeScale").toFloat();
+	up *= Util::Config::getValue("Viewer.Textures.EdgeScale").toFloat();
 
 	coordinates->push_back(osg::Vec3(x.x() + up.x(), x.y() + up.y(), x.z()
 			+ up.z()));
@@ -119,8 +118,8 @@ void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos) {
 	 std::cout << "Edge coord 3: " << y.x() - up.x() << " " << y.y() - up.y() << " " << y.z() - up.z() << "\n";
 	 std::cout << "Edge coord 4: " << y.x() + up.x() << " " << y.y() + up.y() << " " << y.z() + up.z() << "\n";*/
 
-	int repeatCnt = length / (2
-			* appConf->getValue("Viewer.Textures.EdgeScale").toFloat());
+	int repeatCnt = length / (2 * Util::Config::getValue(
+			"Viewer.Textures.EdgeScale").toFloat());
 
 	edgeTexCoords->push_back(osg::Vec2(0, 1.0f));
 	edgeTexCoords->push_back(osg::Vec2(0, 0.0f));

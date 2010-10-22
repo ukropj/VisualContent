@@ -440,6 +440,8 @@ public slots:
 	 *	\brief called when user don't double click
 	 */
 	void mouseTimerTimeout();
+signals:
+	void pickMsg(QString msg);
 };
 }
 

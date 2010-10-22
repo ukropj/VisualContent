@@ -16,18 +16,6 @@ EdgeGroup::~EdgeGroup(void)
 {
 }
 
-/*!
- * 
- * \param scale
- * Koeficient velkosti hran.
- * 
- * \returns
- * Podgraf hran.
- * 
- * 
- * Vytvori podgraf s hranami, ktore spajaju uzly na zaklade ich aktualnej pozicie.
- * 
- */
 void EdgeGroup::initEdges()
 {
 	osg::ref_ptr<osg::Group> allEdges = new osg::Group;	

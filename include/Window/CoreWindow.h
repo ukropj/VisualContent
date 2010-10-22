@@ -40,6 +40,13 @@ namespace Window {
 class CoreWindow: public QMainWindow {
 Q_OBJECT
 
+
+public:
+
+	CoreWindow(QWidget* parent = 0);
+
+	Model::FRAlgorithm * getLayoutThread() const {return layout;}
+
 public slots:
 
 	/**
@@ -133,103 +140,76 @@ public slots:
 	 */
 	void nodeTypeComboBoxChanged(int index);
 
-	/**
-	 *  \fn clean
-	 *  \brief Slot function that is called befoure application atempts to quit
-	 */
-	void clean();
+protected:
+    void closeEvent(QCloseEvent *event);
 
 private:
 
-	/**
-	 *  QApplication * application
-	 *  \brief Pointer ro aplication
-	 */
-	QApplication * application;
-
-	/**
-	 *  QToolBar * toolBar
-	 *  \brief Pointer to toolbar
-	 */
 	QToolBar * toolBar;
 
-	/**
-	 *  QAction * quit
-	 *  \brief Action to quit aplication
-	 */
-	QAction * quit;
-
-	/**
-	 *  QAction * options
-	 *  \brief Pointer to option dialog
-	 */
-	QAction * options;
-
-	/**
-	 *  QPushButton * play
-	 *  \brief Action for play/pause layout
-	 */
-	QPushButton * play;
+	QAction * quitAction;
+	QAction * optionsAction;
+	QAction * playAction;
 
 	/**
 	 *  QPushButton * addMeta
 	 *  \brief Action for adding meta node
 	 */
-	QPushButton * addMeta;
+	QPushButton * addMetaB;
 
 	/**
 	 *  QPushButton * fix
 	 *  \brief Action for fix selected nodes
 	 */
-	QPushButton * fix;
+	QPushButton * fixB;
 
 	/**
 	 *  QPushButton * unFix
 	 *  \brief Action for unfix nodes
 	 */
-	QPushButton * unFix;
+	QPushButton * unFixB;
 
 	/**
 	 *  QPushButton * noSelect
 	 *  \brief Action for no-select mode
 	 */
-	QPushButton * noSelect;
+	QPushButton * noSelectB;
 
 	/**
 	 *  QPushButton * singleSelect
 	 *  \brief Action for single-select mode
 	 */
-	QPushButton * singleSelect;
+	QPushButton * singleSelectB;
 
 	/**
 	 *  QPushButton * multiSelect
 	 *  \brief Action for multi-select mode
 	 */
-	QPushButton * multiSelect;
+	QPushButton * multiSelectB;
 
 	/**
 	 *  QPushButton * center
 	 *  \brief Action for center view
 	 */
-	QPushButton * center;
+	QPushButton * centerB;
 
 	/**
 	 *  QPushButton * removeMeta
 	 *  \brief Action for removing meta nodes
 	 */
-	QPushButton * removeMeta;
+	QPushButton * removeMetaB;
 
 	/**
 	 *  QAction * load
 	 *  \brief Action for loading file
 	 */
-	QAction * load;
+	QAction * loadAction;
 
 	/**
 	 *  QPushButton * label
 	 *  \brief Pointer to labelOn/labelOff button
 	 */
-	QPushButton * label;
+	QPushButton * labelsB;
 
 	/**
 	 *  QSlider * slider
@@ -241,13 +221,13 @@ private:
 	 *  QMenu * file
 	 *  \brief Pointer to file menu
 	 */
-	QMenu * file;
+	QMenu * fileMenu;
 
 	/**
 	 *  QMenu * edit
 	 *  \brief Pointer to edit menu
 	 */
-	QMenu * edit;
+	QMenu * editMenu;
 
 	/**
 	 *  Window::ViewerQT * viewerWidget
@@ -265,13 +245,7 @@ private:
 	 *  QComboBox * nodeTypeComboBox
 	 *  \brief Pointer to comobox of node types
 	 */
-	QComboBox * nodeTypeComboBox;
-
-	/**
-	 *  int isPlaying
-	 *  \brief Flag if layout is running
-	 */
-	bool isPlaying;
+	QComboBox * nodeTypeCB;
 
 	/**
 	 *  \fn private  createActions
@@ -318,35 +292,6 @@ private:
 
 	AppCore::IOManager *manager;	// TODO refactor to MVC
 	Window::MessageWindows *messageWindows;
-
-public:
-
-	/*!
-	 *
-	 * \param parent
-	 * Rodic okna.
-	 *
-	 * \param coreGraph
-	 * Graf, ktory bude zobrazovany.
-	 *
-	 * \param app
-	 * Qt aplikacia.
-	 *
-	 * Constructor
-	 *
-	 */
-	CoreWindow(AppCore::IOManager* manager, Vwr::CoreGraph* coreGraph,
-			QApplication* app);
-
-	/**
-	 *  \fn inline public constant  getLayoutThread
-	 *  \brief Get the layout thread
-	 *  \return Layout::LayoutThread *
-	 */
-	Model::FRAlgorithm * getLayoutThread() const {
-		return layout;
-	}
-
 };
 }
 

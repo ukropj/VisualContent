@@ -157,12 +157,7 @@ namespace Vwr
 		*  \brief Sets nodes freeze state
 		*  \param      val     nodes freeze state
 		*/
-		void setNodesFreezed(bool val) 
-		{ 
-			this->nodesFreezed = val; 
-			nodesGroup->freezeNodePositions();
-			qmetaNodesGroup->freezeNodePositions();
-		}
+		void setNodesFreezed(bool val) ;
 
 	private:
 

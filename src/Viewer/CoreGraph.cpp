@@ -3,17 +3,14 @@
 
 using namespace Vwr;
 
-/*
- * TODO prerobit - v sucastnosti je scena jeden velky plochy graf. toto sa da optimalizovat do stromovej strukutry. pri vytvarani grafu ho treba prechadzat ako graf
- * a nie vsetko zaradom ako je to teraz
- */
-
 Vwr::CoreGraph::CoreGraph(Model::Graph * graph, osg::ref_ptr<osg::Camera> camera) {
+	// TODO ma zmysel posielat graph = 0??
+	// TODO rename this class to SceneGraph and adjust acordingly
 	this->graph = graph;
 	this->camera = (camera == 0 ? (osg::ref_ptr<osg::Camera>) new osg::Camera
 			: camera);
 
-	this->in_nodes = NULL;
+	this->in_nodes = NULL; // todo remove duplicit fields
 	this->in_edges = NULL;
 	this->qmetaNodes = NULL;
 	this->qmetaEdges = NULL;
@@ -239,4 +236,12 @@ void CoreGraph::reloadConfig() {
 
 CoreGraph::~CoreGraph(void) {
 	cleanUp();
+}
+
+void CoreGraph::setNodesFreezed(bool val) { // XXX what is this doing ???
+	this->nodesFreezed = val; // TODO remove field
+//	nodesGroup->freezeNodePositions();
+//	qmetaNodesGroup->freezeNodePositions();
+	// XXX rename
+	this->graph->setFrozen(val);
 }

@@ -95,18 +95,12 @@ public:
 	}
 
 	/**
-	 *  \fn public  loadConfig
-	 *  \brief Loads type configuration
-	 */
-	void loadConfig();
-
-	/**
 	 *  \fn inline public constant  getSettings
 	 *  \brief Returns settings of the Type
 	 *  \return QMap<QString,QString> * settings
 	 */
-	QMap<QString, QString> * getSettings() const {
-		return settings;
+	QString getValue(QString key) const {
+		return settings->value(key);
 	}
 
 	/**
@@ -117,8 +111,8 @@ public:
 	 *
 	 *  \param  val   new settings
 	 */
-	void setSettings(QMap<QString, QString> * val) {
-		settings = val;
+	void setValue(QString key, QString value) {
+		settings->insert(key, value);
 	}
 
 	/**
@@ -126,8 +120,8 @@ public:
 	 *  \brief Returns type texture
 	 *  \return osg::ref_ptr<osg::Texture2D> type texture
 	 */
-	osg::ref_ptr<osg::Texture2D> getTypeTexture() const {
-		return typeTexture;
+	osg::ref_ptr<osg::Texture2D> getTexture() const {
+		return texture;
 	}
 
 	/**
@@ -183,7 +177,7 @@ protected:
 	 *  osg::ref_ptr typeTexture
 	 *  \brief Type texture
 	 */
-	osg::ref_ptr<osg::Texture2D> typeTexture;
+	osg::ref_ptr<osg::Texture2D> texture;
 
 	/**
 	 *  float scale

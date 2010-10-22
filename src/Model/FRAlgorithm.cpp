@@ -26,7 +26,7 @@ FRAlgorithm::FRAlgorithm(Graph *graph) {
 	this->randomize();
 }
 
-FRAlgorithm::FRAlgorithm() {
+FRAlgorithm::FRAlgorithm() { // TODO remove this constructor
 	PI = acos((double) -1);
 	ALPHA = 0.005;
 	MIN_MOVEMENT = 0.05;
@@ -111,7 +111,7 @@ void FRAlgorithm::pause() {
 }
 
 void FRAlgorithm::wakeUp() {
-	if (graph != NULL && state == RUNNING && graph->isFrozen()) {
+	if (graph != NULL) {
 		graph->setFrozen(false);
 	}
 }
@@ -157,43 +157,43 @@ bool FRAlgorithm::iterate() {
 			node->resetForce(); // vynulovanie posobiacej sily			
 		}
 	}
-	{//meta uzly
-
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
-		j = graph->getMetaNodes()->begin();
-		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
-			j.value()->resetForce(); // vynulovanie posobiacej sily
-			k = graph->getMetaNodes()->begin();
-			for (int h = 0; h < graph->getMetaNodes()->count(); h++, ++k) { // pre vsetky metauzly..
-				if (!j.value()->equals(k.value())) {
-					// odpudiva sila medzi metauzlami
-					addRepulsive(j.value(), k.value(),
-							Graph::getMetaStrength());
-				}
-			}
-		}
-	}
-	{//meta hrany
-
-		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator j;
-		j = graph->getMetaEdges()->begin();
-		for (int i = 0; i < graph->getMetaEdges()->count(); i++, ++j) { // pre vsetky metahrany..
-			Node *u = j.value()->getSrcNode();
-			Node *v = j.value()->getDstNode();
-			// uzly nikdy nebudu ignorovane
-			u->setIgnored(false);
-			v->setIgnored(false);
-			if (graph->getMetaNodes()->contains(u->getId())) {
-				// pritazliva sila, posobi na v
-				addMetaAttractive(v, u, Graph::getMetaStrength());
-			}
-			if (graph->getMetaNodes()->contains(v->getId())) {
-				// pritazliva sila, posobi na u
-				addMetaAttractive(u, v, Graph::getMetaStrength());
-			}
-		}
-	}
+//	{//meta uzly
+//
+//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
+//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
+//		j = graph->getMetaNodes()->begin();
+//		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
+//			j.value()->resetForce(); // vynulovanie posobiacej sily
+//			k = graph->getMetaNodes()->begin();
+//			for (int h = 0; h < graph->getMetaNodes()->count(); h++, ++k) { // pre vsetky metauzly..
+//				if (!j.value()->equals(k.value())) {
+//					// odpudiva sila medzi metauzlami
+//					addRepulsive(j.value(), k.value(),
+//							Graph::getMetaStrength());
+//				}
+//			}
+//		}
+//	}
+//	{//meta hrany
+//
+//		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator j;
+//		j = graph->getMetaEdges()->begin();
+//		for (int i = 0; i < graph->getMetaEdges()->count(); i++, ++j) { // pre vsetky metahrany..
+//			Node *u = j.value()->getSrcNode();
+//			Node *v = j.value()->getDstNode();
+//			// uzly nikdy nebudu ignorovane
+//			u->setIgnored(false);
+//			v->setIgnored(false);
+//			if (graph->getMetaNodes()->contains(u->getId())) {
+//				// pritazliva sila, posobi na v
+//				addMetaAttractive(v, u, Graph::getMetaStrength());
+//			}
+//			if (graph->getMetaNodes()->contains(v->getId())) {
+//				// pritazliva sila, posobi na u
+//				addMetaAttractive(u, v, Graph::getMetaStrength());
+//			}
+//		}
+//	}
 	{//uzly
 		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
 		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
@@ -216,7 +216,7 @@ bool FRAlgorithm::iterate() {
 			addAttractive(j.value(), 1);
 		}
 	}
-	if (state == PAUSED) {
+	if (state == PAUSED) { // XXX
 		return true;
 	}
 

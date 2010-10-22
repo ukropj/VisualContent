@@ -34,27 +34,13 @@ namespace Window {
  */
 class ViewerQT: public osgViewer::Viewer, public AdapterWidget {
 public:
-
 	/*!
-	 *
-	 * \param parent
-	 * Rodic widgetu.
-	 *
-	 * \param name
-	 * Meno widgetu.
-	 *
-	 * \param shareWidget
-	 * Zdielanie widgetu.
-	 *
-	 * \param f
-	 * Znacky pre vytvaranie okna.
-	 *
-	 * \param cg
-	 * CoreGraf, ktory sa bude vykreslovat.
-	 *
-	 *
+	 * \param parent Rodic widgetu.
+	 * \param name Meno widgetu.
+	 * \param shareWidget Zdielanie widgetu.
+	 * \param f Znacky pre vytvaranie okna.
+	 * \param cg CoreGraf, ktory sa bude vykreslovat.
 	 * Vytvori widget, ktory dokaze zobrazit OSG grafy.
-	 *
 	 */
 	ViewerQT(QWidget * parent = 0, const char * name = 0,
 			const QGLWidget * shareWidget = 0, WindowFlags f = 0,
@@ -63,9 +49,7 @@ public:
 		this->cg = cg;
 		cg->setCamera(this->getCamera());
 
-		appConf = Util::Config::getInstance();
-
-		osg::DisplaySettings::instance()->setStereo(appConf->getValue(
+		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());
 		osg::DisplaySettings::instance()->setStereoMode(
 				osg::DisplaySettings::ANAGLYPHIC);
@@ -74,7 +58,7 @@ public:
 		getCamera()->setProjectionMatrixAsPerspective(60,
 				static_cast<double> (width()) / static_cast<double> (height()),
 				0.01,
-				appConf->getValue("Viewer.Display.ViewDistance").toFloat());
+				Util::Config::getValue("Viewer.Display.ViewDistance").toFloat());
 		getCamera()->setGraphicsContext(getGraphicsWindow());
 		getCamera()->setComputeNearFarMode(
 				osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
@@ -120,11 +104,11 @@ public:
 	 *  \brief Reloads configuration
 	 */
 	void reloadConfig() {
-		//manipulator->setMaxSpeed(appConf->getValue("Viewer.CameraManipulator.MaxSpeed").toFloat());
-		manipulator->setTrackballSize(appConf->getValue(
+		manipulator->setMaxSpeed(Util::Config::getValue("Viewer.CameraManipulator.MaxSpeed").toFloat());
+		manipulator->setTrackballSize(Util::Config::getValue(
 				"Viewer.CameraManipulator.Sensitivity").toFloat());
 
-		osg::DisplaySettings::instance()->setStereo(appConf->getValue(
+		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());
 	}
 
@@ -164,12 +148,6 @@ private:
 	 *  \brief pick handler
 	 */
 	Vwr::PickHandler * pickHandler;
-
-	/**
-	 *  Util::ApplicationConfig * appConf
-	 *  \brief application configuration
-	 */
-	Util::Config * appConf;
 
 };
 }

@@ -38,7 +38,8 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& ea,
 		eaRel = NULL;
 		// ak dojde push a nie je zapnuty timer tak spusti sa timer a ulozia eventy
 		if (!timer->isActive()) {
-			timer->start(Util::Config::getValue("Mouse.DoubleClickTime").toInt());
+			timer->start(
+					Util::Config::getValue("Mouse.DoubleClickTime").toInt());
 			eaPush = &ea;
 			aaPush = &aa;
 			return false;
@@ -132,6 +133,7 @@ bool PickHandler::handleKeyDown(const osgGA::GUIEventAdapter& ea,
 	if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Control_R || ea.getKey()
 			== osgGA::GUIEventAdapter::KEY_Control_L) {
 		isCtrlPressed = true;
+		qDebug("Ctrl was pressed now!");
 	} else if (ea.getKey() == osgGA::GUIEventAdapter::KEY_Shift_L
 			|| ea.getKey() == osgGA::GUIEventAdapter::KEY_Shift_R) {
 		isShiftPressed = true;
@@ -190,6 +192,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& ea,
 	if (isManipulatingNodes) {
 		isManipulatingNodes = false;
 		setSelectedNodesInterpolation(true);
+		toggleSelectedNodesFixedState(false);
 	}
 
 	return false;
@@ -209,11 +212,13 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& ea,
 		coordinates->push_back(osg::Vec3(_mX, origin_mY, -1));
 
 		selectionQuad->getDrawable(0)->asGeometry()->setVertexArray(coordinates);
-	} else if (pickMode == PickMode::NONE && leftButtonPressed) {
+	} else if ((pickMode == PickMode::NONE || pickMode == PickMode::SINGLE)
+			&& leftButtonPressed) {
 		if (!isManipulatingNodes) {
 			isManipulatingNodes = true;
 			setSelectedNodesInterpolation(false);
-			toggleSelectedNodesFixedState(true);
+			toggleSelectedNodesFixedState(true); // XXX this was changed
+
 		}
 
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*> (&aa);
@@ -266,9 +271,10 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& ea,
 
 bool PickHandler::pick(const double xMin, const double yMin, const double xMax,
 		const double yMax, osgViewer::Viewer* viewer) {
-	if (!viewer->getSceneData())
+	if (!viewer->getSceneData()) {
 		// Nothing to pick.
 		return false;
+	}
 
 	osgUtil::PolytopeIntersector* picker = new osgUtil::PolytopeIntersector(
 			osgUtil::Intersector::PROJECTION, xMin, yMin, xMax, yMax);
@@ -296,15 +302,15 @@ bool PickHandler::pick(const double xMin, const double yMin, const double xMax,
 						bool edgePicked = false;
 
 						if (selectionType == SelectionType::NODE
-								|| selectionType == SelectionType::ALL)
+								|| selectionType == SelectionType::ALL) {
 							nodePicked = doNodePick(nodePath);
-
+						}
 						if ((selectionType == SelectionType::EDGE
 								|| selectionType == SelectionType::ALL)
-								&& !nodePicked)
+								&& !nodePicked) {
 							edgePicked = doEdgePick(nodePath,
 									hitr->primitiveIndex);
-
+						}
 						result = result || nodePicked || edgePicked;
 					}
 				}
@@ -326,7 +332,8 @@ bool PickHandler::doSinglePick(osg::NodePath nodePath,
 }
 
 bool PickHandler::doNodePick(osg::NodePath nodePath) {
-	Model::Node * n = dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 1]);
+	Model::Node * n =
+			dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 1]);
 
 	if (n != NULL) {
 		if (isAltPressed && pickMode == PickMode::NONE) {
@@ -335,15 +342,18 @@ bool PickHandler::doNodePick(osg::NodePath nodePath) {
 			if (!pickedNodes.contains(n)) {
 				pickedNodes.append(n);
 				n->setSelected(true);
+				pickMsg("Node selected");
 			}
 
-			if (isCtrlPressed)
+			if (isCtrlPressed) {
 				unselectPickedNodes(n);
+				qDebug("ctrl presed and node deselected");
+			}
 
 			return true;
 		}
 	}
-
+	pickMsg("Nothing selected");
 	return false;
 }
 
@@ -374,10 +384,12 @@ bool PickHandler::doEdgePick(osg::NodePath nodePath,
 					if (!pickedEdges.contains(e)) {
 						pickedEdges.append(e);
 						e->setSelected(true);
+						pickMsg("Edge selected");
 					}
 
-					if (isCtrlPressed)
+					if (isCtrlPressed) {
 						unselectPickedEdges(e);
+					}
 
 					return true;
 				}
@@ -386,11 +398,13 @@ bool PickHandler::doEdgePick(osg::NodePath nodePath,
 			}
 		}
 	}
-
+	pickMsg("Nothing selected");
 	return false;
 }
 
 bool PickHandler::dragNode(osgViewer::Viewer * viewer) {
+	if (pickedNodes.isEmpty()) return false;
+
 	QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
 			pickedNodes.constBegin();
 
@@ -402,7 +416,8 @@ bool PickHandler::dragNode(osgViewer::Viewer * viewer) {
 	osg::Matrixd compositeM = viewM * projM * screenM;
 	osg::Matrixd compositeMi = compositeMi.inverse(compositeM);
 
-	float scale = Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float scale = Util::Config::getValue(
+			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	while (i != pickedNodes.constEnd()) {
 		osg::Vec3f screenPoint = (*i)->getTargetPosition() * compositeM;
@@ -417,10 +432,9 @@ bool PickHandler::dragNode(osgViewer::Viewer * viewer) {
 	origin_mX = _mX;
 	origin_mY = _mY;
 
-	//AppCore::Core::getInstance()->getLayoutThread()->wakeUp();
-	// TODO wakeup thread
+	coreGraph->setNodesFreezed(false);
 
-	return (pickedNodes.size() > 0);
+	return true;
 }
 
 void PickHandler::drawSelectionQuad(float origin_mX, float origin_mY,
@@ -490,19 +504,23 @@ void PickHandler::toggleSelectedNodesFixedState(bool isFixed) {
 }
 
 void PickHandler::unselectPickedNodes(osg::ref_ptr<Model::Node> node) {
+	// TODO refactor this method
 	if (node == NULL) {
 		QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
 				pickedNodes.constBegin();
 
 		while (i != pickedNodes.constEnd()) {
 			(*i)->setSelected(false);
+			(*i)->setFixed(false);
 			++i;
 		}
 
 		pickedNodes.clear();
 	} else {
 		node->setSelected(false);
+		node->setFixed(false);
 		pickedNodes.removeOne(node);
+		pickMsg("Node deselected");
 	}
 }
 
@@ -520,12 +538,15 @@ void PickHandler::unselectPickedEdges(osg::ref_ptr<Model::Edge> edge) {
 	} else {
 		edge->setSelected(false);
 		pickedEdges.removeOne(edge);
+		pickMsg("Edge deselected");
 	}
 }
 
 osg::Vec3 PickHandler::getSelectionCenter(bool nodesOnly) {
 	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
-	float scale = Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float
+			scale =
+					Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
 
 	if (!nodesOnly) {
 		QLinkedList<osg::ref_ptr<Model::Edge> >::const_iterator ei =

@@ -14,18 +14,6 @@ NodeGroup::NodeGroup(QMap<qlonglong, osg::ref_ptr<Node> > *nodes) {
 NodeGroup::~NodeGroup(void) {
 }
 
-/*!
- * 
- * \param scale
- * Koeficient velkosti uzlov.
- * 
- * \returns
- * Podgraf s uzlami.
- * 
- * 
- * Inicializuje uzly na ich pozicie a priradim im textury.
- * 
- */
 void NodeGroup::initNodes() {
 	osg::ref_ptr<osg::Group> nodeGroup = new osg::Group();
 
@@ -58,26 +46,26 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 
 		group->addChild(wrapChild(node, graphScale));
 
-		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i =
+		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator edgeI =
 				node->getEdges()->begin();
 
-		while (i != node->getEdges()->end()) {
-			if (*i != parentEdge) {
-				osg::ref_ptr<Node> n = NULL;
+		while (edgeI != node->getEdges()->end()) {
+			if (*edgeI != parentEdge) {
+				osg::ref_ptr<Node> otherNode = NULL;
 
-				if (node->getId() == (*i)->getSrcNode()->getId())
-					n = (*i)->getDstNode();
+				if (node->getId() == (*edgeI)->getSrcNode()->getId())
+					otherNode = (*edgeI)->getDstNode();
 				else
-					n = (*i)->getSrcNode();
+					otherNode = (*edgeI)->getSrcNode();
 
-				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(n, *i,
+				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(otherNode, *edgeI,
 						graphScale);
 
 				if (nodeGroup != NULL)
 					group->addChild(nodeGroup);
 			}
 
-			i++;
+			edgeI++;
 		}
 	}
 

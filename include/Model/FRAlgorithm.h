@@ -68,13 +68,20 @@ public:
 	}
 
 	/**
-	 *  \fn public  RunAlg
+	 *  \fn public  IsRunning
+	 *  \brief Returns if layout algorithm is running or not
+	 *  \return bool true, if algorithm is running
+	 */
+	bool isPlaying();
+
+	/**
+	 *  \fn public  play
 	 *  \brief Play paused layout algorithm
 	 */
 	void play();
 
 	/**
-	 *  \fn public  PauseAlg
+	 *  \fn public  pause
 	 *  \brief Pause layout algorithm
 	 */
 	void pause();
@@ -86,17 +93,10 @@ public:
 	void wakeUp();
 
 	/**
-	 *  \fn public  terminate
+	 *  \fn public  stop
 	 *  \brief Terminates algorithm
 	 */
 	void stop();
-
-	/**
-	 *  \fn public  IsRunning
-	 *  \brief Returns if layout algorithm is running or not
-	 *  \return bool true, if algorithm is running
-	 */
-	bool isPlaying();
 
 protected:
 	/**

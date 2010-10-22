@@ -25,13 +25,6 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 	this->graph = graph;
 	this->edges = new QMap<qlonglong, osg::ref_ptr<Edge> > ;
 
-	settings = new QMap<QString, QString> ();
-	//APA
-
-	settings->insert("Velkost", "4242");
-	settings->insert("Farba", "ruzova");
-	//APA
-
 	int pos = 0;
 	int cnt = 0;
 
@@ -55,10 +48,10 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 	this->selected = false;
 	this->usingInterpolation = true;
 
-	float r = type->getSettings()->value("color.R").toFloat();
-	float g = type->getSettings()->value("color.G").toFloat();
-	float b = type->getSettings()->value("color.B").toFloat();
-	float a = type->getSettings()->value("color.A").toFloat();
+	float r = type->getValue("color.R").toFloat();
+	float g = type->getValue("color.G").toFloat();
+	float b = type->getValue("color.B").toFloat();
+	float a = type->getValue("color.A").toFloat();
 
 	this->setColor(osg::Vec4(r, g, b, a));
 }
@@ -90,19 +83,10 @@ void Node::removeAllEdges() {
 }
 
 /*!
- * 
- * \param scale
- * Koeficient velkosti uzlov.
- * 
- * \param bbState
- * Zoznam stavov pre dany uzol. 
- * 
- * \returns
- * Uzol.
- * 
- * 
+ * \param scale Koeficient velkosti uzlov.
+ * \param bbState Zoznam stavov pre dany uzol.
+ * \returns Uzol.
  * Vytvori konkretny uzol a priradi mu stav.
- * 
  */
 osg::ref_ptr<osg::Drawable> Node::createNode(const float & scale,
 		osg::StateSet* bbState) {
@@ -222,7 +206,7 @@ osg::ref_ptr<osg::StateSet> Node::createStateSet(Type * type) {
 	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
 	if (type != 0)
-		stateSet->setTextureAttributeAndModes(0, type->getTypeTexture(),
+		stateSet->setTextureAttributeAndModes(0, type->getTexture(),
 				osg::StateAttribute::ON);
 
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);

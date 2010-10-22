@@ -220,7 +220,7 @@ public:
 	 *  \param    srcPos    new coordinates of the starting Node
 	 *  \param   dstNode    new coordinates of the ending Node
 	 */
-	void updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstNode);
+	void updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos);
 
 	/**
 	 *  \fn inline public constant  getEdgeColor
@@ -305,24 +305,6 @@ public:
 		return graph;
 	}
 
-	/**
-	 *  \fn inline public constant  getSettings
-	 *  \brief Returns current settings of the Edge
-	 *  \return QMap<QString,QString> * settings of the Edge
-	 */
-	QMap<QString, QString> * getSettings() const {
-		return settings;
-	}
-
-	/**
-	 *  \fn inline public  setSettings(QMap<QString, QString> * val)
-	 *  \brief Sets new settings to the Edge
-	 *  \param [in, out]  val QMap<QString,QString> *    new settings
-	 */
-	void setSettings(QMap<QString, QString> * val) {
-		settings = val;
-	}
-
 private:
 	/**
 	 *  Graph * graph
@@ -404,24 +386,11 @@ private:
 	osg::ref_ptr<osgText::FadeText> label;
 
 	/**
-	 *  Util::ApplicationConfig * appConf
-	 *  \brief ApplicationConfig
-	 */
-	Util::Config * appConf;
-
-	/**
 	 *  osg::Vec4 edgeColor
 	 *  \brief Color of the Edge
 	 */
 	osg::Vec4 edgeColor;
 
-protected:
-
-	/**
-	 *  QMap<QString,QString> * settings
-	 *  \brief Settings of the Egde
-	 */
-	QMap<QString, QString> * settings;
 };
 }
 
