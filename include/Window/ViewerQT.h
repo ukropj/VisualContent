@@ -10,8 +10,8 @@
 
 #include "Util/Config.h"
 #include "Viewer/PickHandler.h"
-
 #include "Viewer/CameraManipulator.h"
+#include "Viewer/SceneGraph.h"
 
 /*!
  * \brief
@@ -42,12 +42,12 @@ public:
 	 * \param cg CoreGraf, ktory sa bude vykreslovat.
 	 * Vytvori widget, ktory dokaze zobrazit OSG grafy.
 	 */
-	ViewerQT(QWidget * parent = 0, const char * name = 0,
-			const QGLWidget * shareWidget = 0, WindowFlags f = 0,
-			Vwr::CoreGraph* cg = 0) :
+	ViewerQT(Vwr::SceneGraph* sceneGraph, QWidget * parent = 0,
+			const char * name = 0, const QGLWidget * shareWidget = 0,
+			WindowFlags f = 0) :
 		AdapterWidget(parent, name, shareWidget, f) {
-		this->cg = cg;
-		cg->setCamera(this->getCamera());
+		this->sceneGr = sceneGraph;
+		sceneGr->setCamera(this->getCamera());
 
 		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());
@@ -64,7 +64,7 @@ public:
 				osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
 
 		manipulator = new Vwr::CameraManipulator();
-		pickHandler = new Vwr::PickHandler(manipulator, cg);
+		pickHandler = new Vwr::PickHandler(manipulator, sceneGr);
 
 		addEventHandler(new osgViewer::StatsHandler);
 		addEventHandler(pickHandler);
@@ -79,6 +79,7 @@ public:
 		connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
 
 		_timer.start(10);
+		setSceneData(sceneGr->getScene()); // TODO move to ViewerQT
 	}
 
 	/**
@@ -104,7 +105,8 @@ public:
 	 *  \brief Reloads configuration
 	 */
 	void reloadConfig() {
-		manipulator->setMaxSpeed(Util::Config::getValue("Viewer.CameraManipulator.MaxSpeed").toFloat());
+		manipulator->setMaxSpeed(Util::Config::getValue(
+				"Viewer.CameraManipulator.MaxSpeed").toFloat());
 		manipulator->setTrackballSize(Util::Config::getValue(
 				"Viewer.CameraManipulator.Sensitivity").toFloat());
 
@@ -124,7 +126,7 @@ protected:
 	 *  Vwr::CoreGraph * cg
 	 *  \brief core graph
 	 */
-	Vwr::CoreGraph* cg;
+	Vwr::SceneGraph* sceneGr;
 
 	/**
 	 *  \fn inline protected virtual  paintGL
@@ -132,7 +134,7 @@ protected:
 	 */
 	virtual void paintGL() {
 		frame();
-		cg->update();
+		sceneGr->update();
 	}
 
 private:

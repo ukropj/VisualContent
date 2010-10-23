@@ -19,8 +19,6 @@
 #include <QtGui/QMdiSubWindow>
 #include <QtGui/QMdiArea>
 
-#include "Viewer/CameraManipulator.h"
-
 using Qt::WindowFlags;
 
 #include <iostream>

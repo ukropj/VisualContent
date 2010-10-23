@@ -15,22 +15,23 @@
 #include <QStatusBar>
 #include <QTextEdit>
 #include <QtGui>
+#include <QDebug>
 #include <Qt/qstringlist.h>
-
-#include "Window/OptionsWindow.h"
-#include "Viewer/CoreGraph.h"
-#include "Window/CheckBoxList.h"
-#include "Window/ViewerQT.h"
-#include "Window/MessageWindows.h"
-
-#include "Model/FRAlgorithm.h"
-#include "Core/IOManager.h"
 
 namespace AppCore {
 class IOManager;
 }
+namespace Model {
+class FRAlgorithm;
+}
+namespace Vwr {
+class SceneGraph;
+}
 
 namespace Window {
+class ViewerQT;
+class MessageWindows;
+
 /**
  *  \class CoreWindow
  *  \brief Main window of aplication
@@ -46,6 +47,11 @@ public:
 	CoreWindow(QWidget* parent = 0);
 
 	Model::FRAlgorithm * getLayoutThread() const {return layout;}
+
+	class StatusMsgType {
+		public:
+		static const int ALG=0, PICK=1, KEYS=2, MAIN=3, NORMAL=4, TEMP=5;
+	};
 
 public slots:
 
@@ -139,6 +145,8 @@ public slots:
 	 *  \param  index
 	 */
 	void nodeTypeComboBoxChanged(int index);
+
+	void showStatusMsg(int type, QString msg);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -265,6 +273,8 @@ private:
 	 */
 	void createToolBar();
 
+	void createStatusBar();
+
 	/**
 	 *  \fn private  createHorizontalFrame
 	 *  \brief Crate frame with horizontal label
@@ -276,7 +286,7 @@ private:
 	 *  Vwr::CoreGraph * coreGraph
 	 *  \brief Pointer to CoreGraph
 	 */
-	Vwr::CoreGraph * coreGraph;
+	Vwr::SceneGraph * sceneGraph;
 
 	/**
 	 *  bool edgeLabelsVisible
@@ -291,7 +301,12 @@ private:
 	bool nodeLabelsVisible;
 
 	AppCore::IOManager *manager;	// TODO refactor to MVC
-	Window::MessageWindows *messageWindows;
+	MessageWindows *messageWindows;
+
+	QLabel *algStatus;
+	QLabel *pickStatus;
+	QLabel *keyStatus;
+	QLabel *mainStatus;
 };
 }
 

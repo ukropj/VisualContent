@@ -12,7 +12,6 @@
 #include <QMap>
 
 #include "Model/Edge.h"
-#include "Viewer/TextureWrapper.h"
 
 namespace Vwr {
 /**
@@ -42,7 +41,7 @@ public:
 	 *  \fn public  updateEdgeCoords
 	 *  \brief Updates edges coordinates
 	 */
-	void updateEdgeCoords();
+	void updateEdgeCoords(osg::Vec3d viewVector);
 
 	/**
 	 *  \fn public  synchronizeEdges
@@ -123,7 +122,8 @@ private:
 			osg::ref_ptr<osg::Vec3Array> coordinates,
 			osg::ref_ptr<osg::Vec2Array> edgeTexCoords,
 			osg::ref_ptr<osg::Vec4Array> colors,
-			osg::ref_ptr<osg::Vec4Array> orientedEdgeColors);
+			osg::ref_ptr<osg::Vec4Array> orientedEdgeColors,
+			osg::Vec3d viewVector = osg::Vec3d(0, 0, 1));
 
 	/**
 	 *  \fn private  createEdgeStateSets

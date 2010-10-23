@@ -6,23 +6,22 @@
 #define DATA_EDGE_DEF 1
 
 #include <string>
-#include "Model/Type.h"
-#include "Model/Node.h"
+
 #include <QString>
 #include <QTextStream>
 #include <QtCore/QMap>
 
 #include <osg/PrimitiveSet>
-#include <osg/Camera>
 #include <osgText/Text>
 #include <osgText/FadeText>
 
-#include "Util/Config.h"
+#include "Model/Node.h"
 
 namespace Model {
+class Type;
 class Node;
 class Graph;
-class Type;
+
 
 /**
  *  \class Edge
@@ -48,8 +47,8 @@ public:
 	 * \param camera 	current camera used in viewer
 	 */
 	Edge(qlonglong id, QString name, Graph* graph, osg::ref_ptr<Node> srcNode,
-			osg::ref_ptr<Node> dstNode, Model::Type* type, bool isOriented, int pos =
-					0, osg::ref_ptr<osg::Camera> camera = 0);
+			osg::ref_ptr<Node> dstNode, Model::Type* type, bool isOriented,
+			int pos = 0);
 
 	/**
 	 *  \fn public destructor  ~Edge
@@ -220,7 +219,8 @@ public:
 	 *  \param    srcPos    new coordinates of the starting Node
 	 *  \param   dstNode    new coordinates of the ending Node
 	 */
-	void updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos);
+	void updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos,
+			osg::Vec3 viewVec = osg::Vec3d(0, 0, 1));
 
 	/**
 	 *  \fn inline public constant  getEdgeColor
@@ -250,24 +250,6 @@ public:
 	 */
 	osg::ref_ptr<osg::Vec2Array> getEdgeTexCoords() const {
 		return edgeTexCoords;
-	}
-
-	/**
-	 *  \fn inline public constant  getCamera
-	 *  \brief returns current camera looking at edge
-	 *  \return osg::ref_ptr<osg::Camera>
-	 */
-	osg::ref_ptr<osg::Camera> getCamera() const {
-		return camera;
-	}
-
-	/**
-	 *  \fn inline public  setCamera(osg::ref_ptr<osg::Camera> val)
-	 *  \brief sets current camera used in viewer.
-	 *  \param       val
-	 */
-	void setCamera(osg::ref_ptr<osg::Camera> val) {
-		camera = val;
 	}
 
 	/**
@@ -360,12 +342,6 @@ private:
 	 *  \brief True, if edge is picked
 	 */
 	bool selected;
-
-	/**
-	 *  osg::ref_ptr camera
-	 *  \brief Current camera used in viewer. It is used for billboarding purposes.
-	 */
-	osg::ref_ptr<osg::Camera> camera;
 
 	/**
 	 *  osg::ref_ptr coordinates

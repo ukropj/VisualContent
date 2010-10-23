@@ -1,16 +1,21 @@
 #include "Model/FRAlgorithm.h"
+#include "Model/Edge.h"
+#include "Model/Node.h"
+#include "Model/Graph.h"
+#include "Window/CoreWindow.h"
+#include "Util/Config.h"
 
-using namespace Model ;
-using namespace Vwr;
+using namespace Model;
 
 //Konstruktor pre vlakno s algoritmom
-FRAlgorithm::FRAlgorithm(Graph *graph) {
+FRAlgorithm::FRAlgorithm() {
 	PI = acos((double) -1);
 	ALPHA = 0.005;
 	MIN_MOVEMENT = 0.05;
 	MAX_MOVEMENT = 30;
 	MAX_DISTANCE = 400;
-	state = RUNNING;
+	state = NO_GRAPH;
+	sendMsg(Window::CoreWindow::StatusMsgType::ALG, "NO GRAPH");
 	notEnd = true;
 	osg::Vec3f p(0, 0, 0);
 	center = p;
@@ -20,35 +25,15 @@ FRAlgorithm::FRAlgorithm(Graph *graph) {
 	up = osg::Vec3f();
 	vp = osg::Vec3f();
 	useMaxDistance = false;
+}
 
-
+void FRAlgorithm::setGraph(Graph *graph) {
+	state = PAUSED;
+	while (isIterating);//XXX
+	notEnd = true;
 	this->graph = graph;
 	this->randomize();
 }
-
-FRAlgorithm::FRAlgorithm() { // TODO remove this constructor
-	PI = acos((double) -1);
-	ALPHA = 0.005;
-	MIN_MOVEMENT = 0.05;
-	MAX_MOVEMENT = 30;
-	MAX_DISTANCE = 400;
-	state = RUNNING;
-	notEnd = true;
-	osg::Vec3f p(0, 0, 0);
-	center = p;
-	fv = osg::Vec3f();
-	last = osg::Vec3f();
-	newLoc = osg::Vec3f();
-	up = osg::Vec3f();
-	vp = osg::Vec3f();
-	useMaxDistance = false;
-}
-
-//void FRAlgorithm::setGraph(Graph *graph) {
-//	notEnd = true;
-//	this->graph = graph;
-//	this->randomize();
-//}
 
 void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
 		int animationSpeed, bool useMaxDistance) {
@@ -60,7 +45,7 @@ void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
 		K = computeCalm();
 		graph->setFrozen(false);
 	} else {
-		cout << "Nenastaveny graf. Pouzi metodu SetGraph(Graph graph).";
+		qWarning("No graph");
 	}
 }
 
@@ -103,11 +88,17 @@ void FRAlgorithm::play() {
 		graph->setFrozen(false);
 		state = RUNNING;
 		notEnd = true;
+		sendMsg(Window::CoreWindow::StatusMsgType::ALG, "RUNNING");
+		if (!isRunning())
+			start(); // don't call start manualy to start this thread
 	}
 }
 
 void FRAlgorithm::pause() {
-	state = PAUSED;
+	if (graph != NULL) {
+		state = PAUSED;
+		sendMsg(Window::CoreWindow::StatusMsgType::ALG, "PAUSED");
+	}
 }
 
 void FRAlgorithm::wakeUp() {
@@ -126,24 +117,33 @@ void FRAlgorithm::stop() {
 
 void FRAlgorithm::run() {
 	this->sleep(Util::Config::getValue("Layout.Thread.StartSleepTime").toLong());
+	isIterating = true;
 
 	if (this->graph != NULL) {
-//		isIterating = true;
 		while (notEnd) {
 			// slucka pozastavenia - ak je pauza
 			// alebo je graf zmrazeny (spravidla pocas editacie)
 			while (state != RUNNING || graph->isFrozen()) {
+				if (isIterating && graph->isFrozen()) {
+					sendMsg(Window::CoreWindow::StatusMsgType::ALG, "FROZEN");
+				}
+				isIterating = false;
 				QThread::msleep(100);
 				if (!notEnd) {
+					sendMsg(Window::CoreWindow::StatusMsgType::ALG, "STOPPED");
 					return;
 				}
 			}
+			if (!isIterating) {
+				sendMsg(Window::CoreWindow::StatusMsgType::ALG, "RUNNING");
+			}
+			isIterating = true;
 			if (!iterate()) {
 				graph->setFrozen(true);
 			}
 		}
 	} else {
-		cout << "Nenastaveny graf. Pouzi metodu SetGraph(Graph graph).";
+		qWarning("No graph");
 	}
 }
 
@@ -157,43 +157,43 @@ bool FRAlgorithm::iterate() {
 			node->resetForce(); // vynulovanie posobiacej sily			
 		}
 	}
-//	{//meta uzly
-//
-//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
-//		j = graph->getMetaNodes()->begin();
-//		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
-//			j.value()->resetForce(); // vynulovanie posobiacej sily
-//			k = graph->getMetaNodes()->begin();
-//			for (int h = 0; h < graph->getMetaNodes()->count(); h++, ++k) { // pre vsetky metauzly..
-//				if (!j.value()->equals(k.value())) {
-//					// odpudiva sila medzi metauzlami
-//					addRepulsive(j.value(), k.value(),
-//							Graph::getMetaStrength());
-//				}
-//			}
-//		}
-//	}
-//	{//meta hrany
-//
-//		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator j;
-//		j = graph->getMetaEdges()->begin();
-//		for (int i = 0; i < graph->getMetaEdges()->count(); i++, ++j) { // pre vsetky metahrany..
-//			Node *u = j.value()->getSrcNode();
-//			Node *v = j.value()->getDstNode();
-//			// uzly nikdy nebudu ignorovane
-//			u->setIgnored(false);
-//			v->setIgnored(false);
-//			if (graph->getMetaNodes()->contains(u->getId())) {
-//				// pritazliva sila, posobi na v
-//				addMetaAttractive(v, u, Graph::getMetaStrength());
-//			}
-//			if (graph->getMetaNodes()->contains(v->getId())) {
-//				// pritazliva sila, posobi na u
-//				addMetaAttractive(u, v, Graph::getMetaStrength());
-//			}
-//		}
-//	}
+	//	{//meta uzly
+	//
+	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
+	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
+	//		j = graph->getMetaNodes()->begin();
+	//		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
+	//			j.value()->resetForce(); // vynulovanie posobiacej sily
+	//			k = graph->getMetaNodes()->begin();
+	//			for (int h = 0; h < graph->getMetaNodes()->count(); h++, ++k) { // pre vsetky metauzly..
+	//				if (!j.value()->equals(k.value())) {
+	//					// odpudiva sila medzi metauzlami
+	//					addRepulsive(j.value(), k.value(),
+	//							Graph::getMetaStrength());
+	//				}
+	//			}
+	//		}
+	//	}
+	//	{//meta hrany
+	//
+	//		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator j;
+	//		j = graph->getMetaEdges()->begin();
+	//		for (int i = 0; i < graph->getMetaEdges()->count(); i++, ++j) { // pre vsetky metahrany..
+	//			Node *u = j.value()->getSrcNode();
+	//			Node *v = j.value()->getDstNode();
+	//			// uzly nikdy nebudu ignorovane
+	//			u->setIgnored(false);
+	//			v->setIgnored(false);
+	//			if (graph->getMetaNodes()->contains(u->getId())) {
+	//				// pritazliva sila, posobi na v
+	//				addMetaAttractive(v, u, Graph::getMetaStrength());
+	//			}
+	//			if (graph->getMetaNodes()->contains(v->getId())) {
+	//				// pritazliva sila, posobi na u
+	//				addMetaAttractive(u, v, Graph::getMetaStrength());
+	//			}
+	//		}
+	//	}
 	{//uzly
 		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
 		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
@@ -293,8 +293,7 @@ void FRAlgorithm::addAttractive(Edge* edge, float factor) {
 }
 
 /* Pricitanie pritazlivych sil od metazla */
-void FRAlgorithm::addMetaAttractive(Node* u, Node* meta,
-		float factor) {
+void FRAlgorithm::addMetaAttractive(Node* u, Node* meta, float factor) {
 	up = u->getTargetPosition();
 	vp = meta->getTargetPosition();
 	dist = distance(up, vp);

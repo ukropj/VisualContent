@@ -194,7 +194,7 @@ void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent) {
 			}
 		}
 	}
-	// FIXME
+	// FIXME add something or remove all
 	//	if (Manager::GraphManager::getInstance()->getActiveGraph() != NULL)
 	//		addNodesToList(&parents);
 }

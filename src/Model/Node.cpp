@@ -6,7 +6,9 @@
  * nemam cas, takze sa raz k tomu vratim 8)
  */
 #include "Model/Node.h"
-#include "Viewer/TextureWrapper.h"
+#include "Model/Type.h"
+#include "Model/Graph.h"
+#include "Util/Config.h"
 
 #include <osgText/FadeText>
 

@@ -3,6 +3,8 @@
  * Projekt 3DVisual
  */
 #include "Model/Graph.h"
+#include "Model/Type.h"
+
 
 using namespace Model;
 

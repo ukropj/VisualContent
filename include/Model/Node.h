@@ -5,17 +5,13 @@
 #ifndef DATA_NODE_DEF
 #define DATA_NODE_DEF 1
 
-#include "Model/Graph.h"
-
 #include <vector>
 #include <string>
-#include <osg/Vec3f>
-#include "Model/Type.h"
-#include "Model/Edge.h"
 #include <QMap>
 #include <QString>
 #include <QTextStream>
 
+#include <osg/Vec3f>
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/BlendFunc>
@@ -23,11 +19,11 @@
 #include <osg/CullFace>
 #include <osgText/Text>
 
-#include "Util/Config.h"
+#include "Model/Edge.h"
 
-namespace Model  {
-class Edge;
+namespace Model {
 class Type;
+class Edge;
 class Graph;
 
 /**
@@ -324,9 +320,9 @@ public:
 	 */
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "node id:" << id << " name:" << name << " pos:["
+		QTextStream(&str) << "N" << id << " " << name << "["
 				<< targetPosition.x() << "," << targetPosition.y() << ","
-				<< targetPosition.z() << "]";
+				<< targetPosition.z() << "]" << (isFixed() ? "fixed" : "");
 		return str;
 	}
 

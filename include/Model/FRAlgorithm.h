@@ -16,14 +16,18 @@
 #include <QMutex>
 #include <QThread>
 
-#include "Viewer/DataHelper.h"
-#include "Model/Edge.h"
-#include "Model/Node.h"
-#include "Model/Type.h"
-#include "Model/Graph.h"
-#include "Util/Config.h"
+namespace Util {
+class Config;
+}
 
-namespace Model  {
+namespace Window {
+class CoreWindow;
+}
+
+namespace Model {
+class Graph;
+class Node;
+class Edge;
 /**
  *  \class FRAlgorithm
  *  \brief Object represents Fruchterman-Reingold layout algorithm
@@ -31,15 +35,12 @@ namespace Model  {
  *  \date 28. 4. 2010
  */
 class FRAlgorithm: public QThread {
-public:
-	/**
-	 *  \fn public overloaded constructor  FRAlgorithm(Graph *graph)
-	 *  \brief Creates new FRAlgorithm object and sets input graph
-	 *  \param  graph  Graph to which layout will be setted
-	 */
-	FRAlgorithm(Graph *graph);
+Q_OBJECT
 
+public:
 	FRAlgorithm();
+
+	void setGraph(Graph *graph);
 
 	/**
 	 *  \fn public  SetParameters(float sizeFactor,float flexibility,int animationSpeed,bool useMaxDistance)
@@ -98,6 +99,9 @@ public:
 	 */
 	void stop();
 
+signals:
+	void sendMsg(int type, QString msg);
+
 protected:
 	/**
 	 *  \fn public  Run
@@ -148,7 +152,7 @@ private:
 	 *  \brief maximal distance of nodes, when repulsive force is aplied
 	 */
 	enum State {
-		RUNNING, PAUSED
+		RUNNING, PAUSED, NO_GRAPH
 	};
 
 	/**

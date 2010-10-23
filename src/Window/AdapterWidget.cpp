@@ -1,5 +1,6 @@
 #include "Window/AdapterWidget.h"
 #include "Window/CoreWindow.h"
+#include "Viewer/CameraManipulator.h"
 
 using namespace Window;
 

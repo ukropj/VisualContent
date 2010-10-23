@@ -1,9 +1,15 @@
 #include "Window/OptionsWindow.h"
-#include "Window/CheckBoxList.h"
+//#include "Window/CheckBoxList.h"
+#include "Window/TreeModel.h"
+#include "Window/TreeItem.h"
+#include "Window/ViewerQT.h"
+#include "Viewer/SceneGraph.h"
+#include "Util/Config.h"
+
 
 using namespace Window;
 
-OptionsWindow::OptionsWindow(Vwr::CoreGraph *cg, Window::ViewerQT * viewer) {
+OptionsWindow::OptionsWindow(Vwr::SceneGraph *cg, Window::ViewerQT * viewer) {
 	//vytvorenie a inicializovanie celeho okna
 	this->viewer = viewer;
 	this->cg = cg;
@@ -214,8 +220,8 @@ void OptionsWindow::applyChanges(QString path, QString data) {
 		QList<QString> att = list[i].split(",");
 
 		appConf->add(QString("%1%2").arg(path).arg(att[0]), att[1]);
-		cout << path.toStdString() << att[0].toStdString() << "\t"
-				<< att[1].toStdString() << endl;
+//		qDebug(path.toStdString() + att[0].toStdString() + "\t"
+//				+ att[1].toStdString() + "\n");
 	}
 
 }

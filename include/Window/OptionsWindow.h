@@ -10,23 +10,23 @@
 #define Window_OPTIONS_WINDOW_H 1
 
 #include <QDialog>
-#include "Util/Config.h"
-#include "Window/TreeModel.h"
-#include "Window/TreeItem.h"
+
 #include <QModelIndex>
 #include <QtGui>
-
-#include "Viewer/CoreGraph.h"
-#include "Window/ViewerQT.h"
 
 class QListWidget;
 class QListWidgetItem;
 class QStackedWidget;
 
+namespace Vwr {
+class SceneGraph;
+}
+
 namespace Window
 {
 	class TreeItem;
 	class TreeModel;
+	class ViewerQT;
 
 	/**
 	*  \class OptionsWindow
@@ -49,7 +49,7 @@ namespace Window
 		*  \param  cg	CoreGraph used for reloading of atributes
 		*  \param  viewer    ViewerQT used for reloading of atributes
 		*/
-		OptionsWindow(Vwr::CoreGraph *cg, Window::ViewerQT * viewer);
+		OptionsWindow(Vwr::SceneGraph *cg, Window::ViewerQT * viewer);
 
 		public slots:
 			/**
@@ -149,7 +149,7 @@ namespace Window
 		*  Vwr::CoreGraph * cg
 		*  \brief Pointer to the CoreGraph for reloading of changes
 		*/
-		Vwr::CoreGraph *cg;
+		Vwr::SceneGraph *cg;
 		/**
 		*  Window::ViewerQT * viewer
 		*  \brief Pointer to ViewerQT for reloading of changes

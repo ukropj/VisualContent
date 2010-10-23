@@ -1,4 +1,5 @@
 #include "Viewer/EdgeGroup.h"
+#include "Util/TextureWrapper.h"
 
 using namespace Vwr;
 using namespace Model;
@@ -69,7 +70,7 @@ void EdgeGroup::initEdges()
 	this->edgeGroup = allEdges;
 }
 
-void EdgeGroup::updateEdgeCoords()
+void EdgeGroup::updateEdgeCoords(osg::Vec3d viewVector)
 {
 	osg::ref_ptr<osg::Vec2Array> edgeTexCoords = new osg::Vec2Array;
 	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
@@ -82,7 +83,7 @@ void EdgeGroup::updateEdgeCoords()
 
 	while (i != edges->end()) 
 	{
-		getEdgeCoordinatesAndColors(i.value(), edgePos, coordinates, edgeTexCoords, colors, orientedEdgeColors);
+		getEdgeCoordinatesAndColors(i.value(), edgePos, coordinates, edgeTexCoords, colors, orientedEdgeColors, viewVector);
 		edgePos += 4;
 		i++;
 	}
@@ -100,12 +101,13 @@ void EdgeGroup::getEdgeCoordinatesAndColors(osg::ref_ptr<Edge> edge, int first,
 											osg::ref_ptr<osg::Vec3Array> coordinates, 
 											osg::ref_ptr<osg::Vec2Array> edgeTexCoords,
 											osg::ref_ptr<osg::Vec4Array> colors,
-											osg::ref_ptr<osg::Vec4Array> orientedEdgeColors)
+											osg::ref_ptr<osg::Vec4Array> orientedEdgeColors,
+											osg::Vec3d viewVector)
 {
 	osg::Vec3 srcNodePosition = edge->getSrcNode()->getCurrentPosition();
 	osg::Vec3 dstNodePosition = edge->getDstNode()->getCurrentPosition();
 
-	edge->updateCoordinates(srcNodePosition, dstNodePosition);
+	edge->updateCoordinates(srcNodePosition, dstNodePosition, viewVector);
 	edge->setFirst(first);
 
 	coordinates->push_back(edge->getCooridnates()->at(0));
@@ -162,7 +164,7 @@ void EdgeGroup::createEdgeStateSets()
 	edgeStateSet = new osg::StateSet;
 
 	edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	edgeStateSet->setTextureAttributeAndModes(0, TextureWrapper::getEdgeTexture(), osg::StateAttribute::ON);
+	edgeStateSet->setTextureAttributeAndModes(0, Util::TextureWrapper::getEdgeTexture(), osg::StateAttribute::ON);
 	edgeStateSet->setAttributeAndModes(new osg::BlendFunc, osg::StateAttribute::ON);
 	edgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
@@ -175,7 +177,7 @@ void EdgeGroup::createEdgeStateSets()
 	orientedEdgeStateSet = new osg::StateSet;
 
 	orientedEdgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	orientedEdgeStateSet->setTextureAttributeAndModes(0, TextureWrapper::getOrientedEdgeTexture(), osg::StateAttribute::ON);
+	orientedEdgeStateSet->setTextureAttributeAndModes(0, Util::TextureWrapper::getOrientedEdgeTexture(), osg::StateAttribute::ON);
 	orientedEdgeStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
 	orientedEdgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 

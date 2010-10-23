@@ -12,8 +12,6 @@
 #include <Qt/qstringlist.h>
 #include <QFile>
 
-using namespace std;
-
 typedef QMap<QString, QString> MapSS;
 
 /*!

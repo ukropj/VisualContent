@@ -16,8 +16,9 @@
 
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osg/Quat>
-
-#include "Util/Config.h"
+#include <osg/Notify>
+#include <osg/BoundsChecking>
+#include <osgViewer/Viewer>
 
 using namespace osgGA;
 

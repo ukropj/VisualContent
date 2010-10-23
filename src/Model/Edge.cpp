@@ -3,14 +3,17 @@
  * Projekt 3DVisual
  */
 #include "Model/Edge.h"
+#include "Model/Graph.h"
+#include "Model/Type.h"
+#include "Util/Config.h"
 
 using namespace Model;
 
 Edge::Edge(qlonglong id, QString name, Graph* graph,
 		osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode,
-		Model::Type* type, bool isOriented, int pos,
-		osg::ref_ptr<osg::Camera> camera) :
+		Model::Type* type, bool isOriented, int pos) :
 	osg::DrawArrays(osg::PrimitiveSet::QUADS, pos, 4) {
+
 	this->id = id;
 	this->name = name;
 	this->graph = graph;
@@ -18,7 +21,6 @@ Edge::Edge(qlonglong id, QString name, Graph* graph,
 	this->dstNode = dstNode;
 	this->type = type;
 	this->oriented = isOriented;
-	this->camera = camera;
 	this->selected = false;
 
 	float r = type->getValue("color.R").toFloat();
@@ -68,26 +70,23 @@ void Edge::unlinkNodesAndRemoveFromGraph() {
 	this->graph->removeEdge(this);
 }
 
-void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos) {
+void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos, osg::Vec3 viewVec) {
 	coordinates->clear();
 	edgeTexCoords->clear();
 
-	osg::Vec3d viewVec(0, 0, 1);
+//	osg::Vec3d viewVec(0, 0, 1);
 	osg::Vec3d up;
 
-	if (camera != 0) {
-		osg::Vec3d eye;
-		osg::Vec3d center;
-
-		camera->getViewMatrixAsLookAt(eye, center, up);
-
-		viewVec = eye - center;
-
+//	if (camera != NULL) { // TODO test removing this
+//		osg::Vec3d eye;
+//		osg::Vec3d center;
+//		camera->getViewMatrixAsLookAt(eye, center, up);
+//		viewVec = eye - center;
 		//	std::cout << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
 		//	std::cout << center.x() << " " << center.y() << " " << center.z() << "\n";
-	}
-
-	viewVec.normalize();
+//	}
+//
+//	viewVec.normalize();
 
 	float graphScale = Util::Config::getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();

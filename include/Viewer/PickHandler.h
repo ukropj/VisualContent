@@ -14,14 +14,22 @@
 #include <osg/StateSet> 
 #include <osg/Vec3f>
 
+#include <QLinkedList>
+#include <QTimer>
+
 #include "Model/Node.h"
 #include "Model/Edge.h"
-#include "Viewer/CoreGraph.h"
-#include "Viewer/CameraManipulator.h"
 
-#include <QLinkedList>
+//namespace Window {
+//	class CoreWindow {
+//		enum StatusMsgType;
+//	};
+//}
 
 namespace Vwr {
+class CameraManipulator;
+class SceneGraph;
+
 /**
  *  \class PickHandler
  *  \brief Handles picking events
@@ -96,7 +104,7 @@ public:
 	 *  \param  coreGraph     core graph
 	 */
 	PickHandler(Vwr::CameraManipulator * cameraManipulator,
-			Vwr::CoreGraph * coreGraph);
+			Vwr::SceneGraph * coreGraph);
 
 	/**
 	 *  \fn public virtual  handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -194,7 +202,7 @@ private:
 	 *  Vwr::CoreGraph * coreGraph
 	 *  \brief core graph
 	 */
-	Vwr::CoreGraph * coreGraph;
+	Vwr::SceneGraph * coreGraph;
 
 	/**
 	 *  QLinkedList<osg::ref_ptr<Model::Node> > pickedNodes
@@ -255,6 +263,13 @@ private:
 	 *  \brief selection quad geode
 	 */
 	osg::ref_ptr<osg::Geode> selectionQuad;
+
+	osgViewer::Viewer* getViewer(osgGA::GUIActionAdapter& aa) {
+		return dynamic_cast<osgViewer::Viewer*> (&aa);
+	}
+
+	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double normalX, const double normalY);
+	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double normalX, const double normalY);
 
 	/**
 	 *  \fn private  doSinglePick(osg::NodePath nodePath, unsigned int primitiveIndex)
@@ -441,7 +456,7 @@ public slots:
 	 */
 	void mouseTimerTimeout();
 signals:
-	void pickMsg(QString msg);
+	void sendMsg(int type, QString msg);
 };
 }
 

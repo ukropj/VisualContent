@@ -3,7 +3,9 @@
  * Projekt 3DVisual
  */
 #include "Model/Type.h"
-#include "Viewer/DataHelper.h"
+#include "Model/Graph.h"
+#include "Util/Config.h"
+#include "Util/TextureWrapper.h"
 
 using namespace Model;
 
@@ -30,7 +32,7 @@ Type::Type(qlonglong id, QString name, Graph* graph,
 	} else
 		settings = settingsMap;
 
-	texture = Vwr::DataHelper::readTextureFromFile(settings->value(
+	texture = Util::TextureWrapper::readTextureFromFile(settings->value(
 			"textureFile"));
 	scale = settings->value("scale").toFloat();
 }

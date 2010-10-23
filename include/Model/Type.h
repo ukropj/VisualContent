@@ -10,12 +10,8 @@
 #include <QString>
 #include <QTextStream>
 #include <QMap>
-
 #include <osg/ref_ptr>
 #include <osg/Texture2D>
-
-#include "Model/Graph.h"
-#include "Util/Config.h"
 
 namespace Model  {
 class Graph;

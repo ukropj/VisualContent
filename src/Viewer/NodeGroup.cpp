@@ -1,4 +1,5 @@
 #include "Viewer/NodeGroup.h"
+#include "Util/Config.h"
 
 using namespace Vwr;
 using namespace Model;

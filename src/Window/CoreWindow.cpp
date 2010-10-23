@@ -1,4 +1,12 @@
 #include "Window/CoreWindow.h"
+#include "Window/OptionsWindow.h"
+#include "Window/CheckBoxList.h"
+#include "Window/ViewerQT.h"
+#include "Window/MessageWindows.h"
+#include "Model/FRAlgorithm.h"
+#include "Core/IOManager.h"
+#include "Viewer/SceneGraph.h"
+
 
 using namespace Window;
 
@@ -8,21 +16,22 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	layout = new Model::FRAlgorithm();
 	manager = new AppCore::IOManager();
 	messageWindows = new Window::MessageWindows();
-	coreGraph = new Vwr::CoreGraph();
+	sceneGraph = new Vwr::SceneGraph(new Model::Graph("empty", 0));
 
 	//vytvorenie menu a toolbar-ov
 	createActions();
 	createMenus();
 	createToolBar();
-	statusBar();
+	createStatusBar();
 
-	viewerWidget = new ViewerQT(this, 0, 0, 0, coreGraph);
-	viewerWidget->setSceneData(coreGraph->getScene());
+	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
 
 	// connect statusbar slot
-	connect(viewerWidget->getPickHandler(), SIGNAL(pickMsg(QString)),
-			statusBar(), SLOT(showMessage(QString)));
+	connect(viewerWidget->getPickHandler(), SIGNAL(sendMsg(int, QString)),
+			this, SLOT(showStatusMsg(int, QString)));
+	connect(layout, SIGNAL(sendMsg(int, QString)), this,
+			SLOT(showStatusMsg(int, QString)));
 
 	nodeLabelsVisible = edgeLabelsVisible = false;
 }
@@ -177,6 +186,43 @@ void CoreWindow::createToolBar() {
 	toolBar->setMovable(false);
 }
 
+void CoreWindow::createStatusBar() {
+	QStatusBar *sb = statusBar();
+	algStatus = new QLabel("NO GRAPH");
+	pickStatus = new QLabel("NO PICK");
+	keyStatus = new QLabel("");
+	mainStatus = new QLabel("Application ready");
+	sb->addWidget(mainStatus);
+	sb->addPermanentWidget(pickStatus);
+	sb->addPermanentWidget(keyStatus);
+	sb->addPermanentWidget(algStatus);
+}
+
+void CoreWindow::showStatusMsg(int type, QString msg) {
+//	qDebug() << type << ": " << msg;
+	switch (type) {
+	case StatusMsgType::ALG:
+		algStatus->setText(msg);
+		break;
+	case StatusMsgType::PICK:
+		pickStatus->setText(msg);
+		break;
+	case StatusMsgType::KEYS:
+		keyStatus->setText(msg);
+		break;
+	case StatusMsgType::MAIN:
+		mainStatus->setText(msg);
+		break;
+	case StatusMsgType::TEMP:
+		statusBar()->showMessage(msg, 3000); // 3 sec
+		break;
+	case StatusMsgType::NORMAL:
+	default:
+		statusBar()->showMessage(msg);
+		break;
+	}
+}
+
 QFrame* CoreWindow::createHorizontalFrame() {
 	QFrame * frame = new QFrame();
 	QHBoxLayout * layout = new QHBoxLayout();
@@ -188,7 +234,7 @@ QFrame* CoreWindow::createHorizontalFrame() {
 }
 
 void CoreWindow::showOptions() {
-	OptionsWindow *options = new OptionsWindow(coreGraph, viewerWidget);
+	OptionsWindow *options = new OptionsWindow(sceneGraph, viewerWidget);
 	options->show();
 }
 
@@ -196,10 +242,10 @@ void CoreWindow::playPause() {
 	if (layout->isPlaying()) {
 		playAction->setIcon(QIcon("img/gui/play.png"));
 		layout->pause();
-//		coreGraph->setNodesFreezed(true);
+		sceneGraph->setNodesFreezed(true);
 	} else {
 		playAction->setIcon(QIcon("img/gui/pause.png"));
-//		coreGraph->setNodesFreezed(false);
+		sceneGraph->setNodesFreezed(false);
 		layout->play();
 	}
 }
@@ -294,33 +340,32 @@ void CoreWindow::loadFile() {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open GraphML"),
 			".", tr("GraphML Files (*.graphml)"));
 
-	layout->pause();
-
 	Model::Graph* graph = manager->loadGraph(fileName, messageWindows);
 
 	if (graph == NULL) {
 		messageWindows->showMessageBox("Chyba",
 				"Zvoleny subor nie je validny GraphML subor.", true);
-		layout->play();
 		return;
 	}
 
 	// TODO fix loading
 
-	if (layout->isRunning()) {
-		layout->stop();
-		layout->wait();
-	}
-	delete layout;
-
-	layout = new Model::FRAlgorithm(graph);
+//	if (layout->isRunning()) {
+//		layout->stop();
+//		layout->wait();
+//	}
+//	delete layout;
+	layout->pause();
+	layout->setGraph(graph);
+//	layout = new Model::FRAlgorithm(graph);
 	layout->setParameters(10, 0.7, 1, true);
-	coreGraph->reload(graph);
-
-	layout->start();
-	layout->play();
+//	connect(layout, SIGNAL(sendMsg(int, QString)), this,
+//			SLOT(showStatusMsg(int, QString)));
+	sceneGraph->reload(graph);
 
 	messageWindows->closeLoadingDialog();
+
+	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
 	statusBar()->showMessage("Graph loaded");
@@ -330,19 +375,19 @@ void CoreWindow::labelOnOff(bool) {
 	if (viewerWidget->getPickHandler()->getSelectionType()
 			== Vwr::PickHandler::SelectionType::EDGE) {
 		edgeLabelsVisible = !edgeLabelsVisible;
-		coreGraph->setEdgeLabelsVisible(edgeLabelsVisible);
+		sceneGraph->setEdgeLabelsVisible(edgeLabelsVisible);
 	} else if (viewerWidget->getPickHandler()->getSelectionType()
 			== Vwr::PickHandler::SelectionType::NODE) {
 		nodeLabelsVisible = !nodeLabelsVisible;
-		coreGraph->setNodeLabelsVisible(nodeLabelsVisible);
+		sceneGraph->setNodeLabelsVisible(nodeLabelsVisible);
 	} else if (viewerWidget->getPickHandler()->getSelectionType()
 			== Vwr::PickHandler::SelectionType::ALL) {
 		bool state = edgeLabelsVisible & nodeLabelsVisible;
 
 		nodeLabelsVisible = edgeLabelsVisible = !state;
 
-		coreGraph->setEdgeLabelsVisible(!state);
-		coreGraph->setNodeLabelsVisible(!state);
+		sceneGraph->setEdgeLabelsVisible(!state);
+		sceneGraph->setNodeLabelsVisible(!state);
 	}
 }
 

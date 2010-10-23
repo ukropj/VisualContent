@@ -6,12 +6,6 @@
 #ifndef DATA_GRAPH_DEF
 #define DATA_GRAPH_DEF 1
 
-#include <osg/ref_ptr>
-
-#include "Model/Node.h"
-#include "Model/Type.h"
-#include "Model/Edge.h"
-
 #include <QString>
 #include <QTextStream>
 #include <QList>
@@ -19,11 +13,17 @@
 #include <QtSql>
 #include <QMutableMapIterator>
 
+#include <osg/ref_ptr>
+#include <osg/Vec3f>
+
+#include "Model/Node.h"
+#include "Model/Edge.h"
+
 #define METASTRENGTH 1
 
 namespace Model  {
-class Node;
 class Type;
+class Node;
 class Edge;
 
 /**

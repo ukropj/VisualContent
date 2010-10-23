@@ -1,0 +1,78 @@
+/**
+ *  DataHelper.h
+ *  Projekt 3DVisual
+ */
+#ifndef VIEWER_DATA_HELPER_DEF
+#define VIEWER_DATA_HELPER_DEF 1
+
+#include <cstdlib>
+#include <sstream>
+#include <iostream>
+#include <osg/Geode>
+#include <osg/ShapeDrawable>
+#include <osg/Texture2D>
+#include <osgDB/ReadFile>
+#include <QString>
+
+namespace Model {
+class Node;
+class Edge;
+class Type;
+}
+
+namespace Util {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \class  DataHelper
+///
+/// \author Michal Paprcka, Michal Pavlik, Pavol Perdik
+/// \version 1.0a
+/// \date   13. 12. 2009
+////////////////////////////////////////////////////////////////////////////////////////////////////
+class DataHelper {
+public:
+	/**
+	 * \param center stred gule
+	 * \param radius polomer gule
+	 * \returns objekt gula
+	 * \brief
+	 * Vytvori objekt gulu.
+	 *
+	 **/
+	osg::ref_ptr<osg::Geode> static getSphereGeode(osg::Vec3 center,
+			float radius);
+	/**
+	 * \param count pocet vektorov
+	 * \returns pole vygenerovanych vektorov
+	 **/
+	osg::ref_ptr<osg::Vec3Array> static getInitialVectors(int count);
+
+	/**
+	 * Vypocita krajne pozicie bodov hrany
+	 *
+	 * \param inNode                 pozicia zdrojoveho uzla
+	 * \param outNode                pozicia cieloveho uzla
+	 **/
+	static osg::ref_ptr<osg::Vec3Array>
+	getEdgeVectors(osg::ref_ptr<Model::Node> inNode,
+			osg::ref_ptr<Model::Node> outNode);
+
+	/**
+	 *  \fn public static  getRandomNumber(int lowest, int highest)
+	 *  \brief returns random number
+	 *  \param      lowest     lowest random number
+	 *  \param      highest     highest random number
+	 *  \return int random number
+	 */
+	static int getRandomNumber(int lowest, int highest);
+
+	/**
+	 *  \fn public static  getMassCenter(osg::ref_ptr<osg::Vec3Array> coordinates
+	 *  \brief Returns mass center of given points in space
+	 *  \param    coordinates    points in space
+	 *  \return osg::Vec3f position of mass center
+	 */
+	static osg::Vec3f getMassCenter(osg::ref_ptr<osg::Vec3Array> coordinates);
+};
+}
+
+#endif

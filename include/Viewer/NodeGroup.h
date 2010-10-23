@@ -6,12 +6,12 @@
 #define VIEWER_NODEWRAPPER_DEF 1
 
 #include <QMap>
+#include <QSet>
 
 #include <osg/ref_ptr>
 #include <osg/AutoTransform>
 #include <osg/Group>
 
-#include "Util/Config.h"
 #include "Model/Node.h"
 
 namespace Vwr {
