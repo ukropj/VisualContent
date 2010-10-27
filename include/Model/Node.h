@@ -246,8 +246,9 @@ public:
 	void setSelected(bool selected) {
 		if (selected)
 			setDrawableColor(0, osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
-		else
+		else {
 			setDrawableColor(0, color);
+		}
 
 		this->selected = selected;
 	}
@@ -277,6 +278,26 @@ public:
 	 */
 	bool isIgnored() const {
 		return ignore;
+	}
+
+	bool isExpanded() const {
+		return expanded;
+	}
+
+	void toggleExpanded() {
+		setExpanded(!expanded);
+	}
+
+	bool setExpanded(bool flag) {
+		if (flag == isExpanded())
+			return false;
+
+		expanded = flag;
+		if (expanded && !this->containsDrawable(large))
+			this->addDrawable(large);
+		else if (!expanded)
+			this->removeDrawable(large);
+		return true;
 	}
 
 	/**
@@ -458,6 +479,8 @@ private:
 	 */
 	bool usingInterpolation;
 
+	bool expanded;
+
 	/**
 	 *  \fn private static  createNode(const float & scale, osg::StateSet* bbState)
 	 *  \brief Creates node drawable
@@ -527,6 +550,8 @@ private:
 	 *  \brief Square drawable - esed to mark fixed nodes
 	 */
 	osg::ref_ptr<osg::Drawable> square;
+
+	osg::ref_ptr<osg::Drawable> large;
 };
 }
 

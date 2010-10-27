@@ -78,14 +78,18 @@ osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapChild(
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform;
 	at->setPosition(node->getTargetPosition() * graphScale);
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-	at->addChild(node);
+
+	osg::ref_ptr<osg::Switch> sw = new osg::Switch();
+	sw->addChild(node);
+
+	at->addChild(sw);
 
 	nodeTransforms->insert(node->getId(), at);
 
 	return at;
 }
 
-void NodeGroup::synchronizeNodes() {
+void NodeGroup::synchronizeNodes() { // is never called, was used for metanodes...
 	QList<qlonglong> nodeKeys = nodes->keys();
 
 	QList<qlonglong> nodeTransformsKeys = nodeTransforms->keys();

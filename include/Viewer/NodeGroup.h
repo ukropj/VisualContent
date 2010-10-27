@@ -11,6 +11,7 @@
 #include <osg/ref_ptr>
 #include <osg/AutoTransform>
 #include <osg/Group>
+#include <osg/Switch>
 
 #include "Model/Node.h"
 

@@ -41,17 +41,19 @@ class MessageWindows;
 class CoreWindow: public QMainWindow {
 Q_OBJECT
 
-
 public:
+
+	enum StatusMsgType {
+		ALG, PICK, KEYS, MAIN, NORMAL, TEMP
+	};
 
 	CoreWindow(QWidget* parent = 0);
 
-	Model::FRAlgorithm * getLayoutThread() const {return layout;}
+	Model::FRAlgorithm * getLayoutThread() const {
+		return layout;
+	}
 
-	class StatusMsgType {
-		public:
-		static const int ALG=0, PICK=1, KEYS=2, MAIN=3, NORMAL=4, TEMP=5;
-	};
+	static void log(StatusMsgType type, QString msg);
 
 public slots:
 
@@ -82,17 +84,10 @@ public slots:
 	void singleSelectClicked(bool checked);
 
 	/**
-	 *  \fn public  multiSelectClicked(bool checked
-	 *  \brief Multi-select mode selected
-	 *  \param  checked     flag if button is checked
-	 */
-	void multiSelectClicked(bool checked);
-
-	/**
 	 *  \fn public  addMetaNode
 	 *  \brief Add meta node
 	 */
-//	void addMetaNode();
+	//	void addMetaNode();
 
 	/**
 	 *  \fn public  centerView(bool checked
@@ -113,11 +108,13 @@ public slots:
 	 */
 	void unFixNodes();
 
+	void randomize();
+
 	/**
 	 *  \fn public  removeMetaNodes
 	 *  \brief Remove all meta nodes
 	 */
-//	void removeMetaNodes();
+	//	void removeMetaNodes();
 
 	/**
 	 *  \fn public  loadFile
@@ -146,10 +143,8 @@ public slots:
 	 */
 	void nodeTypeComboBoxChanged(int index);
 
-	void showStatusMsg(int type, QString msg);
-
 protected:
-    void closeEvent(QCloseEvent *event);
+	void closeEvent(QCloseEvent *event);
 
 private:
 
@@ -273,8 +268,6 @@ private:
 	 */
 	void createToolBar();
 
-	void createStatusBar();
-
 	/**
 	 *  \fn private  createHorizontalFrame
 	 *  \brief Crate frame with horizontal label
@@ -300,9 +293,13 @@ private:
 	 */
 	bool nodeLabelsVisible;
 
-	AppCore::IOManager *manager;	// TODO refactor to MVC
+	AppCore::IOManager *manager;
 	MessageWindows *messageWindows;
 
+	void showStatusMsg(StatusMsgType type, QString msg);
+	void createStatusBar();
+
+	static CoreWindow* instanceForStatusLog;
 	QLabel *algStatus;
 	QLabel *pickStatus;
 	QLabel *keyStatus;

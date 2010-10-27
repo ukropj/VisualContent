@@ -2,8 +2,8 @@
  *  PickHandler.h
  *  Projekt 3DVisual
  */
-#ifndef VIEWER_PICK_HANDLER_DEF
-#define VIEWER_PICK_HANDLER_DEF 1
+#ifndef VIEWER_INPUT_HANDLER_DEF
+#define VIEWER_INPUT_HANDLER_DEF 1
 
 #include <osgGA/GUIEventHandler>
 #include <osgGA/GUIEventAdapter>
@@ -11,7 +11,7 @@
 #include <osgViewer/Viewer>
 #include <osg/ref_ptr>
 #include <osg/Geode>
-#include <osg/StateSet> 
+#include <osg/StateSet>
 #include <osg/Vec3f>
 
 #include <QLinkedList>
@@ -19,12 +19,7 @@
 
 #include "Model/Node.h"
 #include "Model/Edge.h"
-
-//namespace Window {
-//	class CoreWindow {
-//		enum StatusMsgType;
-//	};
-//}
+#include "Window/CoreWindow.h"
 
 namespace Vwr {
 class CameraManipulator;
@@ -33,40 +28,14 @@ class SceneGraph;
 /**
  *  \class PickHandler
  *  \brief Handles picking events
- *  \author Michal Paprcka
- *  \date 29. 4. 2010
  */
 class PickHandler: public QObject, public osgGA::GUIEventHandler {
 Q_OBJECT
 
 public:
 
-	/**
-	 *  \class PickMode
-	 *  \brief Picking modes
-	 *  \author Michal Paprcka
-	 *  \date 29. 4. 2010
-	 */
-	class PickMode {
-	public:
-
-		/**
-		 *  const int NONE
-		 *  \brief no picking
-		 */
-		static const int NONE = 0;
-
-		/**
-		 *  const int SINGLE
-		 *  \brief picking single object
-		 */
-		static const int SINGLE = 1;
-
-		/**
-		 *  const int MULTI
-		 *  \brief multiobject picking
-		 */
-		static const int MULTI = 2;
+	enum InputMode {
+		NONE = 0, SELECT = 1
 	};
 
 	/**
@@ -75,26 +44,8 @@ public:
 	 *  \author Michal Paprcka
 	 *  \date 29. 4. 2010
 	 */
-	class SelectionType {
-	public:
-
-		/**
-		 *  const int ALL
-		 *  \brief picking all
-		 */
-		static const int ALL = 0;
-
-		/**
-		 *  const int NODE
-		 *  \brief picking nodes
-		 */
-		static const int NODE = 1;
-
-		/**
-		 *  const int EDGE
-		 *  \brief picking edges
-		 */
-		static const int EDGE = 2;
+	enum SelectionType {
+		ALL = 0, NODE = 1, EDGE = 2
 	};
 
 	/**
@@ -116,19 +67,12 @@ public:
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
 
 	/**
-	 *  \fn public  toggleSelectedNodesFixedState(bool isFixed)
-	 *  \brief Sets fixed state to picked nodes
-	 *  \param     isFixed     fixed state
-	 */
-	void toggleSelectedNodesFixedState(bool isFixed);
-
-	/**
 	 *  \fn inline public  setPickMode( int pickMode )
 	 *  \brief Sets pick mode
 	 *  \param     pickMode
 	 */
-	void setPickMode(int pickMode) {
-		this->pickMode = pickMode;
+	void setPickMode(InputMode pickMode) {
+		this->mode = pickMode;
 	}
 
 	/**
@@ -136,8 +80,8 @@ public:
 	 *  \brief Sets selection type
 	 *  \param      selectionType
 	 */
-	void setSelectionType(int selectionType) {
-		this->selectionType = selectionType;
+	void setSelectionType(SelectionType type) {
+		this->selectionType = type;
 	}
 
 	/**
@@ -145,7 +89,7 @@ public:
 	 *  \brief Returns selection type
 	 *  \return int selection type
 	 */
-	int getSelectionType() const {
+	SelectionType getSelectionType() const {
 		return selectionType;
 	}
 
@@ -162,35 +106,46 @@ public:
 	 *  \brief Returns selected nodes
 	 *  \return QLinkedList<osg::ref_ptr<Model::Node> > * selected nodes
 	 */
-	QLinkedList<osg::ref_ptr<Model::Node> > * getSelectedNodes() {
-		return &pickedNodes;
-	}
+	//	QLinkedList<osg::ref_ptr<Model::Node> > * getSelectedNodes() {
+	//		return &pickedNodes;
+	//	}
 
 	/**
 	 *  \fn inline public  getSelectedEdges
 	 *  \brief Returns selected edges
 	 *  \return QLinkedList<osg::ref_ptr<Model::Edge> > * selected edges
 	 */
-	QLinkedList<osg::ref_ptr<Model::Edge> > * getSelectedEdges() {
-		return &pickedEdges;
-	}
+	//	QLinkedList<osg::ref_ptr<Model::Edge> > * getSelectedEdges() {
+	//		return &pickedEdges;
+	//	}
+	void setSelectedFixed(bool isFixed);
 
 protected:
+private:
 	// Store mouse xy location for button press & move events.
-	float _mX, _mY;
-	float origin_mX, origin_mY, origin_mX_normalized, origin_mY_normalized;
+	osg::Vec2f lastPos;
+	osg::Vec2f originPos;
+	osg::Vec2f originNormPos;
 
-	/**
-	 *  bool leftButtonPressed
-	 *  \brief true, if left mouse button pressed
-	 */
 	bool leftButtonPressed;
 
 	// Perform a pick operation.
-	bool pick(const double xMin, const double yMin, const double xMax,
-			const double yMax, osgViewer::Viewer* viewer);
+	Model::Node* pickOne(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
+	QList<Model::Node*> pickMore(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 
-private:
+	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double normalX,
+			const double normalY);
+	QList<Model::Node*> getNodesInQuad(osgViewer::Viewer* viewer,
+			const double xMin, const double yMin, const double xMax,
+			const double yMax);
+	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double normalX,
+			const double normalY);//todo implement
+
+	void createSelectionQuad();
+	void initSelectionQuad(osgViewer::Viewer * viewer);
+	void drawSelectionQuad();
 
 	/**
 	 *  Vwr::CameraManipulator * cameraManipulator
@@ -205,40 +160,25 @@ private:
 	Vwr::SceneGraph * coreGraph;
 
 	/**
-	 *  QLinkedList<osg::ref_ptr<Model::Node> > pickedNodes
+	 *  QLinkedList<osg::ref_ptr<Model::Node> > selectedNodes
 	 *  \brief picked nodes list
 	 */
-	QLinkedList<osg::ref_ptr<Model::Node> > pickedNodes;
+	QLinkedList<osg::ref_ptr<Model::Node> > selectedNodes;
+	//	osg::ref_ptr<Model::Node> selectedNode;
+
+	bool multiPickEnabled;
 
 	/**
 	 *  QLinkedList<osg::ref_ptr<Model::Edge> > pickedEdges
 	 *  \brief picked edges list
 	 */
-	QLinkedList<osg::ref_ptr<Model::Edge> > pickedEdges;
+	//	QLinkedList<osg::ref_ptr<Model::Edge> > pickedEdges;
 
 	/**
-	 *  osg::ref_ptr group
-	 *  \brief custom node group
+	 *  osg::ref_ptr projection
+	 *  \brief custom node projection
 	 */
-	osg::ref_ptr<osg::Group> group;
-
-	/**
-	 *  bool isCtrlPressed
-	 *  \brief true, if ctrl was pressed
-	 */
-	bool isCtrlPressed;
-
-	/**
-	 *  bool isShiftPressed
-	 *  \brief true, if shift was pressed
-	 */
-	bool isShiftPressed;
-
-	/**
-	 *  bool isAltPressed
-	 *  \brief true, if alt was pressed
-	 */
-	bool isAltPressed;
+	osg::ref_ptr<osg::Projection> projection;
 
 	/**
 	 *  bool isDrawingSelectionQuad
@@ -250,7 +190,7 @@ private:
 	 *  bool isDragging
 	 *  \brief true, if user is dragging mouse
 	 */
-	bool isDragging;
+	//	bool isDragging;
 
 	/**
 	 *  bool isManipulatingNodes
@@ -268,9 +208,6 @@ private:
 		return dynamic_cast<osgViewer::Viewer*> (&aa);
 	}
 
-	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double normalX, const double normalY);
-	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double normalX, const double normalY);
-
 	/**
 	 *  \fn private  doSinglePick(osg::NodePath nodePath, unsigned int primitiveIndex)
 	 *  \brief Picks single object on screen
@@ -278,7 +215,7 @@ private:
 	 *  \param     primitiveIndex  picked primitive index
 	 *  \return bool true, if object was picked
 	 */
-	bool doSinglePick(osg::NodePath nodePath, unsigned int primitiveIndex);
+	//	bool doSinglePick(osg::NodePath nodePath, unsigned int primitiveIndex);
 
 	/**
 	 *  \fn private  doNodePick(osg::NodePath nodePath)
@@ -286,7 +223,7 @@ private:
 	 *  \param   nodePath     pick nodepath
 	 *  \return bool true, if node was picked
 	 */
-	bool doNodePick(osg::NodePath nodePath);
+	//	bool doNodePick(osg::NodePath nodePath);
 
 	/**
 	 *  \fn private  doEdgePick(osg::NodePath nodePath, unsigned int primitiveIndex)
@@ -295,58 +232,40 @@ private:
 	 *  \param     primitiveIndex    picked primitive index
 	 *  \return bool
 	 */
-	bool doEdgePick(osg::NodePath nodePath, unsigned int primitiveIndex);
+	//	bool doEdgePick(osg::NodePath nodePath, unsigned int primitiveIndex);
 
-	/**
-	 *  \fn private  dragNode(osgViewer::Viewer * viewer)
-	 *  \brief Drags selected nodes
-	 *  \param viewer  current viewer
-	 *  \return bool true, if nodes were dragged
-	 */
-	bool dragNode(osgViewer::Viewer * viewer);
-
+	osg::Vec3f getMousePos(osg::Vec3f origPos, osgViewer::Viewer* viewer);
 	/**
 	 *  int pickMode
 	 *  \brief current pick mode
 	 */
-	int pickMode;
+	InputMode mode;
 
 	/**
 	 *  int selectionType
 	 *  \brief current selection type
 	 */
-	int selectionType;
+	SelectionType selectionType;
 
-	/**
-	 *  \fn private  drawSelectionQuad(float origin_mX, float origin_mY, osgViewer::Viewer * viewer)
-	 *  \brief draws selection quad
-	 *  \param   origin_mX     star position
-	 *  \param   origin_mY     end position
-	 *  \param   viewer    current viewer
-	 */
-	void drawSelectionQuad(float origin_mX, float origin_mY,
-			osgViewer::Viewer * viewer);
+	bool select(Model::Node* node = NULL);
 
-	/**
-	 *  \fn private  unselectPickedNodes(osg::ref_ptr<Model::Node> node = 0)
-	 *  \brief unselects picked nodes. If null, all nodes will be unselected.
-	 *  \param     node     nodes to unselect
-	 */
-	void unselectPickedNodes(osg::ref_ptr<Model::Node> node = 0);
+	void deselectAll();
+
+	bool toggle(Model::Node* node = NULL);
 
 	/**
 	 *  \fn private  unselectPickedEdges(osg::ref_ptr<Model::Edge> edge = 0)
 	 *  \brief unselects picked edges. If null, all edges will be unselected.
 	 *  \param     edge   edges to unselect
 	 */
-	void unselectPickedEdges(osg::ref_ptr<Model::Edge> edge = 0);
+	//	void unselectPickedEdges(osg::ref_ptr<Model::Edge> edge = 0);
 
 	/**
 	 *  \fn private  setSelectedNodesInterpolation(bool state)
 	 *  \brief sets interpolation state to selected nodes
 	 *  \param      state     interpolation state
 	 */
-	void setSelectedNodesInterpolation(bool state);
+	void setSelectedInterpolation(bool state);
 
 	/**
 	 *  \fn private  handlePush( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -398,50 +317,33 @@ private:
 	bool handleRelease(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
 
-	/**
-	 *  \fn private  handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
-	 *  \brief handles keyup event
-	 *  \param  ea     event adapter
-	 *  \param  aa    action adapter
-	 *  \return bool true, if event was handled
-	 */
-
-	bool handleKeyUp(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
-
-	/**
-	 *  \fn private  handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
-	 *  \brief handles keydown event
-	 *  \param  ea    event adapter
-	 *  \param  aa    action adapter
-	 *  \return bool true, if event was handled
-	 */
-	bool handleKeyDown(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
+	bool isShift(const osgGA::GUIEventAdapter& event);
+	bool isCtrl(const osgGA::GUIEventAdapter& event);
+	bool isAlt(const osgGA::GUIEventAdapter& event);
 
 	/**
 	 *  const osgGA::GUIEventAdapter * eaPush
 	 *  \brief	variable for storing event for detecting double click
 	 */
-	const osgGA::GUIEventAdapter * eaPush;
+	//	const osgGA::GUIEventAdapter * pushEvent;
 
 	/**
 	 *  const osgGA::GUIEventAdapter * eaRel
 	 *  \brief	variable for storing event for detecting double click
 	 */
-	const osgGA::GUIEventAdapter * eaRel;
+	//	const osgGA::GUIEventAdapter * releaseEvent;
 
 	/**
 	 *  osgGA::GUIActionAdapter * aaPush
 	 *  \brief	variable for storing event for detecting double click
 	 */
-	osgGA::GUIActionAdapter * aaPush;
+	//	osgGA::GUIActionAdapter * pushAction;
 
 	/**
 	 *  osgGA::GUIActionAdapter * aaRel
 	 *  \brief	variable for storing event for detecting double click
 	 */
-	osgGA::GUIActionAdapter * aaRel;
+	//	osgGA::GUIActionAdapter * releaseAction;
 
 	/**
 	 *  QTimer timer
@@ -455,9 +357,6 @@ public slots:
 	 *	\brief called when user don't double click
 	 */
 	void mouseTimerTimeout();
-signals:
-	void sendMsg(int type, QString msg);
 };
 }
-
 #endif

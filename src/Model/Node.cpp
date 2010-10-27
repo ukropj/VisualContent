@@ -9,6 +9,7 @@
 #include "Model/Type.h"
 #include "Model/Graph.h"
 #include "Util/Config.h"
+#include "Util/TextureWrapper.h"
 
 #include <osgText/FadeText>
 
@@ -40,6 +41,12 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 	this->addDrawable(createNode(this->type->getScale(), Node::createStateSet(
 			this->type)));
 
+	// devil
+	osg::ref_ptr<osg::StateSet> ss = Node::createStateSet();
+	ss->setTextureAttributeAndModes(0, type->getDevil(),
+			osg::StateAttribute::ON);
+
+	this->large = createNode(this->type->getScale() * 3, ss);
 	this->square = createSquare(this->type->getScale(), Node::createStateSet());
 	this->label = createLabel(this->type->getScale(), labelText);
 
@@ -49,6 +56,7 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 	this->ignore = false;
 	this->selected = false;
 	this->usingInterpolation = true;
+	expanded = false;
 
 	float r = type->getValue("color.R").toFloat();
 	float g = type->getValue("color.G").toFloat();
@@ -207,9 +215,11 @@ osg::ref_ptr<osg::StateSet> Node::createStateSet(Type * type) {
 	stateSet->setDataVariance(osg::Object::DYNAMIC);
 	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
+	// todo move this to createNode
 	if (type != 0)
 		stateSet->setTextureAttributeAndModes(0, type->getTexture(),
 				osg::StateAttribute::ON);
+	//
 
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
 	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
@@ -294,13 +304,14 @@ osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed)
 		float graphScale = Util::Config::getInstance()->getValue(
 				"Viewer.Display.NodeDistanceScale").toFloat();
 
+		//		currentPosition = osg::Vec3(targetPosition * graphScale);
 		osg::Vec3 directionVector = osg::Vec3(targetPosition.x(),
 				targetPosition.y(), targetPosition.z()) * graphScale
 				- currentPosition;
-		this->currentPosition = osg::Vec3(directionVector
+		currentPosition = osg::Vec3(directionVector
 				* (usingInterpolation ? interpolationSpeed : 1)
-				+ this->currentPosition);
+				+ currentPosition);
 	}
 
-	return osg::Vec3(this->currentPosition);
+	return osg::Vec3(currentPosition);
 }

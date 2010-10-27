@@ -120,6 +120,10 @@ public:
 		return texture;
 	}
 
+	osg::ref_ptr<osg::Texture2D> getDevil() const {
+			return devil;
+		}
+
 	/**
 	 *  \fn inline public constant  getScale
 	 *  \brief Returns type scale
@@ -174,6 +178,7 @@ protected:
 	 *  \brief Type texture
 	 */
 	osg::ref_ptr<osg::Texture2D> texture;
+	osg::ref_ptr<osg::Texture2D> devil;
 
 	/**
 	 *  float scale

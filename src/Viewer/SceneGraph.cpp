@@ -145,7 +145,7 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 void SceneGraph::update() {
 	root->removeChildren(customNodesPosition, 1);
 
-	synchronize();
+//	synchronize();
 
 	float graphScale = Util::Config::getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();

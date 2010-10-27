@@ -91,14 +91,13 @@ ADD_SUBDIRECTORY(dependencies/Source)
 FILE(GLOB_RECURSE SRC  "src/*.cpp")
 FILE(GLOB_RECURSE INCL "include/*.h")
 
-# .h subor, ktory obsahuje Q_OBJECT
+# .h subory, ktore obsahuju Q_OBJECT
 SET(SOURCES_H 
 	./include/OsgQtBrowser/QGraphicsViewAdapter.h 
 	./include/Window/CoreWindow.h
 	./include/Window/OptionsWindow.h
 	./include/Window/CheckBoxList.h
 	./include/Viewer/PickHandler.h
-	./include/Model/FRAlgorithm.h
 )
 
 # toto makro spracuje Q_OBJECT a vygeneruje novy cpp subor, ktory bude dostupny v ${SOURCES_H_MOC} premennej

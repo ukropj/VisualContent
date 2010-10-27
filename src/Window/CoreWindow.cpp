@@ -7,11 +7,12 @@
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
 
-
 using namespace Window;
 
 CoreWindow::CoreWindow(QWidget *parent) :
 	QMainWindow(parent) {
+
+	createStatusBar();
 	//inicializacia premennych
 	layout = new Model::FRAlgorithm();
 	manager = new AppCore::IOManager();
@@ -22,18 +23,21 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	createActions();
 	createMenus();
 	createToolBar();
-	createStatusBar();
 
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
 
-	// connect statusbar slot
-	connect(viewerWidget->getPickHandler(), SIGNAL(sendMsg(int, QString)),
-			this, SLOT(showStatusMsg(int, QString)));
-	connect(layout, SIGNAL(sendMsg(int, QString)), this,
-			SLOT(showStatusMsg(int, QString)));
-
 	nodeLabelsVisible = edgeLabelsVisible = false;
+
+	// testing only:
+	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",
+			messageWindows);
+	layout->setGraph(graph);
+	layout->setParameters(10, 0.7, 1, false);
+	sceneGraph->reload(graph);
+	layout->play();
+
+	noSelectB->click();
 }
 
 void CoreWindow::createActions() {
@@ -49,7 +53,7 @@ void CoreWindow::createActions() {
 
 	playAction = new QAction(this);
 	playAction->setIcon(QIcon("img/gui/pause.png"));
-	playAction->setToolTip("&Play");
+	playAction->setToolTip(tr("Play"));
 	connect(playAction, SIGNAL(triggered()), this, SLOT(playPause()));
 
 	addMetaB = new QPushButton();
@@ -61,20 +65,20 @@ void CoreWindow::createActions() {
 
 	removeMetaB = new QPushButton();
 	removeMetaB->setIcon(QIcon("img/gui/removemeta.png"));
-	removeMetaB->setToolTip("&Remove meta nodes");
+	removeMetaB->setToolTip(tr("Remove meta nodes"));
 	removeMetaB->setFocusPolicy(Qt::NoFocus);
 	removeMetaB->setEnabled(false);//FIXME remove
 	//	connect(removeMeta, SIGNAL(clicked()), this, SLOT(removeMetaNodes()));
 
 	fixB = new QPushButton();
 	fixB->setIcon(QIcon("img/gui/fix.png"));
-	fixB->setToolTip("&Fix nodes");
+	fixB->setToolTip(tr("Fix nodes"));
 	fixB->setFocusPolicy(Qt::NoFocus);
 	connect(fixB, SIGNAL(clicked()), this, SLOT(fixNodes()));
 
 	unFixB = new QPushButton();
 	unFixB->setIcon(QIcon("img/gui/unfix.png"));
-	unFixB->setToolTip("&Unfix nodes");
+	unFixB->setToolTip(tr("Unfix nodes"));
 	unFixB->setFocusPolicy(Qt::NoFocus);
 	connect(unFixB, SIGNAL(clicked()), this, SLOT(unFixNodes()));
 
@@ -88,14 +92,16 @@ void CoreWindow::createActions() {
 	//mody - ziadny vyber, vyber jedneho, multi vyber centrovanie
 	noSelectB = new QPushButton();
 	noSelectB->setIcon(QIcon("img/gui/noselect.png"));
-	noSelectB->setToolTip("&No-select mode");
+	noSelectB->setShortcut(tr("CTRL+Z"));
+	noSelectB->setToolTip(tr("Explore mode"));
 	noSelectB->setCheckable(true);
 	noSelectB->setFocusPolicy(Qt::NoFocus);
 	connect(noSelectB, SIGNAL(clicked(bool)), this, SLOT(noSelectClicked(bool)));
 
 	singleSelectB = new QPushButton();
 	singleSelectB->setIcon(QIcon("img/gui/singleselect.png"));
-	singleSelectB->setToolTip("&Single-select mode");
+	singleSelectB->setShortcut(tr("CTRL+X"));
+	singleSelectB->setToolTip(tr("Select mode"));
 	singleSelectB->setCheckable(true);
 	singleSelectB->setFocusPolicy(Qt::NoFocus);
 	connect(singleSelectB, SIGNAL(clicked(bool)), this,
@@ -103,26 +109,24 @@ void CoreWindow::createActions() {
 
 	multiSelectB = new QPushButton();
 	multiSelectB->setIcon(QIcon("img/gui/multiselect.png"));
-	multiSelectB->setToolTip("&Multi-select mode");
-	multiSelectB->setCheckable(true);
+	multiSelectB->setToolTip(tr("Randomize"));
 	multiSelectB->setFocusPolicy(Qt::NoFocus);
-	connect(multiSelectB, SIGNAL(clicked(bool)), this,
-			SLOT(multiSelectClicked(bool)));
+	connect(multiSelectB, SIGNAL(clicked()), this, SLOT(randomize()));
 
 	centerB = new QPushButton();
 	centerB->setIcon(QIcon("img/gui/center.png"));
-	centerB->setToolTip("&Center view");
+	centerB->setToolTip(tr("Center view"));
 	centerB->setFocusPolicy(Qt::NoFocus);
 	connect(centerB, SIGNAL(clicked(bool)), this, SLOT(centerView(bool)));
 }
 
 void CoreWindow::createMenus() {
-	fileMenu = menuBar()->addMenu("File");
+	fileMenu = menuBar()->addMenu(tr("File"));
 	fileMenu->addAction(loadAction);
 	fileMenu->addSeparator();
 	fileMenu->addAction(quitAction);
 
-	editMenu = menuBar()->addMenu("Edit");
+	editMenu = menuBar()->addMenu(tr("Edit"));
 	editMenu->addAction(optionsAction);
 }
 
@@ -137,7 +141,6 @@ void CoreWindow::createToolBar() {
 	toolBar = new QToolBar("Tools", this);
 
 	QFrame * frame = createHorizontalFrame();
-
 	frame->layout()->addWidget(noSelectB);
 	frame->layout()->addWidget(singleSelectB);
 	toolBar->addWidget(frame);
@@ -146,18 +149,15 @@ void CoreWindow::createToolBar() {
 	toolBar->addWidget(frame);
 	frame->layout()->addWidget(multiSelectB);
 	frame->layout()->addWidget(centerB);
-
 	toolBar->addWidget(nodeTypeCB);
 	toolBar->addSeparator();
 
+//	frame = createHorizontalFrame();
+//	toolBar->addWidget(frame);
+//	frame->layout()->addWidget(addMetaB);
+//	frame->layout()->addWidget(removeMetaB);
+
 	frame = createHorizontalFrame();
-
-	toolBar->addWidget(frame);
-	frame->layout()->addWidget(addMetaB);
-	frame->layout()->addWidget(removeMetaB);
-
-	frame = createHorizontalFrame();
-
 	toolBar->addWidget(frame);
 	frame->layout()->addWidget(fixB);
 	frame->layout()->addWidget(unFixB);
@@ -186,43 +186,6 @@ void CoreWindow::createToolBar() {
 	toolBar->setMovable(false);
 }
 
-void CoreWindow::createStatusBar() {
-	QStatusBar *sb = statusBar();
-	algStatus = new QLabel("NO GRAPH");
-	pickStatus = new QLabel("NO PICK");
-	keyStatus = new QLabel("");
-	mainStatus = new QLabel("Application ready");
-	sb->addWidget(mainStatus);
-	sb->addPermanentWidget(pickStatus);
-	sb->addPermanentWidget(keyStatus);
-	sb->addPermanentWidget(algStatus);
-}
-
-void CoreWindow::showStatusMsg(int type, QString msg) {
-//	qDebug() << type << ": " << msg;
-	switch (type) {
-	case StatusMsgType::ALG:
-		algStatus->setText(msg);
-		break;
-	case StatusMsgType::PICK:
-		pickStatus->setText(msg);
-		break;
-	case StatusMsgType::KEYS:
-		keyStatus->setText(msg);
-		break;
-	case StatusMsgType::MAIN:
-		mainStatus->setText(msg);
-		break;
-	case StatusMsgType::TEMP:
-		statusBar()->showMessage(msg, 3000); // 3 sec
-		break;
-	case StatusMsgType::NORMAL:
-	default:
-		statusBar()->showMessage(msg);
-		break;
-	}
-}
-
 QFrame* CoreWindow::createHorizontalFrame() {
 	QFrame * frame = new QFrame();
 	QHBoxLayout * layout = new QHBoxLayout();
@@ -243,34 +206,31 @@ void CoreWindow::playPause() {
 		playAction->setIcon(QIcon("img/gui/play.png"));
 		layout->pause();
 		sceneGraph->setNodesFreezed(true);
+		log(NORMAL, "Layout paused");
 	} else {
 		playAction->setIcon(QIcon("img/gui/pause.png"));
 		sceneGraph->setNodesFreezed(false);
 		layout->play();
+		log(NORMAL, "Layout unpaused");
 	}
 }
 
+void CoreWindow::randomize() {
+	layout->randomize();
+	log(NORMAL, "Layout randomized");
+}
+
 void CoreWindow::noSelectClicked(bool checked) {
-	viewerWidget->getPickHandler()->setPickMode(
-			Vwr::PickHandler::PickMode::NONE);
+	viewerWidget->getPickHandler()->setPickMode(Vwr::PickHandler::NONE);
 	singleSelectB->setChecked(false);
 	multiSelectB->setChecked(false);
 	centerB->setChecked(false);
 }
 
 void CoreWindow::singleSelectClicked(bool checked) {
-	viewerWidget->getPickHandler()->setPickMode(
-			Vwr::PickHandler::PickMode::SINGLE);
+	viewerWidget->getPickHandler()->setPickMode(Vwr::PickHandler::SELECT);
 	noSelectB->setChecked(false);
 	multiSelectB->setChecked(false);
-	centerB->setChecked(false);
-}
-
-void CoreWindow::multiSelectClicked(bool checked) {
-	viewerWidget->getPickHandler()->setPickMode(
-			Vwr::PickHandler::PickMode::MULTI);
-	noSelectB->setChecked(false);
-	singleSelectB->setChecked(false);
 	centerB->setChecked(false);
 }
 
@@ -284,11 +244,12 @@ void CoreWindow::centerView(bool checked) {
 }
 
 void CoreWindow::fixNodes() {
-	viewerWidget->getPickHandler()->toggleSelectedNodesFixedState(true);
+	//	viewerWidget->getPickHandler()->toggleSelectedNodesFixedState(true);
+	// FIXME replace with working code
 }
 
 void CoreWindow::unFixNodes() {
-	viewerWidget->getPickHandler()->toggleSelectedNodesFixedState(false);
+	//	viewerWidget->getPickHandler()->toggleSelectedNodesFixedState(false);
 	layout->wakeUp();
 }
 
@@ -348,19 +309,10 @@ void CoreWindow::loadFile() {
 		return;
 	}
 
-	// TODO fix loading
-
-//	if (layout->isRunning()) {
-//		layout->stop();
-//		layout->wait();
-//	}
-//	delete layout;
 	layout->pause();
 	layout->setGraph(graph);
-//	layout = new Model::FRAlgorithm(graph);
-	layout->setParameters(10, 0.7, 1, true);
-//	connect(layout, SIGNAL(sendMsg(int, QString)), this,
-//			SLOT(showStatusMsg(int, QString)));
+	layout->setParameters(10, 0.7, 1, false);
+
 	sceneGraph->reload(graph);
 
 	messageWindows->closeLoadingDialog();
@@ -368,26 +320,27 @@ void CoreWindow::loadFile() {
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
-	statusBar()->showMessage("Graph loaded");
+	log(NORMAL, "Graph loaded");
 }
 
 void CoreWindow::labelOnOff(bool) {
-	if (viewerWidget->getPickHandler()->getSelectionType()
-			== Vwr::PickHandler::SelectionType::EDGE) {
+	bool state;
+	switch (viewerWidget->getPickHandler()->getSelectionType()) {
+	case Vwr::PickHandler::EDGE:
 		edgeLabelsVisible = !edgeLabelsVisible;
 		sceneGraph->setEdgeLabelsVisible(edgeLabelsVisible);
-	} else if (viewerWidget->getPickHandler()->getSelectionType()
-			== Vwr::PickHandler::SelectionType::NODE) {
+		break;
+	case Vwr::PickHandler::NODE:
 		nodeLabelsVisible = !nodeLabelsVisible;
 		sceneGraph->setNodeLabelsVisible(nodeLabelsVisible);
-	} else if (viewerWidget->getPickHandler()->getSelectionType()
-			== Vwr::PickHandler::SelectionType::ALL) {
-		bool state = edgeLabelsVisible & nodeLabelsVisible;
-
+		break;
+	case Vwr::PickHandler::ALL:
+		state = edgeLabelsVisible & nodeLabelsVisible;
 		nodeLabelsVisible = edgeLabelsVisible = !state;
-
 		sceneGraph->setEdgeLabelsVisible(!state);
 		sceneGraph->setNodeLabelsVisible(!state);
+	default:
+		break;
 	}
 }
 
@@ -398,18 +351,15 @@ void CoreWindow::sliderValueChanged(int value) {
 void CoreWindow::nodeTypeComboBoxChanged(int index) {
 	switch (index) {
 	case 0:
-		viewerWidget->getPickHandler()->setSelectionType(
-				Vwr::PickHandler::SelectionType::ALL);
+		viewerWidget->getPickHandler()->setSelectionType(Vwr::PickHandler::ALL);
 		labelsB->setChecked(edgeLabelsVisible & nodeLabelsVisible);
 		break;
 	case 1:
-		viewerWidget->getPickHandler()->setSelectionType(
-				Vwr::PickHandler::SelectionType::NODE);
+		viewerWidget->getPickHandler()->setSelectionType(Vwr::PickHandler::NODE);
 		labelsB->setChecked(nodeLabelsVisible);
 		break;
 	case 2:
-		viewerWidget->getPickHandler()->setSelectionType(
-				Vwr::PickHandler::SelectionType::EDGE);
+		viewerWidget->getPickHandler()->setSelectionType(Vwr::PickHandler::EDGE);
 		labelsB->setChecked(edgeLabelsVisible);
 		break;
 	}
@@ -417,6 +367,55 @@ void CoreWindow::nodeTypeComboBoxChanged(int index) {
 
 void CoreWindow::closeEvent(QCloseEvent *event) {
 	qDebug("About to quit\n");
+	layout->stop();
+	layout->wait();
 	event->accept();
+}
+
+Window::CoreWindow* CoreWindow::instanceForStatusLog = NULL;
+
+void CoreWindow::log(StatusMsgType type, QString msg) {
+	if (instanceForStatusLog == NULL) {
+		qWarning() << "Statusbar not created yet!";
+		return;
+	}
+	instanceForStatusLog->showStatusMsg(type, msg);
+}
+
+void CoreWindow::showStatusMsg(StatusMsgType type, QString msg) {
+	switch (type) {
+	case ALG:
+		algStatus->setText(msg);
+		break;
+	case PICK:
+//		pickStatus->setText(msg);
+		break;
+	case KEYS:
+//		keyStatus->setText(msg);
+		break;
+	case MAIN:
+		mainStatus->setText(msg);
+		break;
+	case TEMP:
+		statusBar()->showMessage(msg, 3000); // 3 sec
+		break;
+	case NORMAL:
+	default:
+		statusBar()->showMessage(msg);
+		break;
+	}
+}
+
+void CoreWindow::createStatusBar() {
+	statusBar();
+	algStatus = new QLabel(" --- ");
+	pickStatus = new QLabel(" --- ");
+	keyStatus = new QLabel("");
+	mainStatus = new QLabel("Application ready");
+	statusBar()->addWidget(mainStatus);
+//	statusBar()->addPermanentWidget(pickStatus);
+//	statusBar()->addPermanentWidget(keyStatus);
+	statusBar()->addPermanentWidget(algStatus);
+	instanceForStatusLog = this;
 }
 

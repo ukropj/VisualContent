@@ -7,6 +7,9 @@
 
 using namespace Model;
 
+typedef QMap<qlonglong, osg::ref_ptr<Node> >::const_iterator NodeIt;
+typedef QMap<qlonglong, osg::ref_ptr<Edge> >::const_iterator EdgeIt;
+
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
 	PI = acos((double) -1);
@@ -15,7 +18,7 @@ FRAlgorithm::FRAlgorithm() {
 	MAX_MOVEMENT = 30;
 	MAX_DISTANCE = 400;
 	state = NO_GRAPH;
-	sendMsg(Window::CoreWindow::StatusMsgType::ALG, "NO GRAPH");
+	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 	notEnd = true;
 	osg::Vec3f p(0, 0, 0);
 	center = p;
@@ -29,7 +32,8 @@ FRAlgorithm::FRAlgorithm() {
 
 void FRAlgorithm::setGraph(Graph *graph) {
 	state = PAUSED;
-	while (isIterating);//XXX
+	while (isIterating)
+		;//XXX
 	notEnd = true;
 	this->graph = graph;
 	this->randomize();
@@ -57,15 +61,19 @@ double FRAlgorithm::computeCalm() {
 }
 /* Rozmiestni uzly na nahodne pozicie */
 void FRAlgorithm::randomize() {
-	QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-	j = graph->getNodes()->begin();
+	State orig = state;
+	while (isIterating)
+		state = PAUSED;;//XXX
 
-	for (int i = 0; i < graph->getNodes()->count(); i++, ++j) {
-		if (!j.value()->isFixed()) {
+	for (NodeIt i = graph->getNodes()->constBegin(); i
+			!= graph->getNodes()->constEnd(); i++) {
+		Node* node = i.value();
+		if (!node->isFixed()) {
 			osg::Vec3f randPos = getRandomLocation();
-			j.value()->setTargetPosition(randPos);
+			node->setTargetPosition(randPos);
 		}
 	}
+	state = orig;
 	graph->setFrozen(false);
 }
 
@@ -88,7 +96,7 @@ void FRAlgorithm::play() {
 		graph->setFrozen(false);
 		state = RUNNING;
 		notEnd = true;
-		sendMsg(Window::CoreWindow::StatusMsgType::ALG, "RUNNING");
+		Window::CoreWindow::log(Window::CoreWindow::ALG, "RUNNING");
 		if (!isRunning())
 			start(); // don't call start manualy to start this thread
 	}
@@ -97,7 +105,7 @@ void FRAlgorithm::play() {
 void FRAlgorithm::pause() {
 	if (graph != NULL) {
 		state = PAUSED;
-		sendMsg(Window::CoreWindow::StatusMsgType::ALG, "PAUSED");
+		Window::CoreWindow::log(Window::CoreWindow::ALG, "PAUSED");
 	}
 }
 
@@ -125,17 +133,17 @@ void FRAlgorithm::run() {
 			// alebo je graf zmrazeny (spravidla pocas editacie)
 			while (state != RUNNING || graph->isFrozen()) {
 				if (isIterating && graph->isFrozen()) {
-					sendMsg(Window::CoreWindow::StatusMsgType::ALG, "FROZEN");
+					Window::CoreWindow::log(Window::CoreWindow::ALG, "FROZEN");
 				}
 				isIterating = false;
 				QThread::msleep(100);
 				if (!notEnd) {
-					sendMsg(Window::CoreWindow::StatusMsgType::ALG, "STOPPED");
+					Window::CoreWindow::log(Window::CoreWindow::ALG, "STOPPED");
 					return;
 				}
 			}
 			if (!isIterating) {
-				sendMsg(Window::CoreWindow::StatusMsgType::ALG, "RUNNING");
+				Window::CoreWindow::log(Window::CoreWindow::ALG, "RUNNING");
 			}
 			isIterating = true;
 			if (!iterate()) {
@@ -149,14 +157,18 @@ void FRAlgorithm::run() {
 
 bool FRAlgorithm::iterate() {
 	bool changed = false;
-	{
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-		j = graph->getNodes()->begin();
-		for (int i = 0; i < graph->getNodes()->count(); i++, ++j) { // pre vsetky uzly..
-			Node* node = j.value();
-			node->resetForce(); // vynulovanie posobiacej sily			
-		}
+	QMap<qlonglong, osg::ref_ptr<Node> >* nodes = graph->getNodes();
+	QMap<qlonglong, osg::ref_ptr<Edge> >* edges = graph->getEdges();
+
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+		i.value()->resetForce();
 	}
+
+	// TODO change to for or while cycles (QMapIterator)
+	//	foreach (Node* node, graph->getNodes()->values())
+	//		{ // pre vsetky uzly..
+	//			node->resetForce(); // vynulovanie posobiacej sily
+	//		}
 	//	{//meta uzly
 	//
 	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
@@ -194,59 +206,56 @@ bool FRAlgorithm::iterate() {
 	//			}
 	//		}
 	//	}
-	{//uzly
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
-		j = graph->getNodes()->begin();
-		for (int i = 0; i < graph->getNodes()->count(); i++, ++j) { // pre vsetky uzly..
-			k = graph->getNodes()->begin();
-			for (int h = 0; h < graph->getNodes()->count(); h++, ++k) { // pre vsetky uzly..
-				if (!j.value()->equals(k.value())) {
-					// odpudiva sila beznej velkosti
-					addRepulsive(j.value(), k.value(), 1);
-				}
+
+	//uzly
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+		// pre vsetky uzly..
+		Node* u = i.value();
+		for (NodeIt j = nodes->constBegin(); j != nodes->constEnd(); j++) {
+			// pre vsetky uzly..
+			Node* v = j.value();
+			if (!u->equals(v)) {
+				addRepulsive(u, v, 1); // odpudiva sila beznej velkosti
 			}
 		}
 	}
-	{//hrany
-		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator j;
-		j = graph->getEdges()->begin();
-		for (int i = 0; i < graph->getEdges()->count(); i++, ++j) { // pre vsetky hrany..
-			// pritazliva sila beznej velkosti
-			addAttractive(j.value(), 1);
-		}
+
+	//hrany
+	for (EdgeIt i = edges->constBegin(); i != edges->constEnd(); i++) {
+		addAttractive(i.value(), 1); // pritazliva sila beznej velkosti
 	}
-	if (state == PAUSED) { // XXX
-		return true;
-	}
+
+	//	if (state == PAUSED) { // XXX
+	//		return true;
+	//	}
 
 	// aplikuj sily na uzly
-	{
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-		j = graph->getNodes()->begin();
-		for (int i = 0; i < graph->getNodes()->count(); i++, ++j) { // pre vsetky uzly..
-			if (!j.value()->isFixed()) {
-				last = j.value()->getTargetPosition();
-				bool fo = applyForces(j.value());
-				changed = changed || fo;
-			} else {
-				changed = false;
-			}
-		}
-	}
-	// aplikuj sily na metauzly
-	{
-		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-		j = graph->getMetaNodes()->begin();
-		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
-			if (!j.value()->isFixed()) {
-				bool fo = applyForces(j.value());
-				changed = changed || fo;
-			}
-		}
-	}
-	// vracia true ak sa ma pokracovat dalsou iteraciou
 
+
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+		Node* u = i.value();
+		if (!u->isFixed()) {
+			last = u->getTargetPosition();
+			bool fo = applyForces(u);
+			changed = changed || fo;
+		} else {
+			changed = false;
+		}
+	}
+
+	//	// aplikuj sily na metauzly
+	//	{
+	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
+	//		j = graph->getMetaNodes()->begin();
+	//		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
+	//			if (!j.value()->isFixed()) {
+	//				bool fo = applyForces(j.value());
+	//				changed = changed || fo;
+	//			}
+	//		}
+	//	}
+
+	// vracia true ak sa ma pokracovat dalsou iteraciou
 	return changed;
 }
 
@@ -324,6 +333,7 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 	fv *= rep(dist) * factor;// velkost sily
 	u->addForce(fv);
 }
+
 /* Vzorec na vypocet odpudivej sily */
 float FRAlgorithm::rep(double distance) {
 	return (float) (-(K * K) / distance);

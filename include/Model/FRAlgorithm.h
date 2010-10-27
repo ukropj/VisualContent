@@ -16,12 +16,10 @@
 #include <QMutex>
 #include <QThread>
 
+#include "Window/CoreWindow.h"
+
 namespace Util {
 class Config;
-}
-
-namespace Window {
-class CoreWindow;
 }
 
 namespace Model {
@@ -35,7 +33,6 @@ class Edge;
  *  \date 28. 4. 2010
  */
 class FRAlgorithm: public QThread {
-Q_OBJECT
 
 public:
 	FRAlgorithm();
@@ -98,9 +95,6 @@ public:
 	 *  \brief Terminates algorithm
 	 */
 	void stop();
-
-signals:
-	void sendMsg(int type, QString msg);
 
 protected:
 	/**
