@@ -131,18 +131,18 @@ private:
 	bool leftButtonPressed; // not used now
 
 	// Perform a pick operation.
-	Model::Node* pickOne(const osgGA::GUIEventAdapter& event,
-			osgGA::GUIActionAdapter& action);
-	QList<Model::Node*> pickMore(const osgGA::GUIEventAdapter& event,
-			osgGA::GUIActionAdapter& action);
+	Model::Node* pickOne(osgViewer::Viewer* viewer,
+			const osgGA::GUIEventAdapter& event);
+	QList<Model::Node*> pickMore(osgViewer::Viewer* viewer,
+			const osgGA::GUIEventAdapter& event);
 
-	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double normalX,
-			const double normalY);
+	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double x,
+			const double y);
 	QList<Model::Node*> getNodesInQuad(osgViewer::Viewer* viewer,
 			const double xMin, const double yMin, const double xMax,
 			const double yMax);
-	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double normalX,
-			const double normalY);//todo implement ..
+	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double x,
+			const double y);//todo implement ..
 
 	void createSelectionQuad();
 	void initSelectionQuad(osgViewer::Viewer * viewer);

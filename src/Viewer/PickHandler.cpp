@@ -134,7 +134,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 	switch (mode) {
 	case NONE:
-		node = pickOne(event, action);
+		node = pickOne(getViewer(action), event);
 		if (node != NULL) {
 			node->toggleExpanded();
 			return true;
@@ -143,7 +143,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 	case SELECT:
 		multiPickEnabled = isShift(event);
 
-		ret = select(pickOne(event, action));
+		ret = select(pickOne(getViewer(action), event));
 
 		i = selectedNodes.constBegin();
 		while (i != selectedNodes.constEnd()) {
@@ -178,7 +178,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 
 		if (!multiPickEnabled)
 			deselectAll();
-		QList<Model::Node*> nodes = pickMore(event, action);
+		QList<Model::Node*> nodes = pickMore(getViewer(action), event);
 		QList<Model::Node*>::const_iterator ni = nodes.constBegin();
 		multiPickEnabled = true; // temp to select form quad
 		while (ni != nodes.constEnd()) {
@@ -278,11 +278,12 @@ osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos,
 	return newPosition * compositeMi;
 }
 
-Model::Node* PickHandler::pickOne(const osgGA::GUIEventAdapter& event,
-		osgGA::GUIActionAdapter& action) {
-	osgViewer::Viewer* viewer = getViewer(action);
-	Model::Node* pickedNode = getNodeAt(viewer, event.getXnormalized(),
-			event.getYnormalized());// todo change to local
+Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
+		const osgGA::GUIEventAdapter& event) {
+	if (viewer == NULL)
+		return NULL;
+
+	Model::Node* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
 	if (pickedNode == NULL)
 		qDebug() << "NO PICK";
 	else {
@@ -291,9 +292,11 @@ Model::Node* PickHandler::pickOne(const osgGA::GUIEventAdapter& event,
 	return pickedNode;
 }
 
-QList<Model::Node*> PickHandler::pickMore(const osgGA::GUIEventAdapter& event,
-		osgGA::GUIActionAdapter& action) {
-	osgViewer::Viewer* viewer = getViewer(action);
+QList<Model::Node*> PickHandler::pickMore(osgViewer::Viewer* viewer,
+		const osgGA::GUIEventAdapter& event) {
+	QList<Model::Node*> pickedNodes;
+	if (viewer == NULL)
+		return pickedNodes;
 
 	float x, y, w, h;
 
@@ -313,7 +316,7 @@ QList<Model::Node*> PickHandler::pickMore(const osgGA::GUIEventAdapter& event,
 		h = originNormPos.y();
 	}
 
-	QList<Model::Node*> pickedNodes = getNodesInQuad(viewer, x, y, w, h);
+	pickedNodes = getNodesInQuad(viewer, x, y, w, h);
 
 	if (pickedNodes.isEmpty())
 		qDebug() << "NO PICK";
@@ -323,18 +326,23 @@ QList<Model::Node*> PickHandler::pickMore(const osgGA::GUIEventAdapter& event,
 	return pickedNodes;
 }
 
-Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double nX,
-		const double nY) {
-	double m = 0.00005f;
-	if (!viewer->getSceneData()) {
-		return NULL; // Nothing to pick.
-	}
-	// picking node at point means picking in very small quad
-	// some form of ray oriented picking should be used instead
-	QList<Model::Node*> nodes = getNodesInQuad(viewer, nX - m, nY - m, nX + m,
-			nY + m);
-	if (!nodes.isEmpty()) {
-		return nodes.first();
+Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
+		const double y) {
+	osgUtil::LineSegmentIntersector::Intersections intersections;
+
+	if (viewer->computeIntersections(x, y, intersections)) {
+		for (osgUtil::LineSegmentIntersector::Intersections::iterator hitr =
+				intersections.begin(); hitr != intersections.end(); hitr++) {
+			if (hitr->nodePath.empty())
+				continue;
+			osg::NodePath nodePath = hitr->nodePath;
+			if (nodePath.size() <= 1)
+				continue;
+			Model::Node* n =
+					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 1]);
+			if (n != NULL)
+				return n;
+		}
 	}
 	return NULL;
 }
@@ -343,9 +351,7 @@ QList<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 		const double xMin, const double yMin, const double xMax,
 		const double yMax) {
 	QList<Model::Node*> nodes;
-	if (!viewer->getSceneData()) {
-		return nodes; // Nothing to pick.
-	}
+
 	osgUtil::PolytopeIntersector* picker = new osgUtil::PolytopeIntersector(
 			osgUtil::Intersector::PROJECTION, xMin, yMin, xMax, yMax);
 	osgUtil::IntersectionVisitor iv(picker);
@@ -361,9 +367,10 @@ QList<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 			osg::NodePath nodePath = hitr->nodePath;
 			if (nodePath.size() <= 1)
 				continue;
-			Model::Node* n =
-					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 1]);
-			nodes.append(n);
+//			std::cout << "node \"" << nodePath.back()->getName() << "\"" << std::endl;
+			Model::Node* n = dynamic_cast<Model::Node *> (nodePath.back());
+			if (n != NULL)
+				nodes.append(n);
 		}
 	}
 	return nodes;

@@ -87,6 +87,7 @@ public:
 	 */
 	void setName(QString val) {
 		name = val;
+//		osg::Geode::setName(val); TODO set geode name
 	}
 
 	/**
