@@ -27,7 +27,7 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 	//	releaseEvent = NULL;
 	//	releaseAction = NULL;
 
-	this->cameraManipulator = cameraManipulator;
+	this->cameraManipulator = cameraManipulator; // XXX why do we need this?
 	this->coreGraph = coreGraph;
 
 	originPos = osg::Vec2f(0.0, 0.0);
@@ -130,10 +130,11 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 	originNormPos.set(event.getXnormalized(), event.getYnormalized());
 	Model::Node* node = NULL;
 	bool ret;
+	NodeList::const_iterator i;
 
 	switch (mode) {
 	case NONE:
-		node = pickOne(event, action); //todo switch to toggling
+		node = pickOne(event, action);
 		if (node != NULL) {
 			node->toggleExpanded();
 			return true;
@@ -143,8 +144,12 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 		multiPickEnabled = isShift(event);
 
 		ret = select(pickOne(event, action));
-		setSelectedFixed(true);
-		setSelectedInterpolation(false);
+
+		i = selectedNodes.constBegin();
+		while (i != selectedNodes.constEnd()) {
+			(*i)->setFrozen(true);
+			++i;
+		}
 
 		if (selectedNodes.isEmpty() || multiPickEnabled) {
 			// drawing quad might follow
@@ -183,11 +188,9 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 		multiPickEnabled = false; // not important even if was true before
 	}
 
-	QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
-			selectedNodes.constBegin();
+	NodeList::const_iterator i = selectedNodes.constBegin();
 	while (i != selectedNodes.constEnd()) {
-		(*i)->setFixed(false);
-		(*i)->setUsingInterpolation(true);
+		(*i)->setFrozen(false);
 		++i;
 	}
 
@@ -227,8 +230,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 		return false;
 	case SELECT:
 		if (!selectedNodes.isEmpty() && !multiPickEnabled) { // drag node(s)
-			QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
-					selectedNodes.constBegin();
+			NodeList::const_iterator i = selectedNodes.constBegin();
 
 			while (i != selectedNodes.constEnd()) {
 				(*i)->setTargetPosition(//todo current
@@ -240,7 +242,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 			coreGraph->setFrozen(false);
 			return true;
 		} else { // draw selecting rectangle
-			if (!isDrawingSelectionQuad) {
+			if (!isDrawingSelectionQuad) { // init quad
 				isDrawingSelectionQuad = true;
 				drawSelectionQuad(); // to rewrite old coords before first showing
 				initSelectionQuad(getViewer(action));
@@ -264,7 +266,9 @@ osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos,
 	osg::Matrixd compositeM = viewM * projM * screenM;
 	osg::Matrixd compositeMi = compositeMi.inverse(compositeM);
 
-	float scale = Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float
+			scale =
+					Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
 
 	osg::Vec3f screenPoint = origPos * compositeM; // TODO change to currnet pos
 	osg::Vec3f newPosition = osg::Vec3f(screenPoint.x() - (originPos.x()
@@ -376,17 +380,14 @@ bool PickHandler::select(Model::Node* node) {
 	}
 
 	if (selectedNodes.contains(node) && !multiPickEnabled) {
-		//		node->setFixed(true);
 		node->setSelected(true);
-		//		node->setUsingInterpolation(false);
 		return true;
 	}
 
 	if (multiPickEnabled) {
 		if (selectedNodes.contains(node)) { // remove from nodes
 			node->setSelected(false);
-			node->setFixed(false);
-			node->setUsingInterpolation(true);
+			node->setFrozen(false);
 			selectedNodes.removeOne(node);
 			qDebug() << " one deselected";
 			return true;
@@ -400,19 +401,15 @@ bool PickHandler::select(Model::Node* node) {
 
 	qDebug() << " one selected";
 	node->setSelected(true);
-	//	node->setFixed(true);
-	//	node->setUsingInterpolation(false);
 	return true;
 }
 
 void PickHandler::deselectAll() {
-	QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
-			selectedNodes.constBegin();
+	NodeList::const_iterator i = selectedNodes.constBegin();
 
 	while (i != selectedNodes.constEnd()) {
 		(*i)->setSelected(false);
-		(*i)->setFixed(false);
-		(*i)->setUsingInterpolation(true);
+		(*i)->setFrozen(false);
 		qDebug() << " all deselected";
 		++i;
 	}
@@ -550,8 +547,7 @@ osg::Vec3 PickHandler::getSelectionCenter(bool nodesOnly) {
 	//		}
 	//	}
 
-	QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator ni =
-			selectedNodes.constBegin();
+	NodeList::const_iterator ni = selectedNodes.constBegin();
 
 	while (ni != selectedNodes.constEnd()) {
 		coordinates->push_back((*ni)->getTargetPosition());
@@ -564,26 +560,6 @@ osg::Vec3 PickHandler::getSelectionCenter(bool nodesOnly) {
 		center = Util::DataHelper::getMassCenter(coordinates);
 
 	return center;
-}
-
-void PickHandler::setSelectedFixed(bool isFixed) {
-	QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
-			selectedNodes.constBegin();
-
-	while (i != selectedNodes.constEnd()) {
-		(*i)->setFixed(isFixed);
-		++i;
-	}
-}
-
-void PickHandler::setSelectedInterpolation(bool state) {
-	QLinkedList<osg::ref_ptr<Model::Node> >::const_iterator i =
-			selectedNodes.constBegin();
-
-	while (i != selectedNodes.constEnd()) {
-		(*i)->setUsingInterpolation(state);
-		++i;
-	}
 }
 
 bool PickHandler::isShift(const osgGA::GUIEventAdapter& event) {
@@ -607,4 +583,13 @@ bool PickHandler::isCtrl(const osgGA::GUIEventAdapter& event) {
 	return false;
 }
 
-//bool isAlt
+bool PickHandler::isAlt(const osgGA::GUIEventAdapter& event) {
+	int key = event.getModKeyMask();
+	if (key & osgGA::GUIEventAdapter::MODKEY_ALT) {
+		//		StatusLogger::log(StatusLogger::KEYS, "CTRL");
+		qDebug() << "ALT";
+		return true;
+	}
+	return false;
+}
+

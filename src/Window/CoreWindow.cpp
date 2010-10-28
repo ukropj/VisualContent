@@ -74,12 +74,14 @@ void CoreWindow::createActions() {
 	fixB->setIcon(QIcon("img/gui/fix.png"));
 	fixB->setToolTip(tr("Fix nodes"));
 	fixB->setFocusPolicy(Qt::NoFocus);
+	fixB->setShortcut(tr("CTRL+F"));
 	connect(fixB, SIGNAL(clicked()), this, SLOT(fixNodes()));
 
 	unFixB = new QPushButton();
 	unFixB->setIcon(QIcon("img/gui/unfix.png"));
 	unFixB->setToolTip(tr("Unfix nodes"));
 	unFixB->setFocusPolicy(Qt::NoFocus);
+	unFixB->setShortcut(tr("CTRL+U"));
 	connect(unFixB, SIGNAL(clicked()), this, SLOT(unFixNodes()));
 
 	labelsB = new QPushButton();
@@ -152,10 +154,10 @@ void CoreWindow::createToolBar() {
 	toolBar->addWidget(nodeTypeCB);
 	toolBar->addSeparator();
 
-//	frame = createHorizontalFrame();
-//	toolBar->addWidget(frame);
-//	frame->layout()->addWidget(addMetaB);
-//	frame->layout()->addWidget(removeMetaB);
+	//	frame = createHorizontalFrame();
+	//	toolBar->addWidget(frame);
+	//	frame->layout()->addWidget(addMetaB);
+	//	frame->layout()->addWidget(removeMetaB);
 
 	frame = createHorizontalFrame();
 	toolBar->addWidget(frame);
@@ -244,12 +246,24 @@ void CoreWindow::centerView(bool checked) {
 }
 
 void CoreWindow::fixNodes() {
-	//	viewerWidget->getPickHandler()->toggleSelectedNodesFixedState(true);
-	// FIXME replace with working code
+	NodeList nodes = viewerWidget->getPickHandler()->getSelectedNodes();
+	NodeList::const_iterator i = nodes.constBegin();
+
+	while (i != nodes.constEnd()) {
+//		(*i)->setTargetPosition((*i)->getCurrentPosition() / graphScale);
+		(*i)->setFixed(true);
+		++i;
+	}
 }
 
 void CoreWindow::unFixNodes() {
-	//	viewerWidget->getPickHandler()->toggleSelectedNodesFixedState(false);
+	NodeList nodes = viewerWidget->getPickHandler()->getSelectedNodes();
+	NodeList::const_iterator i = nodes.constBegin();
+
+	while (i != nodes.constEnd()) {
+		(*i)->setFixed(false);
+		++i;
+	}
 	layout->wakeUp();
 }
 
@@ -388,10 +402,10 @@ void CoreWindow::showStatusMsg(StatusMsgType type, QString msg) {
 		algStatus->setText(msg);
 		break;
 	case PICK:
-//		pickStatus->setText(msg);
+		//		pickStatus->setText(msg);
 		break;
 	case KEYS:
-//		keyStatus->setText(msg);
+		//		keyStatus->setText(msg);
 		break;
 	case MAIN:
 		mainStatus->setText(msg);
@@ -413,8 +427,8 @@ void CoreWindow::createStatusBar() {
 	keyStatus = new QLabel("");
 	mainStatus = new QLabel("Application ready");
 	statusBar()->addWidget(mainStatus);
-//	statusBar()->addPermanentWidget(pickStatus);
-//	statusBar()->addPermanentWidget(keyStatus);
+	//	statusBar()->addPermanentWidget(pickStatus);
+	//	statusBar()->addPermanentWidget(keyStatus);
 	statusBar()->addPermanentWidget(algStatus);
 	instanceForStatusLog = this;
 }

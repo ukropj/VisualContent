@@ -35,7 +35,7 @@ public:
 	 *  \fn public destructor  ~EdgeGroup
 	 *  \brief destructor
 	 */
-	~EdgeGroup(void);
+	~EdgeGroup();
 
 	/**
 	 *  \fn public  updateEdgeCoords

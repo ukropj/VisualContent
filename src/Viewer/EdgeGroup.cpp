@@ -13,7 +13,7 @@ EdgeGroup::EdgeGroup(QMap<qlonglong, osg::ref_ptr<Edge> > *edges, float scale)
 	initEdges();
 }
 
-EdgeGroup::~EdgeGroup(void)
+EdgeGroup::~EdgeGroup()
 {
 }
 

@@ -74,19 +74,7 @@ void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos, osg::Vec3 viewV
 	coordinates->clear();
 	edgeTexCoords->clear();
 
-//	osg::Vec3d viewVec(0, 0, 1);
 	osg::Vec3d up;
-
-//	if (camera != NULL) { // TODO test removing this
-//		osg::Vec3d eye;
-//		osg::Vec3d center;
-//		camera->getViewMatrixAsLookAt(eye, center, up);
-//		viewVec = eye - center;
-		//	std::cout << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
-		//	std::cout << center.x() << " " << center.y() << " " << center.z() << "\n";
-//	}
-//
-//	viewVec.normalize();
 
 	float graphScale = Util::Config::getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();

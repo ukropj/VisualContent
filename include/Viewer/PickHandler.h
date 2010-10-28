@@ -19,7 +19,9 @@
 
 #include "Model/Node.h"
 #include "Model/Edge.h"
-#include "Window/CoreWindow.h"
+#include "Window/CoreWindow.h"\
+
+typedef QLinkedList<osg::ref_ptr<Model::Node> > NodeList;
 
 namespace Vwr {
 class CameraManipulator;
@@ -104,21 +106,20 @@ public:
 	/**
 	 *  \fn inline public  getSelectedNodes
 	 *  \brief Returns selected nodes
-	 *  \return QLinkedList<osg::ref_ptr<Model::Node> > * selected nodes
+	 *  \return NodeList * selected nodes
 	 */
-	//	QLinkedList<osg::ref_ptr<Model::Node> > * getSelectedNodes() {
-	//		return &pickedNodes;
-	//	}
+	NodeList getSelectedNodes() const {
+		return selectedNodes;
+	}
 
 	/**
 	 *  \fn inline public  getSelectedEdges
 	 *  \brief Returns selected edges
 	 *  \return QLinkedList<osg::ref_ptr<Model::Edge> > * selected edges
 	 */
-	//	QLinkedList<osg::ref_ptr<Model::Edge> > * getSelectedEdges() {
-	//		return &pickedEdges;
+	//	QLinkedList<osg::ref_ptr<Model::Edge> > getSelectedEdges() {
+	//		return selectedEdges;
 	//	}
-	void setSelectedFixed(bool isFixed);
 
 protected:
 private:
@@ -127,7 +128,7 @@ private:
 	osg::Vec2f originPos;
 	osg::Vec2f originNormPos;
 
-	bool leftButtonPressed;
+	bool leftButtonPressed; // not used now
 
 	// Perform a pick operation.
 	Model::Node* pickOne(const osgGA::GUIEventAdapter& event,
@@ -141,7 +142,7 @@ private:
 			const double xMin, const double yMin, const double xMax,
 			const double yMax);
 	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double normalX,
-			const double normalY);//todo implement
+			const double normalY);//todo implement ..
 
 	void createSelectionQuad();
 	void initSelectionQuad(osgViewer::Viewer * viewer);
@@ -160,10 +161,10 @@ private:
 	Vwr::SceneGraph * coreGraph;
 
 	/**
-	 *  QLinkedList<osg::ref_ptr<Model::Node> > selectedNodes
+	 *  NodeList selectedNodes
 	 *  \brief picked nodes list
 	 */
-	QLinkedList<osg::ref_ptr<Model::Node> > selectedNodes;
+	NodeList selectedNodes;
 	//	osg::ref_ptr<Model::Node> selectedNode;
 
 	bool multiPickEnabled;
@@ -208,32 +209,6 @@ private:
 		return dynamic_cast<osgViewer::Viewer*> (&aa);
 	}
 
-	/**
-	 *  \fn private  doSinglePick(osg::NodePath nodePath, unsigned int primitiveIndex)
-	 *  \brief Picks single object on screen
-	 *  \param    nodePath   pick nodepath
-	 *  \param     primitiveIndex  picked primitive index
-	 *  \return bool true, if object was picked
-	 */
-	//	bool doSinglePick(osg::NodePath nodePath, unsigned int primitiveIndex);
-
-	/**
-	 *  \fn private  doNodePick(osg::NodePath nodePath)
-	 *  \brief Picks single node
-	 *  \param   nodePath     pick nodepath
-	 *  \return bool true, if node was picked
-	 */
-	//	bool doNodePick(osg::NodePath nodePath);
-
-	/**
-	 *  \fn private  doEdgePick(osg::NodePath nodePath, unsigned int primitiveIndex)
-	 *  \brief Picks single edge
-	 *  \param     nodePath   pick nodepath
-	 *  \param     primitiveIndex    picked primitive index
-	 *  \return bool
-	 */
-	//	bool doEdgePick(osg::NodePath nodePath, unsigned int primitiveIndex);
-
 	osg::Vec3f getMousePos(osg::Vec3f origPos, osgViewer::Viewer* viewer);
 	/**
 	 *  int pickMode
@@ -252,20 +227,6 @@ private:
 	void deselectAll();
 
 	bool toggle(Model::Node* node = NULL);
-
-	/**
-	 *  \fn private  unselectPickedEdges(osg::ref_ptr<Model::Edge> edge = 0)
-	 *  \brief unselects picked edges. If null, all edges will be unselected.
-	 *  \param     edge   edges to unselect
-	 */
-	//	void unselectPickedEdges(osg::ref_ptr<Model::Edge> edge = 0);
-
-	/**
-	 *  \fn private  setSelectedNodesInterpolation(bool state)
-	 *  \brief sets interpolation state to selected nodes
-	 *  \param      state     interpolation state
-	 */
-	void setSelectedInterpolation(bool state);
 
 	/**
 	 *  \fn private  handlePush( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -356,7 +317,7 @@ public slots:
 	 *	\fn public mouseTimerTimeout
 	 *	\brief called when user don't double click
 	 */
-	void mouseTimerTimeout();
+	void mouseTimerTimeout(); // not used now
 };
 }
 #endif

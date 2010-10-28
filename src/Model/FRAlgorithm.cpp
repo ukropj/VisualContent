@@ -234,7 +234,7 @@ bool FRAlgorithm::iterate() {
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		Node* u = i.value();
-		if (!u->isFixed()) {
+		if (!u->isFrozen() && !u->isFixed()) {
 			last = u->getTargetPosition();
 			bool fo = applyForces(u);
 			changed = changed || fo;

@@ -220,9 +220,8 @@ public:
 	 *  \brief Sets node fixed state
 	 *  \param     fixed     fixed state
 	 */
-	void setFixed(bool fixed) {
-		this->fixed = fixed;
-
+	void setFixed(bool flag) {
+		fixed = flag;
 		if (fixed && !this->containsDrawable(square))
 			this->addDrawable(square);
 		else if (!fixed)
@@ -236,6 +235,20 @@ public:
 	 */
 	bool isFixed() const {
 		return fixed;
+	}
+
+	void setFrozen(bool flag) {
+		frozen = flag;
+		setUsingInterpolation(!frozen);
+	}
+
+	/**
+	 *  \fn inline public constant  isFixed
+	 *  \brief Returns if the Node is fixed
+	 *  \return bool true, if the Node is fixed
+	 */
+	bool isFrozen() const {
+		return frozen;
 	}
 
 	/**
@@ -457,19 +470,27 @@ private:
 
 	/**
 	 *  bool fixed
-	 *  \brief node fixed state
+	 *  \brief node fixed state - fixed node is not moved by algorithm, toggled by used
 	 */
 	bool fixed;
 
 	/**
+	 *  bool frozen
+	 *  \brief node frozen state - frozen node is not moved by algorithm still affects other nodes,
+	 *  toggled automatically when moving a node, node movements are not interpolated
+	 */
+	bool frozen;
+
+	/**
 	 *  bool ignore
-	 *  \brief node ignoring flag
+	 *  \brief node ignoring flag - node is ignored by algorithm, that means it does not
+	 *  move and does not affect other nodes
 	 */
 	bool ignore;
 
 	/**
 	 *  bool selected
-	 *  \brief node picked state
+	 *  \brief node selected state - node was selected by user
 	 */
 	bool selected;
 

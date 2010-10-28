@@ -7,8 +7,6 @@
 #include "Viewer/SkyTransform.h"
 #include "Model/Graph.h"
 
-
-
 using namespace Vwr;
 
 SceneGraph::SceneGraph(Model::Graph* graph) {
@@ -145,7 +143,7 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 void SceneGraph::update() {
 	root->removeChildren(customNodesPosition, 1);
 
-//	synchronize();
+	synchronize();
 
 	float graphScale = Util::Config::getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();
@@ -172,7 +170,9 @@ osg::Vec3d SceneGraph::getViewVector() {
 	osg::Vec3d viewVec(0, 0, 1);
 	if (camera != NULL) {
 		camera->getViewMatrixAsLookAt(eye, center, up);
-		osg::Vec3d viewVec = eye - center;
+		viewVec = eye - center;
+//		qDebug() << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
+//		qDebug() << center.x() << " " << center.y() << " " << center.z() << "\n";
 	} else {
 		qWarning("SceneGraph::getViewVector camera == NULL");
 	}

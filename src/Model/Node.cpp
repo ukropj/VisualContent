@@ -54,6 +54,7 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 	this->velocity = osg::Vec3f(0, 0, 0);
 	this->fixed = false;
 	this->ignore = false;
+	this->frozen = false;
 	this->selected = false;
 	this->usingInterpolation = true;
 	expanded = false;
