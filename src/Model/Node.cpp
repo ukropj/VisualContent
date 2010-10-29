@@ -20,7 +20,7 @@ using namespace Model;
 Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 		osg::Vec3f position) {
 	this->id = id;
-	this->name = name;
+	setName(name);
 	this->type = type;
 	this->targetPosition = position;
 	this->currentPosition = position * Util::Config::getInstance()->getValue(
@@ -147,8 +147,8 @@ osg::ref_ptr<osg::Drawable> Node::createNode(const float & scale,
 
 osg::ref_ptr<osg::Drawable> Node::createSquare(const float & scale,
 		osg::StateSet* bbState) {
-	float width = 2.0f;
-	float height = 2.0f;
+	float width = 3.0f;
+	float height = 3.0f;
 
 	width *= scale;
 	height *= scale;

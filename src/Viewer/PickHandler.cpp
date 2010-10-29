@@ -178,8 +178,8 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 
 		if (!multiPickEnabled)
 			deselectAll();
-		QList<Model::Node*> nodes = pickMore(getViewer(action), event);
-		QList<Model::Node*>::const_iterator ni = nodes.constBegin();
+		QSet<Model::Node*> nodes = pickMore(getViewer(action), event);
+		QSet<Model::Node*>::const_iterator ni = nodes.constBegin();
 		multiPickEnabled = true; // temp to select form quad
 		while (ni != nodes.constEnd()) {
 			select(*ni); // select node found in quad
@@ -292,9 +292,9 @@ Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
 	return pickedNode;
 }
 
-QList<Model::Node*> PickHandler::pickMore(osgViewer::Viewer* viewer,
+QSet<Model::Node*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 		const osgGA::GUIEventAdapter& event) {
-	QList<Model::Node*> pickedNodes;
+	QSet<Model::Node*> pickedNodes;
 	if (viewer == NULL)
 		return pickedNodes;
 
@@ -347,10 +347,10 @@ Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 	return NULL;
 }
 
-QList<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
+QSet<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 		const double xMin, const double yMin, const double xMax,
 		const double yMax) {
-	QList<Model::Node*> nodes;
+	QSet<Model::Node*> nodes;
 
 	osgUtil::PolytopeIntersector* picker = new osgUtil::PolytopeIntersector(
 			osgUtil::Intersector::PROJECTION, xMin, yMin, xMax, yMax);
@@ -362,15 +362,17 @@ QList<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 				picker->getIntersections();
 		for (osgUtil::PolytopeIntersector::Intersections::iterator hitr =
 				intersections.begin(); hitr != intersections.end(); hitr++) {
-			if (hitr->nodePath.empty())
+			if (hitr->nodePath.size() <= 1)
 				continue;
+
 			osg::NodePath nodePath = hitr->nodePath;
-			if (nodePath.size() <= 1)
-				continue;
-//			std::cout << "node \"" << nodePath.back()->getName() << "\"" << std::endl;
+//			std::cout << nodePath.size()
+//					<< ": \"" << nodePath.back()->getName() << "\""
+//					<< std::endl;
+
 			Model::Node* n = dynamic_cast<Model::Node *> (nodePath.back());
 			if (n != NULL)
-				nodes.append(n);
+				nodes.insert(n); // don't insert duplicates
 		}
 	}
 	return nodes;

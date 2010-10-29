@@ -28,6 +28,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	setCentralWidget(viewerWidget);
 
 	nodeLabelsVisible = edgeLabelsVisible = false;
+	noSelectB->click();
 
 	// testing only:
 	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",
@@ -37,7 +38,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	sceneGraph->reload(graph);
 	layout->play();
 
-	noSelectB->click();
+
 }
 
 void CoreWindow::createActions() {
@@ -88,6 +89,7 @@ void CoreWindow::createActions() {
 	labelsB->setIcon(QIcon("img/gui/label.png"));
 	labelsB->setToolTip("&Turn on/off labels");
 	labelsB->setCheckable(true);
+	labelsB->setShortcut(tr("CTRL+T"));
 	labelsB->setFocusPolicy(Qt::NoFocus);
 	connect(labelsB, SIGNAL(clicked(bool)), this, SLOT(labelOnOff(bool)));
 

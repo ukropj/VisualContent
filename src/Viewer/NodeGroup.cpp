@@ -21,8 +21,8 @@ void NodeGroup::initNodes() {
 	if (Util::Config::getValue("Viewer.Display.NodesAlwaysOnTop").toInt())
 		nodeGroup->getOrCreateStateSet()->setRenderBinDetails(100, "RenderBin");
 
-	float graphScale =
-			Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float graphScale = Util::Config::getValue(
+			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	QMapIterator<qlonglong, osg::ref_ptr<Node> > i(*nodes);
 
@@ -59,8 +59,8 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 				else
 					otherNode = (*edgeI)->getSrcNode();
 
-				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(otherNode, *edgeI,
-						graphScale);
+				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(otherNode,
+						*edgeI, graphScale);
 
 				if (nodeGroup != NULL)
 					group->addChild(nodeGroup);
@@ -73,15 +73,14 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 	return group;
 }
 
-osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapChild(
-		osg::ref_ptr<Node> node, float graphScale) {
+osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapChild(osg::ref_ptr<Node> node,
+		float graphScale) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform;
 	at->setPosition(node->getTargetPosition() * graphScale);
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 
 	osg::ref_ptr<osg::Switch> sw = new osg::Switch();
 	sw->addChild(node);
-
 	at->addChild(sw);
 
 	nodeTransforms->insert(node->getId(), at);
@@ -108,8 +107,8 @@ void NodeGroup::synchronizeNodes() { // is never called, was used for metanodes.
 	result = nodeKeys.toSet().subtract(nodeTransformsKeys.toSet());
 	i = result.constBegin();
 
-	float graphScale =
-			Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float graphScale = Util::Config::getValue(
+			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	while (i != result.constEnd()) {
 		group->addChild(wrapChild(nodes->value(*i), graphScale));
@@ -129,8 +128,8 @@ void NodeGroup::updateNodeCoordinates(float interpolationSpeed) {
 }
 
 void NodeGroup::freezeNodePositions() {
-	float graphScale =
-			Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
+	float graphScale = Util::Config::getValue(
+			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	QMap<qlonglong, osg::ref_ptr<Node> >::const_iterator i =
 			nodes->constBegin();

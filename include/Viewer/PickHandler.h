@@ -133,12 +133,12 @@ private:
 	// Perform a pick operation.
 	Model::Node* pickOne(osgViewer::Viewer* viewer,
 			const osgGA::GUIEventAdapter& event);
-	QList<Model::Node*> pickMore(osgViewer::Viewer* viewer,
+	QSet<Model::Node*> pickMore(osgViewer::Viewer* viewer,
 			const osgGA::GUIEventAdapter& event);
 
 	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double x,
 			const double y);
-	QList<Model::Node*> getNodesInQuad(osgViewer::Viewer* viewer,
+	QSet<Model::Node*> getNodesInQuad(osgViewer::Viewer* viewer,
 			const double xMin, const double yMin, const double xMax,
 			const double yMax);
 	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double x,
