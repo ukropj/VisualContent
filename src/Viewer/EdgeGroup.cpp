@@ -66,6 +66,7 @@ void EdgeGroup::initEdges()
 
 	allEdges->addChild(g1);	
 	allEdges->addChild(g2);	
+	allEdges->setName("edges_group");
 
 	this->edgeGroup = allEdges;
 }

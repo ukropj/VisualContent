@@ -193,6 +193,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 		(*i)->setFrozen(false);
 		++i;
 	}
+	coreGraph->setFrozen(false);
 
 	return true;
 }
@@ -333,15 +334,19 @@ Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 	if (viewer->computeIntersections(x, y, intersections)) {
 		for (osgUtil::LineSegmentIntersector::Intersections::iterator hitr =
 				intersections.begin(); hitr != intersections.end(); hitr++) {
-			if (hitr->nodePath.empty())
+			if (hitr->nodePath.size() <= 2)
 				continue;
 			osg::NodePath nodePath = hitr->nodePath;
-			if (nodePath.size() <= 1)
-				continue;
+
 			Model::Node* n =
-					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 1]);
-			if (n != NULL)
-				return n;
+					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 2]);
+			// NOTE: 2 because structure is Node-Geode-(Drawable)
+			// Node is second to last
+			if (n != NULL) {
+				osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
+				if (n->isPickable(g))
+					return n;
+			}
 		}
 	}
 	return NULL;
@@ -362,17 +367,20 @@ QSet<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 				picker->getIntersections();
 		for (osgUtil::PolytopeIntersector::Intersections::iterator hitr =
 				intersections.begin(); hitr != intersections.end(); hitr++) {
-			if (hitr->nodePath.size() <= 1)
+			if (hitr->nodePath.size() <= 2)
 				continue;
-
 			osg::NodePath nodePath = hitr->nodePath;
-//			std::cout << nodePath.size()
-//					<< ": \"" << nodePath.back()->getName() << "\""
-//					<< std::endl;
+			//	std::cout << nodePath.size()
+			//			<< ": \"" << nodePath.back()->getName() << "\""
+			//			<< std::endl;
 
-			Model::Node* n = dynamic_cast<Model::Node *> (nodePath.back());
-			if (n != NULL)
-				nodes.insert(n); // don't insert duplicates
+			Model::Node* n =
+					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 2]);
+			if (n != NULL) {
+				osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
+				if (n->isPickable(g))
+					nodes.insert(n); // don't insert duplicates
+			}
 		}
 	}
 	return nodes;
@@ -415,13 +423,12 @@ bool PickHandler::select(Model::Node* node) {
 
 void PickHandler::deselectAll() {
 	NodeList::const_iterator i = selectedNodes.constBegin();
-
 	while (i != selectedNodes.constEnd()) {
 		(*i)->setSelected(false);
 		(*i)->setFrozen(false);
-		qDebug() << " all deselected";
 		++i;
 	}
+	qDebug() << " all deselected";
 
 	selectedNodes.clear();
 }

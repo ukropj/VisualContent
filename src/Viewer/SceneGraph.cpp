@@ -7,7 +7,80 @@
 #include "Viewer/SkyTransform.h"
 #include "Model/Graph.h"
 
+#include <osg/Geode>
+#include <osg/Node>
+#include <osg/Group>
+#include <osgWidget/Box>
+#include <osgWidget/Label>
+#include <osgWidget/Window>
+#include <osgWidget/WindowManager>
+#include <osgWidget/Browser>
+//#include <osgWidget/GeometryHints>
+#include <osgViewer/ViewerEventHandlers>
+#include <osg/Texture2D>
+
+#include <qdebug.h>
+#include <QtGui>
+
 using namespace Vwr;
+
+osg::ref_ptr<osg::Node> experiments() {
+
+
+	osgWidget::Label* label = new osgWidget::Label("", "");
+	label->addSize(22.0f, 22.0f);
+	label->setColor(1.0f, 1.0f, 1.0f, 0.5f);
+	label->setImage("img/devil.jpg", true);
+	//	window->addWidget(label);
+	//	window->resize();
+	//	this->addDrawable(window);
+	//	sw->addChild(window);
+	//
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(label);
+
+//	osgWidget::Window* widget = new osgWidget::Widget("");
+//	osgWidget::Box* widget = new osgWidget::Box("");
+//	widget->addWidget(label);
+	//	widget->attachMoveCallback();
+	//	widget->attachScaleCallback();
+	//	widget->resize();
+
+
+	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
+	at->setPosition(osg::Vec3f(0,0,0));
+	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
+	at->addChild(geode);
+
+	//	return geode;
+	return at;
+
+	//	at->addChild(widget);
+	//	osgWidget::WindowManager* wm = new osgWidget::WindowManager(&viewer,
+	//			1280.0f, 1024.0f, MASK_2D,
+	//			// osgWidget::WindowManager::WM_USE_RENDERBINS |
+	//			osgWidget::WindowManager::WM_PICK_DEBUG);
+	//	wm->addChild(widget);
+	//	at->addChild(widget);
+	//	customNodeList.append(at);
+
+	//	osgWidget::GeometryHints hints(osg::Vec3(0.0f, 0.0f, 0.0f), osg::Vec3(1.0f,
+	//			0.0f, 0.0f), osg::Vec3(0.0f, 0.0f, 1.0f), osg::Vec4(1.0f, 1.0f,
+	//			1.0f, 1.0f),
+	//			osgWidget::GeometryHints::RESIZE_HEIGHT_TO_MAINTAINCE_ASPECT_RATIO);
+	//
+	//	osg::ref_ptr<osg::Group> group = new osg::Group;
+	//
+	//	osg::ref_ptr<osgWidget::Browser> browser = new osgWidget::Browser;
+	//	if (browser->open("www.google.com", hints)) {
+	//		group->addChild(browser.get());
+	//		hints.position.x() += 1.1f;
+	//	}
+	//
+	//	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform;
+	//	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_CAMERA);
+	////	at->addChild(geode);
+}
 
 SceneGraph::SceneGraph(Model::Graph* graph) {
 	// TODO cleanup class
@@ -15,10 +88,12 @@ SceneGraph::SceneGraph(Model::Graph* graph) {
 	camera = NULL;
 
 	root = new osg::Group();
+	root->setName("root");
 	root->addChild(createSkyBox());
 	backgroundPosition = 0;
 
 	reload(graph);
+//	customNodeList.append(experiments());
 }
 
 void SceneGraph::reload(Model::Graph * newGraph) {
@@ -67,8 +142,8 @@ void SceneGraph::cleanUp() {
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
-	osg::ref_ptr<osg::Texture2D> skymap = Util::TextureWrapper::getCoudTexture(2048,
-			1024,
+	osg::ref_ptr<osg::Texture2D> skymap = Util::TextureWrapper::getCoudTexture(
+			2048, 1024,
 			Util::Config::getValue("Viewer.Display.BackGround.R").toInt(),
 			Util::Config::getValue("Viewer.Display.BackGround.G").toInt(),
 			Util::Config::getValue("Viewer.Display.BackGround.B").toInt(), 255);
@@ -106,12 +181,14 @@ osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
 	osg::ref_ptr<osg::ClearNode> clearNode = new osg::ClearNode;
 	clearNode->setRequiresClear(false);
 	clearNode->addChild(transform);
+	clearNode->setName("skybox");
 
 	return clearNode;
 }
 
 osg::ref_ptr<osg::Group> SceneGraph::initEdgeLabels() {
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	geode->setName("edges_labels");
 
 	QMapIterator<qlonglong, osg::ref_ptr<Model::Edge> > i(*graph->getEdges());
 
@@ -171,8 +248,8 @@ osg::Vec3d SceneGraph::getViewVector() {
 	if (camera != NULL) {
 		camera->getViewMatrixAsLookAt(eye, center, up);
 		viewVec = eye - center;
-//		qDebug() << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
-//		qDebug() << center.x() << " " << center.y() << " " << center.z() << "\n";
+		//		qDebug() << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
+		//		qDebug() << center.x() << " " << center.y() << " " << center.z() << "\n";
 	} else {
 		qWarning("SceneGraph::getViewVector camera == NULL");
 	}

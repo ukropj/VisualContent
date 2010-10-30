@@ -11,17 +11,18 @@
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
 
+#include <osgWidget/Label>
 #include <osgText/FadeText>
 
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
 using namespace Model;
 
-Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
+Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph,
 		osg::Vec3f position) {
 	this->id = id;
 	setName(name);
-	this->type = type;
+	this->type = nodeType;
 	this->targetPosition = position;
 	this->currentPosition = position * Util::Config::getInstance()->getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();
@@ -38,18 +39,6 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 			labelText = labelText.replace(pos, 1, "\n");
 	}
 
-	this->addDrawable(createNode(this->type->getScale(), Node::createStateSet(
-			this->type)));
-
-	// devil
-	osg::ref_ptr<osg::StateSet> ss = Node::createStateSet();
-	ss->setTextureAttributeAndModes(0, type->getDevil(),
-			osg::StateAttribute::ON);
-
-	this->large = createNode(this->type->getScale() * 3, ss);
-	this->square = createSquare(this->type->getScale(), Node::createStateSet());
-	this->label = createLabel(this->type->getScale(), labelText);
-
 	this->force = osg::Vec3f();
 	this->velocity = osg::Vec3f(0, 0, 0);
 	this->fixed = false;
@@ -59,11 +48,28 @@ Node::Node(qlonglong id, QString name, Type* type, Graph* graph,
 	this->usingInterpolation = true;
 	expanded = false;
 
+	nodeSmall = createTextureNode(type->getTexture(), type->getScale());
+	nodeLarge = createTextureNode(type->getDevil(), type->getScale() * 3);
+	square = createSquare(type->getScale());
+	label = createLabel(labelText, type->getScale());
+
+	nodeSmall->setName("node");
+	nodeLarge->setName("image");
+	square->setName("square");
+	label->setName("label");
+
+	addChild(nodeSmall);
+	addChild(nodeLarge);
+	addChild(square);
+	addChild(label);
+
+	setAllChildrenOff();
+	setChildValue(nodeSmall, true);
+
 	float r = type->getValue("color.R").toFloat();
 	float g = type->getValue("color.G").toFloat();
 	float b = type->getValue("color.B").toFloat();
 	float a = type->getValue("color.A").toFloat();
-
 	this->setColor(osg::Vec4(r, g, b, a));
 }
 
@@ -72,7 +78,7 @@ Node::~Node(void) {
 		{
 			edges->value(i)->unlinkNodes();
 		}
-	edges->clear(); //staci to ?? netreba spravit delete/remove ??
+	edges->clear(); //staci to ?? netreba spravit delete/remove ???
 
 	delete edges;
 }
@@ -93,14 +99,13 @@ void Node::removeAllEdges() {
 	edges->clear();
 }
 
-/*!
- * \param scale Koeficient velkosti uzlov.
- * \param bbState Zoznam stavov pre dany uzol.
- * \returns Uzol.
- * Vytvori konkretny uzol a priradi mu stav.
- */
-osg::ref_ptr<osg::Drawable> Node::createNode(const float & scale,
-		osg::StateSet* bbState) {
+osg::ref_ptr<osg::Geode> Node::createTextureNode(
+		osg::ref_ptr<osg::Texture2D> texture, const float scale) {
+	osg::ref_ptr<osg::StateSet> bbState = createStateSet();
+	if (texture != NULL)
+		bbState->setTextureAttributeAndModes(0, texture,
+				osg::StateAttribute::ON);
+
 	float width = 2.0f;
 	float height = 2.0f;
 
@@ -142,11 +147,14 @@ osg::ref_ptr<osg::Drawable> Node::createNode(const float & scale,
 	nodeQuad->setColorBinding(osg::Geometry::BIND_OVERALL);
 	nodeQuad->setStateSet(bbState);
 
-	return nodeQuad;
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(nodeQuad);
+	return geode;
 }
 
-osg::ref_ptr<osg::Drawable> Node::createSquare(const float & scale,
-		osg::StateSet* bbState) {
+osg::ref_ptr<osg::Geode> Node::createSquare(const float scale) {
+	osg::ref_ptr<osg::StateSet> bbState = createStateSet();
+
 	float width = 3.0f;
 	float height = 3.0f;
 
@@ -182,12 +190,14 @@ osg::ref_ptr<osg::Drawable> Node::createSquare(const float & scale,
 
 	nodeRect->setStateSet(bbState);
 
-	return nodeRect;
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(nodeRect);
+	return geode;
 }
 
-osg::ref_ptr<osg::Drawable> Node::createLabel(const float & scale, QString name) {
-	osg::ref_ptr<osgText::FadeText> label = new osgText::FadeText;
-	label->setFadeSpeed(0.03);
+osg::ref_ptr<osg::Geode> Node::createLabel(QString text, const float scale) {
+	osg::ref_ptr<osgText::FadeText> textDrawable = new osgText::FadeText();
+	textDrawable->setFadeSpeed(0.03);
 
 	QString fontPath = Util::Config::getInstance()->getValue(
 			"Viewer.Labels.Font");
@@ -196,31 +206,27 @@ osg::ref_ptr<osg::Drawable> Node::createLabel(const float & scale, QString name)
 	float newScale = 1.375f * scale;
 
 	if (fontPath != NULL && !fontPath.isEmpty())
-		label->setFont(fontPath.toStdString());
+		textDrawable->setFont(fontPath.toStdString());
 
-	label->setText(name.toStdString());
-	label->setLineSpacing(0);
-	label->setAxisAlignment(osgText::Text::SCREEN);
-	label->setCharacterSize(newScale);
-	label->setDrawMode(osgText::Text::TEXT);
-	label->setAlignment(osgText::Text::CENTER_BOTTOM_BASE_LINE);
-	label->setPosition(osg::Vec3(0, newScale, 0));
-	label->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	textDrawable->setText(text.toStdString());
+	textDrawable->setLineSpacing(0);
+	textDrawable->setAxisAlignment(osgText::Text::SCREEN);
+	textDrawable->setCharacterSize(newScale);
+	textDrawable->setDrawMode(osgText::Text::TEXT);
+	textDrawable->setAlignment(osgText::Text::CENTER_BOTTOM_BASE_LINE);
+	textDrawable->setPosition(osg::Vec3(0, newScale, 0));
+	textDrawable->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-	return label;
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(textDrawable);
+	return geode;
 }
 
-osg::ref_ptr<osg::StateSet> Node::createStateSet(Type * type) {
-	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet;
+osg::ref_ptr<osg::StateSet> Node::createStateSet() {
+	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
 
 	stateSet->setDataVariance(osg::Object::DYNAMIC);
 	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
-	// todo move this to createNode
-	if (type != 0)
-		stateSet->setTextureAttributeAndModes(0, type->getTexture(),
-				osg::StateAttribute::ON);
-	//
 
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
 	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
@@ -236,6 +242,26 @@ osg::ref_ptr<osg::StateSet> Node::createStateSet(Type * type) {
 	stateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
 	return stateSet;
+}
+
+void Node::setNodeColor(int pos, osg::Vec4 color) {
+	osg::Geometry * geometry1 =
+			dynamic_cast<osg::Geometry *> (nodeSmall->getDrawable(pos));
+	osg::Geometry * geometry2 =
+			dynamic_cast<osg::Geometry *> (nodeLarge->getDrawable(pos));
+
+	if (geometry1 != NULL) {
+		osg::Vec4Array * colorArray =
+				dynamic_cast<osg::Vec4Array *> (geometry1->getColorArray());
+		colorArray->pop_back();
+		colorArray->push_back(color);
+	}
+	if (geometry2 != NULL) {
+		osg::Vec4Array * colorArray =
+				dynamic_cast<osg::Vec4Array *> (geometry2->getColorArray());
+		colorArray->pop_back();
+		colorArray->push_back(color);
+	}
 }
 
 bool Node::equals(Node* node) {
@@ -258,46 +284,49 @@ bool Node::equals(Node* node) {
 	return true;
 }
 
-void Node::setDrawableColor(int pos, osg::Vec4 color) {
-	osg::Geometry * geometry =
-			dynamic_cast<osg::Geometry *> (this->getDrawable(pos));
+void Node::showLabel(bool visible) {
+	setChildValue(label, visible);
+}
 
-	if (geometry != NULL) {
-		osg::Vec4Array * colorArray =
-				dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
+bool Node::setExpanded(bool flag) {
+	if (flag == isExpanded())
+		return false;
 
-		colorArray->pop_back();
-		colorArray->push_back(color);
+	expanded = flag;
+	setChildValue(nodeLarge, expanded);
+	setChildValue(nodeSmall, !expanded);
+	return true;
+}
+
+bool Node::setSelected(bool flag) {
+	if (flag == isSelected())
+		return false;
+
+	selected = flag;
+	if (selected)
+		setNodeColor(0, osg::Vec4(1.0f, 0.0f, 0.0f, 0.5f)); // red
+	else {
+		setNodeColor(0, color);
 	}
 }
 
-void Node::showLabel(bool visible) {
-	if (visible && !this->containsDrawable(label))
-		this->addDrawable(label);
-	else if (!visible)
-		this->removeDrawable(label);
+bool Node::setFixed(bool flag) {
+	if (flag == isFixed())
+		return false;
+	fixed = flag;
+	setChildValue(square, fixed);
 }
 
 void Node::reloadConfig() {
-	this->setDrawable(0, createNode(this->type->getScale(),
-			Node::createStateSet(this->type)));
-	setSelected(selected);
+	// TODO if needed at all
+}
 
-	osg::ref_ptr<osg::Drawable> newRect = createSquare(this->type->getScale(),
-			Node::createStateSet());
-	osg::ref_ptr<osg::Drawable> newLabel = createLabel(this->type->getScale(),
-			labelText);
-
-	if (this->containsDrawable(label)) {
-		this->setDrawable(this->getDrawableIndex(label), newLabel);
-	}
-
-	if (this->containsDrawable(square)) {
-		this->setDrawable(this->getDrawableIndex(square), newRect);
-	}
-
-	label = newLabel;
-	square = newRect;
+bool Node::isPickable(osg::Geode* geode) {
+	if (geode->getName() == nodeSmall->getName() || geode->getName()
+			== nodeLarge->getName())
+		return true;
+	else
+		return false;
 }
 
 osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed) {

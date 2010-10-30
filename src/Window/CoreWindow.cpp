@@ -28,7 +28,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	setCentralWidget(viewerWidget);
 
 	nodeLabelsVisible = edgeLabelsVisible = false;
-	noSelectB->click();
+	singleSelectB->click();
 
 	// testing only:
 	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",

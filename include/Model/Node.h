@@ -13,6 +13,7 @@
 
 #include <osg/Vec3f>
 #include <osg/Geode>
+#include <osg/Switch>
 #include <osg/Geometry>
 #include <osg/BlendFunc>
 #include <osg/Depth>
@@ -32,7 +33,7 @@ class Graph;
  *  \author Aurel Paulovic, Michal Paprcka
  *  \date 29. 4. 2010
  */
-class Node: public osg::Geode {
+class Node: public osg::Switch {
 public:
 
 	/**
@@ -87,7 +88,7 @@ public:
 	 */
 	void setName(QString val) {
 		name = val;
-		osg::Geode::setName(val.toStdString());
+		osg::Group::setName(val.toStdString());
 	}
 
 	/**
@@ -221,13 +222,7 @@ public:
 	 *  \brief Sets node fixed state
 	 *  \param     fixed     fixed state
 	 */
-	void setFixed(bool flag) {
-		fixed = flag;
-		if (fixed && !this->containsDrawable(square))
-			this->addDrawable(square);
-		else if (!fixed)
-			this->removeDrawable(square);
-	}
+	bool setFixed(bool flag);
 
 	/**
 	 *  \fn inline public constant  isFixed
@@ -257,15 +252,7 @@ public:
 	 *  \brief Sets node picked state
 	 *  \param     selected     picked state
 	 */
-	void setSelected(bool selected) {
-		if (selected)
-			setDrawableColor(0, osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
-		else {
-			setDrawableColor(0, color);
-		}
-
-		this->selected = selected;
-	}
+	bool setSelected(bool flag);
 
 	/**
 	 *  \fn inline public constant  isSelected
@@ -302,17 +289,7 @@ public:
 		setExpanded(!expanded);
 	}
 
-	bool setExpanded(bool flag) {
-		if (flag == isExpanded())
-			return false;
-
-		expanded = flag;
-		if (expanded && !this->containsDrawable(large))
-			this->addDrawable(large);
-		else if (!expanded)
-			this->removeDrawable(large);
-		return true;
-	}
+	bool setExpanded(bool flag);
 
 	/**
 	 *  \fn inline public  setVelocity(osg::Vec3f v)
@@ -370,7 +347,7 @@ public:
 		this->color = color;
 
 		if (!selected)
-			setDrawableColor(0, color);
+			setNodeColor(0, color);
 	}
 
 	/**
@@ -412,6 +389,8 @@ public:
 	 *  \brief Reloads node configuration
 	 */
 	void reloadConfig();
+
+	bool isPickable(osg::Geode* geode);
 
 private:
 
@@ -503,43 +482,14 @@ private:
 
 	bool expanded;
 
-	/**
-	 *  \fn private static  createNode(const float & scale, osg::StateSet* bbState)
-	 *  \brief Creates node drawable
-	 *  \param      scale    node scale
-	 *  \param  bbState    node stateset
-	 *  \return osg::ref_ptr node drawable
-	 */
-	static osg::ref_ptr<osg::Drawable> createNode(const float & scale,
-			osg::StateSet* bbState);
+	osg::ref_ptr<osg::StateSet> createStateSet();
 
-	/**
-	 *  \fn private static  createStateSet(Type * type = 0)
-	 *  \brief Creates node stateset
-	 *  \param   type     node type
-	 *  \return osg::ref_ptr node stateset
-	 */
-	static osg::ref_ptr<osg::StateSet> createStateSet(Type * type = 0);
+	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<
+			osg::Texture2D> texture, const float scale = 1);
 
-	/**
-	 *  \fn private static  createLabel(const float & scale, QString name)
-	 *  \brief Creates node label from name
-	 *  \param      scale     label scale
-	 *  \param       name     label text
-	 *  \return osg::ref_ptr node label
-	 */
-	static osg::ref_ptr<osg::Drawable> createLabel(const float & scale,
-			QString name);
+	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
 
-	/**
-	 *  \fn private static  createSquare
-	 *  \brief Creates square around node
-	 *  \param  scale   square scale
-	 *  \param  bbState     square stateset
-	 *  \return osg::ref_ptr square drawable
-	 */
-	static osg::ref_ptr<osg::Drawable> createSquare(const float & scale,
-			osg::StateSet* bbState);
+	osg::ref_ptr<osg::Geode> createSquare(const float scale = 1);
 
 	/**
 	 *  osg::Vec4 color
@@ -553,7 +503,7 @@ private:
 	 *  \param     pos     drawable position
 	 *  \param     color     drawable color
 	 */
-	void setDrawableColor(int pos, osg::Vec4 color);
+	void setNodeColor(int pos, osg::Vec4 color);
 
 	/**
 	 *  QString labelText
@@ -561,19 +511,11 @@ private:
 	 */
 	QString labelText;
 
-	/**
-	 *  osg::ref_ptr label
-	 *  \brief Label drawable
-	 */
-	osg::ref_ptr<osg::Drawable> label;
+	osg::ref_ptr<osg::Geode> label;
+	osg::ref_ptr<osg::Geode> square;
 
-	/**
-	 *  osg::ref_ptr square
-	 *  \brief Square drawable - esed to mark fixed nodes
-	 */
-	osg::ref_ptr<osg::Drawable> square;
-
-	osg::ref_ptr<osg::Drawable> large;
+	osg::ref_ptr<osg::Geode> nodeSmall;
+	osg::ref_ptr<osg::Geode> nodeLarge;
 };
 }
 

@@ -35,6 +35,7 @@ void NodeGroup::initNodes() {
 			nodeGroup->addChild(g);
 	}
 
+	nodeGroup->setName("nodes_group");
 	this->group = nodeGroup;
 }
 
@@ -75,15 +76,12 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 
 osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapChild(osg::ref_ptr<Node> node,
 		float graphScale) {
-	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform;
+	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
 	at->setPosition(node->getTargetPosition() * graphScale);
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 
-	osg::ref_ptr<osg::Switch> sw = new osg::Switch();
-	sw->addChild(node);
-	at->addChild(sw);
-
 	nodeTransforms->insert(node->getId(), at);
+	at->addChild(node);
 
 	return at;
 }
