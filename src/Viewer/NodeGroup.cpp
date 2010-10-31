@@ -1,5 +1,7 @@
 #include "Viewer/NodeGroup.h"
 #include "Util/Config.h"
+#include "Viewer/EdgeGroup.h"
+#include <QDebug>
 
 using namespace Vwr;
 using namespace Model;
@@ -8,6 +10,7 @@ NodeGroup::NodeGroup(QMap<qlonglong, osg::ref_ptr<Node> > *nodes) {
 	this->nodes = nodes;
 	this->nodeTransforms
 			= new QMap<qlonglong, osg::ref_ptr<osg::AutoTransform> > ;
+	this->addedEdges = new QMap<qlonglong, osg::ref_ptr<Model::Edge> > ;
 
 	initNodes();
 }
@@ -54,6 +57,17 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 		while (edgeI != node->getEdges()->end()) {
 			if (*edgeI != parentEdge) {
 				osg::ref_ptr<Node> otherNode = NULL;
+
+//				if (!addedEdges->contains((*edgeI)->getId())) {
+//					addedEdges->insert((*edgeI)->getId(), edgeI.value());
+//					osg::ref_ptr<osg::Group> edgeGroup = new osg::Group;
+//					edgeGroup->setName("edges_group");
+//					edgeGroup->setStateSet(EdgeGroup::createStateSet(false));
+//					edgeGroup->addChild(edgeI.value());
+//					group->addChild(edgeGroup);
+//				} else {
+//					qDebug() << "edge already in";
+//				}
 
 				if (node->getId() == (*edgeI)->getSrcNode()->getId())
 					otherNode = (*edgeI)->getDstNode();

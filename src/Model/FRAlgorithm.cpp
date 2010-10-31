@@ -4,6 +4,7 @@
 #include "Model/Graph.h"
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
+#include <iostream>
 
 using namespace Model;
 
@@ -269,6 +270,7 @@ bool FRAlgorithm::applyForces(Node* node) {
 		if (l > MAX_MOVEMENT) { // je sila privelka?
 			fv.normalize();
 			fv *= 5;
+//			std::cout << "max movement (5 used)" << std::endl;
 		}
 		// pricitame aktualnu rychlost
 		fv += node->getVelocity();
@@ -320,6 +322,7 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 	vp = v->getTargetPosition();
 	dist = distance(up, vp);
 	if (useMaxDistance && dist > MAX_DISTANCE) {
+//		std::cout << "max dist" << std::endl;
 		return;
 	}
 	if (dist == 0) {

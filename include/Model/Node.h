@@ -359,6 +359,8 @@ public:
 		return color;
 	}
 
+	float getRadius() const;
+
 	/**
 	 *  \fn public  showLabel(bool visible)
 	 *  \brief If true, node name will be shown.

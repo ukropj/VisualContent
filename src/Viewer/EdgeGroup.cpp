@@ -1,187 +1,65 @@
 #include "Viewer/EdgeGroup.h"
 #include "Util/TextureWrapper.h"
+#include <QDebug>
 
 using namespace Vwr;
 using namespace Model;
 
-EdgeGroup::EdgeGroup(QMap<qlonglong, osg::ref_ptr<Edge> > *edges, float scale)
-{
+EdgeGroup::EdgeGroup(QMap<qlonglong, osg::ref_ptr<Edge> > *edges, float scale) {
 	this->edges = edges;
 	this->scale = scale;
 
-	createEdgeStateSets();
-	initEdges();
-}
-
-EdgeGroup::~EdgeGroup()
-{
-}
-
-void EdgeGroup::initEdges()
-{
-	osg::ref_ptr<osg::Group> allEdges = new osg::Group;	
-	
-	osg::ref_ptr<osg::Vec2Array> edgeTexCoords = new osg::Vec2Array;
-	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	osg::ref_ptr<osg::Vec4Array> orientedEdgeColors = new osg::Vec4Array;
-
-	geometry = new osg::Geometry;
-	orientedGeometry = new osg::Geometry;
-
-    QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i = edges->begin();
-
-	int edgePos = 0;
-
-	while (i != edges->end()) 
-	{
-		getEdgeCoordinatesAndColors(i.value(), edgePos, coordinates, edgeTexCoords, colors, orientedEdgeColors);
-		edgePos += 4;
-
-		if (i.value()->isOriented())
-			orientedGeometry->addPrimitiveSet(i.value());
-		else
-			geometry->addPrimitiveSet(i.value());
-
-		i++;
-	}
-
-	geometry->setTexCoordArray(0, edgeTexCoords);
-	geometry->setVertexArray(coordinates);
-	geometry->setColorArray(colors);
-	geometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-
-	orientedGeometry->setTexCoordArray(0, edgeTexCoords);
-	orientedGeometry->setVertexArray(coordinates);
-	orientedGeometry->setColorArray(orientedEdgeColors);
-	orientedGeometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-
-	osg::ref_ptr<osg::Geode> g1 = new osg::Geode;
-	g1->addDrawable(geometry);
-	g1->setStateSet(edgeStateSet);
-
-	osg::ref_ptr<osg::Geode> g2 = new osg::Geode;
-	g2->addDrawable(orientedGeometry);
-	g2->setStateSet(orientedEdgeStateSet);
-
-	allEdges->addChild(g1);	
-	allEdges->addChild(g2);	
-	allEdges->setName("edges_group");
-
-	this->edgeGroup = allEdges;
-}
-
-void EdgeGroup::updateEdgeCoords(osg::Vec3d viewVector)
-{
-	osg::ref_ptr<osg::Vec2Array> edgeTexCoords = new osg::Vec2Array;
-	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	osg::ref_ptr<osg::Vec4Array> orientedEdgeColors = new osg::Vec4Array;
+	edgeGroup = new osg::Group;
+	edgeGroup->setName("edges_group");
+	edgeGroup->setStateSet(createStateSet(false));
+	// NOTE: all edges are shown as unoriented for now!
 
 	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i = edges->begin();
-
-	int edgePos = 0;
-
-	while (i != edges->end()) 
-	{
-		getEdgeCoordinatesAndColors(i.value(), edgePos, coordinates, edgeTexCoords, colors, orientedEdgeColors, viewVector);
-		edgePos += 4;
+	while (i != edges->end()) {
+		edgeGroup->addChild(i.value());
 		i++;
 	}
 
-	geometry->setVertexArray(coordinates);
-	geometry->setTexCoordArray(0, edgeTexCoords);
-	geometry->setColorArray(colors);
-		
-	orientedGeometry->setVertexArray(coordinates);
-	orientedGeometry->setTexCoordArray(0, edgeTexCoords);
-	orientedGeometry->setColorArray(orientedEdgeColors);
 }
 
-void EdgeGroup::getEdgeCoordinatesAndColors(osg::ref_ptr<Edge> edge, int first,
-											osg::ref_ptr<osg::Vec3Array> coordinates, 
-											osg::ref_ptr<osg::Vec2Array> edgeTexCoords,
-											osg::ref_ptr<osg::Vec4Array> colors,
-											osg::ref_ptr<osg::Vec4Array> orientedEdgeColors,
-											osg::Vec3d viewVector)
-{
-	osg::Vec3 srcNodePosition = edge->getSrcNode()->getCurrentPosition();
-	osg::Vec3 dstNodePosition = edge->getDstNode()->getCurrentPosition();
-
-	edge->updateCoordinates(srcNodePosition, dstNodePosition, viewVector);
-	edge->setFirst(first);
-
-	coordinates->push_back(edge->getCooridnates()->at(0));
-	coordinates->push_back(edge->getCooridnates()->at(1));
-	coordinates->push_back(edge->getCooridnates()->at(2));
-	coordinates->push_back(edge->getCooridnates()->at(3));
-
-	edgeTexCoords->push_back(edge->getEdgeTexCoords()->at(0));
-	edgeTexCoords->push_back(edge->getEdgeTexCoords()->at(1));
-	edgeTexCoords->push_back(edge->getEdgeTexCoords()->at(2));
-	edgeTexCoords->push_back(edge->getEdgeTexCoords()->at(3));
-
-	if (edge->isOriented())
-		orientedEdgeColors->push_back(edge->getEdgeColor());
-	else
-		colors->push_back(edge->getEdgeColor());
+EdgeGroup::~EdgeGroup() {
 }
 
-void EdgeGroup::synchronizeEdges()
-{
-	QList<qlonglong> edgeKeys = edges->keys();
+void EdgeGroup::updateEdgeCoords(osg::Vec3d viewVector) {
+	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i = edges->begin();
 
-	for (int i = 0; i < 2; i++)
-	{
-		osg::ref_ptr<osg::Geometry> geometry = edgeGroup->getChild(i)->asGeode()->getDrawable(0)->asGeometry();
-		const osg::Geometry::PrimitiveSetList primitives = geometry->getPrimitiveSetList();
-
-		for (unsigned int x = 0; x < primitives.size() ; x++)
-		{
-			Edge * e = dynamic_cast<Edge * >(primitives.at(x).get());
-
-			if (!edgeKeys.contains(e->getId()))
-			{
-				geometry->removePrimitiveSet(geometry->getPrimitiveSetIndex((e)));
-			}
-		}
-	}
-
-	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator ie = edges->begin();
-
-	while (ie != edges->end()) 
-	{
-		if (!(*ie)->isOriented() && geometry->getPrimitiveSetIndex((*ie)) == geometry->getNumPrimitiveSets())
-			geometry->addPrimitiveSet(*ie);
-		else if ((*ie)->isOriented() && orientedGeometry->getPrimitiveSetIndex((*ie)) == orientedGeometry->getNumPrimitiveSets())
-			orientedGeometry->addPrimitiveSet(*ie);
-
-		ie++;
+	while (i != edges->end()) {
+		i.value()->updateGeometry(viewVector);
+		i++;
 	}
 }
 
-void EdgeGroup::createEdgeStateSets()
-{
-	edgeStateSet = new osg::StateSet;
+osg::ref_ptr<osg::StateSet> EdgeGroup::createStateSet(bool oriented) {
+	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet;
 
-	edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	edgeStateSet->setTextureAttributeAndModes(0, Util::TextureWrapper::getEdgeTexture(), osg::StateAttribute::ON);
-	edgeStateSet->setAttributeAndModes(new osg::BlendFunc, osg::StateAttribute::ON);
+	if (!oriented) {
+		edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+		edgeStateSet->setTextureAttributeAndModes(0,
+				Util::TextureWrapper::getEdgeTexture(), osg::StateAttribute::ON);
+		edgeStateSet->setAttributeAndModes(new osg::BlendFunc,
+				osg::StateAttribute::ON);
+	} else {
+		edgeStateSet->setTextureAttributeAndModes(0,
+				Util::TextureWrapper::getOrientedEdgeTexture(),
+				osg::StateAttribute::ON);
+		edgeStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+	}
+
 	edgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-
 	edgeStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
- 	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
- 	depth->setWriteMask(false);
- 	edgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
+	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
+	depth->setWriteMask(false);
+	edgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
 
-	orientedEdgeStateSet = new osg::StateSet;
+	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
+	cull->setMode(osg::CullFace::BACK);
+	edgeStateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
-	orientedEdgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	orientedEdgeStateSet->setTextureAttributeAndModes(0, Util::TextureWrapper::getOrientedEdgeTexture(), osg::StateAttribute::ON);
-	orientedEdgeStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
-	orientedEdgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-
-	orientedEdgeStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN); 
-	orientedEdgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
+	return edgeStateSet;
 }

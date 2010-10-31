@@ -6,13 +6,13 @@
 #include "Model/Graph.h"
 #include "Model/Type.h"
 #include "Util/Config.h"
+#include "Util/TextureWrapper.h"
 
 using namespace Model;
 
 Edge::Edge(qlonglong id, QString name, Graph* graph,
-		osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode,
-		Model::Type* type, bool isOriented, int pos) :
-	osg::DrawArrays(osg::PrimitiveSet::QUADS, pos, 4) {
+		osg::ref_ptr<Model::Node> srcNode, osg::ref_ptr<Model::Node> dstNode,
+		Model::Type* type, bool isOriented, int pos) {
 
 	this->id = id;
 	this->name = name;
@@ -23,18 +23,18 @@ Edge::Edge(qlonglong id, QString name, Graph* graph,
 	this->oriented = isOriented;
 	this->selected = false;
 
+
+	geometry = createGeometry();
+//	updateGeometry();
+
+	label = createLabel(name);
+	addDrawable(geometry);
+
 	float r = type->getValue("color.R").toFloat();
 	float g = type->getValue("color.G").toFloat();
 	float b = type->getValue("color.B").toFloat();
 	float a = type->getValue("color.A").toFloat();
-
-	this->edgeColor = osg::Vec4(r, g, b, a);
-
-	coordinates = new osg::Vec3Array();
-	edgeTexCoords = new osg::Vec2Array();
-
-	updateCoordinates(getSrcNode()->getTargetPosition(),
-			getDstNode()->getTargetPosition());
+	setEdgeColor(osg::Vec4(r, g, b, a));
 }
 
 Edge::~Edge(void) {
@@ -70,55 +70,67 @@ void Edge::unlinkNodesAndRemoveFromGraph() {
 	this->graph->removeEdge(this);
 }
 
-void Edge::updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos, osg::Vec3 viewVec) {
-	coordinates->clear();
-	edgeTexCoords->clear();
-
-	osg::Vec3d up;
-
+void Edge::updateGeometry(osg::Vec3 viewVec) {
 	float graphScale = Util::Config::getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	osg::Vec3 x, y;
-	x.set(srcPos);
-	y.set(dstPos);
+	x.set(srcNode->getCurrentPosition());
+	y.set(dstNode->getCurrentPosition());
+
+//	float rx = srcNode->getRadius();
+//	float ry = dstNode->getRadius();
+
+//	osg::Vec3d offset = x - y;
+//	float origLength = offset.normalize();
+	//	if (origLength < rx + ry) return false;
+//	x += -offset * rx; TODO
+//	y += offset * ry;
 
 	osg::Vec3d edgeDir = x - y;
 	length = edgeDir.length();
 
-	up = edgeDir ^ viewVec;
+	osg::Vec3d up = edgeDir ^ viewVec;
 	up.normalize();
 
 	up *= Util::Config::getValue("Viewer.Textures.EdgeScale").toFloat();
 
-	coordinates->push_back(osg::Vec3(x.x() + up.x(), x.y() + up.y(), x.z()
-			+ up.z()));
-	coordinates->push_back(osg::Vec3(x.x() - up.x(), x.y() - up.y(), x.z()
-			- up.z()));
-	coordinates->push_back(osg::Vec3(y.x() - up.x(), y.y() - up.y(), y.z()
-			- up.z()));
-	coordinates->push_back(osg::Vec3(y.x() + up.x(), y.y() + up.y(), y.z()
-			+ up.z()));
-
-	/*std::cout << "Edge coord 1: " << x.x() + up.x() << " " << x.y() + up.y() << " " << x.z() + up.z() << "\n";
-	 std::cout << "Edge coord 2: " << x.x() - up.x() << " " << x.y() - up.y() << " " << x.z() - up.z() << "\n";
-	 std::cout << "Edge coord 3: " << y.x() - up.x() << " " << y.y() - up.y() << " " << y.z() - up.z() << "\n";
-	 std::cout << "Edge coord 4: " << y.x() + up.x() << " " << y.y() + up.y() << " " << y.z() + up.z() << "\n";*/
+	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
+	coordinates->push_back(x + up);
+	coordinates->push_back(x - up);
+	coordinates->push_back(y - up);
+	coordinates->push_back(y + up);
 
 	int repeatCnt = length / (2 * Util::Config::getValue(
 			"Viewer.Textures.EdgeScale").toFloat());
 
+	osg::ref_ptr<osg::Vec2Array> edgeTexCoords = new osg::Vec2Array;
 	edgeTexCoords->push_back(osg::Vec2(0, 1.0f));
 	edgeTexCoords->push_back(osg::Vec2(0, 0.0f));
 	edgeTexCoords->push_back(osg::Vec2(repeatCnt, 0.0f));
 	edgeTexCoords->push_back(osg::Vec2(repeatCnt, 1.0f));
 
 	if (label != NULL)
-		label->setPosition((srcPos + dstPos) / 2);
+		label->setPosition((x + y) / 2);
+
+	geometry->setVertexArray(coordinates);
+	geometry->setTexCoordArray(0, edgeTexCoords);
 }
 
-osg::ref_ptr<osg::Drawable> Edge::createLabel(QString name) {
-	label = new osgText::FadeText;
+osg::ref_ptr<osg::Geometry> Edge::createGeometry() {
+	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
+	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS,
+			0, 4));
+
+	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	geometry->setColorArray(colorArray);
+	geometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+	return geometry;
+}
+
+osg::ref_ptr<osgText::FadeText> Edge::createLabel(QString text) {
+	osg::ref_ptr<osgText::FadeText> label = new osgText::FadeText;
 	label->setFadeSpeed(0.03);
 
 	QString fontPath = Util::Config::getInstance()->getValue(
@@ -130,7 +142,7 @@ osg::ref_ptr<osg::Drawable> Edge::createLabel(QString name) {
 	if (fontPath != NULL && !fontPath.isEmpty())
 		label->setFont(fontPath.toStdString());
 
-	label->setText(name.toStdString());
+	label->setText(text.toStdString());
 	label->setLineSpacing(0);
 	label->setAxisAlignment(osgText::Text::SCREEN);
 	label->setCharacterSize(scale);
@@ -142,4 +154,3 @@ osg::ref_ptr<osg::Drawable> Edge::createLabel(QString name) {
 
 	return label;
 }
-

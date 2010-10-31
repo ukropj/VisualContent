@@ -197,7 +197,7 @@ osg::ref_ptr<osg::Geode> Node::createSquare(const float scale) {
 
 osg::ref_ptr<osg::Geode> Node::createLabel(QString text, const float scale) {
 	osg::ref_ptr<osgText::FadeText> textDrawable = new osgText::FadeText();
-	textDrawable->setFadeSpeed(0.03);
+	textDrawable->setFadeSpeed(0.04);
 
 	QString fontPath = Util::Config::getInstance()->getValue(
 			"Viewer.Labels.Font");
@@ -317,6 +317,14 @@ bool Node::setFixed(bool flag) {
 	setChildValue(square, fixed);
 }
 
+float Node::getRadius() const {
+	if (getChildValue(nodeLarge)) {
+		return nodeLarge->getBound().radius();
+	} else {
+		return nodeSmall->getBound().radius() - 8.0f; // XXX temp magic
+	}
+}
+
 void Node::reloadConfig() {
 	// TODO if needed at all
 }
@@ -338,9 +346,16 @@ osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed)
 		osg::Vec3 directionVector = osg::Vec3(targetPosition.x(),
 				targetPosition.y(), targetPosition.z()) * graphScale
 				- currentPosition;
+		//		if (usingInterpolation) {
+//		float length = directionVector.normalize();
 		currentPosition = osg::Vec3(directionVector
 				* (usingInterpolation ? interpolationSpeed : 1)
 				+ currentPosition);
+		//			currentPosition += (length < 10.0f ? directionVector * length / 2
+		//					: directionVector * 10.0f);
+		//		} else {
+		//			currentPosition += directionVector;
+		//		}
 	}
 
 	return osg::Vec3(currentPosition);

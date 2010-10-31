@@ -194,7 +194,7 @@ osg::ref_ptr<osg::Group> SceneGraph::initEdgeLabels() {
 
 	while (i.hasNext()) {
 		i.next();
-		geode->addDrawable(i.value()->createLabel(i.value()->getName()));
+		geode->addDrawable(i.value()->getLabel());
 	}
 
 	osg::ref_ptr<osg::Group> labels = new osg::Group;
@@ -236,6 +236,7 @@ void SceneGraph::update() {
 	}
 
 	edgesGroup->updateEdgeCoords(getViewVector());
+//	qDebug() << "Edge group updated";
 	//	qmetaEdgesGroup->updateEdgeCoords();
 	root->addChild(initCustomNodes());
 }

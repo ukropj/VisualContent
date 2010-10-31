@@ -13,6 +13,7 @@
 #include <osg/Group>
 
 #include "Model/Node.h"
+#include "Model/Edge.h"
 
 namespace Vwr {
 /**
@@ -93,6 +94,8 @@ private:
 	 *  \brief nodes group
 	 */
 	osg::ref_ptr<osg::Group> group;
+
+	QMap<qlonglong, osg::ref_ptr<Model::Edge> > *addedEdges;
 
 	/**
 	 *  \fn private  initNodes

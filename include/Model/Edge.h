@@ -12,6 +12,7 @@
 #include <QtCore/QMap>
 
 #include <osg/PrimitiveSet>
+#include <osg/Stateset>
 #include <osgText/Text>
 #include <osgText/FadeText>
 
@@ -22,18 +23,17 @@ class Type;
 class Node;
 class Graph;
 
-
 /**
  *  \class Edge
  *  \brief Object represents an edge in a Graph.
  *  \author Aurel Paulovic, Michal Paprcka
  *  \date 29. 4. 2010
  */
-class Edge: public osg::DrawArrays {
+class Edge: public osg::Geode {
 public:
 
 	/**
-	 * \fn public constructor Edge(qlonglong id, QString name, Graph* graph, osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode, Type* type, bool isOriented, int pos = 0, osg::ref_ptr<osg::Camera> camera = 0)
+	 * \fn public constructor Edge(qlonglong id, QString name, Graph* graph, osg::ref_ptr<Model::Node> srcNode, osg::ref_ptr<Model::Node> dstNode, Type* type, bool isOriented, int pos = 0, osg::ref_ptr<osg::Camera> camera = 0)
 	 * \brief  Creates new Edge object connecting two Nodes
 	 *
 	 * \param id	ID of the Edge
@@ -46,9 +46,10 @@ public:
 	 * \param pos int		first coordinate in Drawable coordinates array
 	 * \param camera 	current camera used in viewer
 	 */
-	Edge(qlonglong id, QString name, Graph* graph, osg::ref_ptr<Node> srcNode,
-			osg::ref_ptr<Node> dstNode, Model::Type* type, bool isOriented,
-			int pos = 0);
+	Edge(qlonglong id, QString name, Graph* graph,
+			osg::ref_ptr<Model::Node> srcNode,
+			osg::ref_ptr<Model::Node> dstNode, Model::Type* type,
+			bool isOriented, int pos = 0);
 
 	/**
 	 *  \fn public destructor  ~Edge
@@ -87,43 +88,19 @@ public:
 	/**
 	 * \fn inline public constant getSrcNode
 	 * \brief  Returns the starting Node of the Edge
-	 * \return osg::ref_ptr<Node> starting Node of the Edge
+	 * \return osg::ref_ptr<Model::Node> starting Node of the Edge
 	 */
-	osg::ref_ptr<Node> getSrcNode() const {
+	osg::ref_ptr<Model::Node> getSrcNode() const {
 		return srcNode;
-	}
-
-	/**
-	 * \fn inline public constant setSrcNode
-	 * \brief  Sets new starting Node of the Edge
-	 *
-	 * OBSOLETE - DO NOT USE IT
-	 *
-	 * \param val new starting Node of the Edge
-	 */
-	void setSrcNode(osg::ref_ptr<Node> val) {
-		srcNode = val;
 	}
 
 	/**
 	 * \fn inline public constant getDstNode
 	 * \brief  Returns ending Node of the Edge
-	 * \return osg::ref_ptr<Node> ending Node of the Edge
+	 * \return osg::ref_ptr<Model::Node> ending Node of the Edge
 	 */
-	osg::ref_ptr<Node> getDstNode() const {
+	osg::ref_ptr<Model::Node> getDstNode() const {
 		return dstNode;
-	}
-
-	/**
-	 * \fn inline public setDstNode(osg::ref_ptr<Node> val)
-	 * \brief Sets new ending Node of the Edge
-	 *
-	 * OBSOLETE - DO NOT USE IT
-	 *
-	 * \param val new ending Node of the Edge
-	 */
-	void setDstNode(osg::ref_ptr<Node> val) {
-		dstNode = val;
 	}
 
 	/**
@@ -136,33 +113,12 @@ public:
 	}
 
 	/**
-	 * \fn void setType(Type* val)
-	 * \brief  Sets new Type of the Edge
-	 *
-	 * OBSOLETE - DO NOT USE IT
-	 *
-	 * \param  val new Type of the Edge
-	 */
-	void setType(Model::Type* val) {
-		type = val;
-	}
-
-	/**
 	 * \fn inline public constant isOriented
 	 * \brief Returns if the Edge is oriented or not
 	 * \return bool true, if the Edge is oriented
 	 */
 	bool isOriented() const {
 		return oriented;
-	}
-
-	/**
-	 * \fn inline public setOriented(bool val)
-	 * \brief  Sets if the Edge is oriented
-	 * \param val 		true, if the Edge is oriented
-	 */
-	void setOriented(bool val) {
-		oriented = val;
 	}
 
 	/**
@@ -196,15 +152,6 @@ public:
 	}
 
 	/**
-	 *  \fn inline public constant  getCooridnates
-	 *  \brief Returns coordinates of the Edge
-	 *  \return osg::ref_ptr coordinates of the Edge
-	 */
-	osg::ref_ptr<osg::Vec3Array> getCooridnates() const {
-		return coordinates;
-	}
-
-	/**
 	 *  \fn inline public constant  getLength
 	 *  \brief Returns length of the Edge
 	 *  \return float length of the Edge
@@ -219,8 +166,7 @@ public:
 	 *  \param    srcPos    new coordinates of the starting Node
 	 *  \param   dstNode    new coordinates of the ending Node
 	 */
-	void updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstPos,
-			osg::Vec3 viewVec = osg::Vec3d(0, 0, 1));
+	void updateGeometry(osg::Vec3 viewVec = osg::Vec3d(0, 0, 1));
 
 	/**
 	 *  \fn inline public constant  getEdgeColor
@@ -229,7 +175,7 @@ public:
 	 */
 	osg::Vec4 getEdgeColor() const {
 		if (selected)
-			return osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f);
+			return osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f);
 		else
 			return edgeColor;
 	}
@@ -239,17 +185,14 @@ public:
 	 *  \brief Sets the color of the Edge
 	 *  \param     val   new color
 	 */
-	void setEdgeColor(osg::Vec4 val) {
-		edgeColor = val;
-	}
-
-	/**
-	 *  \fn inline public constant  getEdgeTexCoords
-	 *  \brief Returns Texture coordinates array.
-	 *  \return osg::ref_ptr<osg::Vec2Array>
-	 */
-	osg::ref_ptr<osg::Vec2Array> getEdgeTexCoords() const {
-		return edgeTexCoords;
+	void setEdgeColor(osg::Vec4 color) {
+		edgeColor = color;
+		if (geometry != NULL) {
+			osg::Vec4Array * colorArray =
+					dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
+			colorArray->pop_back();
+			colorArray->push_back(color);
+		}
 	}
 
 	/**
@@ -271,20 +214,16 @@ public:
 	}
 
 	/**
-	 *  \fn public  createLabel(QString name)
-	 *  \brief Creates new label
-	 *  \param      name     new label
-	 *  \return osg::ref_ptr added label
-	 */
-	osg::ref_ptr<osg::Drawable> createLabel(QString name);
-
-	/**
 	 *  \fn inline public  getGraph
 	 *  \brief Returns the Graph to which is the Edge assigned
 	 *  \return Graph * Edge's Graph
 	 */
 	Graph* getGraph() {
 		return graph;
+	}
+
+	osg::ref_ptr<osgText::FadeText> getLabel() {
+		return label;
 	}
 
 private:
@@ -308,16 +247,16 @@ private:
 	QString name;
 
 	/**
-	 *  osg::ref_ptr<Node> srcNode
+	 *  osg::ref_ptr<Model::Node> srcNode
 	 *  \brief Starting Node of the Edge
 	 */
-	osg::ref_ptr<Node> srcNode;
+	osg::ref_ptr<Model::Node> srcNode;
 
 	/**
-	 *  osg::ref_ptr<Node> dstNode
+	 *  osg::ref_ptr<Model::Node> dstNode
 	 *  \brief Ending Node of the Edge
 	 */
-	osg::ref_ptr<Node> dstNode;
+	osg::ref_ptr<Model::Node> dstNode;
 
 	/**
 	 *  Type * type
@@ -343,17 +282,7 @@ private:
 	 */
 	bool selected;
 
-	/**
-	 *  osg::ref_ptr coordinates
-	 *  \brief Coordinates of the Edge
-	 */
-	osg::ref_ptr<osg::Vec3Array> coordinates;
-
-	/**
-	 *  osg::ref_ptr<osg::Vec2Array> edgeTexCoords
-	 *  \brief Texture coordinates array.
-	 */
-	osg::ref_ptr<osg::Vec2Array> edgeTexCoords;
+	osg::ref_ptr<osg::Geometry> geometry;
 
 	/**
 	 *  osg::ref_ptr label
@@ -367,6 +296,9 @@ private:
 	 */
 	osg::Vec4 edgeColor;
 
+	osg::ref_ptr<osg::Geometry> createGeometry();
+
+	osg::ref_ptr<osgText::FadeText> createLabel(QString text);
 };
 }
 
