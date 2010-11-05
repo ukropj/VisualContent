@@ -14,7 +14,7 @@ typedef QMap<qlonglong, osg::ref_ptr<Edge> >::const_iterator EdgeIt;
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
 	PI = acos((double) -1);
-	ALPHA = 0.005;
+	ALPHA = 0.005; // XXX try changing
 	MIN_MOVEMENT = 0.05;
 	MAX_MOVEMENT = 30;
 	MAX_DISTANCE = 400;
@@ -64,7 +64,8 @@ double FRAlgorithm::computeCalm() {
 void FRAlgorithm::randomize() {
 	State orig = state;
 	while (isIterating)
-		state = PAUSED;;//XXX
+		state = PAUSED;
+	;//XXX
 
 	for (NodeIt i = graph->getNodes()->constBegin(); i
 			!= graph->getNodes()->constEnd(); i++) {
@@ -165,49 +166,6 @@ bool FRAlgorithm::iterate() {
 		i.value()->resetForce();
 	}
 
-	// TODO change to for or while cycles (QMapIterator)
-	//	foreach (Node* node, graph->getNodes()->values())
-	//		{ // pre vsetky uzly..
-	//			node->resetForce(); // vynulovanie posobiacej sily
-	//		}
-	//	{//meta uzly
-	//
-	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator k;
-	//		j = graph->getMetaNodes()->begin();
-	//		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
-	//			j.value()->resetForce(); // vynulovanie posobiacej sily
-	//			k = graph->getMetaNodes()->begin();
-	//			for (int h = 0; h < graph->getMetaNodes()->count(); h++, ++k) { // pre vsetky metauzly..
-	//				if (!j.value()->equals(k.value())) {
-	//					// odpudiva sila medzi metauzlami
-	//					addRepulsive(j.value(), k.value(),
-	//							Graph::getMetaStrength());
-	//				}
-	//			}
-	//		}
-	//	}
-	//	{//meta hrany
-	//
-	//		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator j;
-	//		j = graph->getMetaEdges()->begin();
-	//		for (int i = 0; i < graph->getMetaEdges()->count(); i++, ++j) { // pre vsetky metahrany..
-	//			Node *u = j.value()->getSrcNode();
-	//			Node *v = j.value()->getDstNode();
-	//			// uzly nikdy nebudu ignorovane
-	//			u->setIgnored(false);
-	//			v->setIgnored(false);
-	//			if (graph->getMetaNodes()->contains(u->getId())) {
-	//				// pritazliva sila, posobi na v
-	//				addMetaAttractive(v, u, Graph::getMetaStrength());
-	//			}
-	//			if (graph->getMetaNodes()->contains(v->getId())) {
-	//				// pritazliva sila, posobi na u
-	//				addMetaAttractive(u, v, Graph::getMetaStrength());
-	//			}
-	//		}
-	//	}
-
 	//uzly
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		// pre vsetky uzly..
@@ -217,22 +175,21 @@ bool FRAlgorithm::iterate() {
 			Node* v = j.value();
 			if (!u->equals(v)) {
 				addRepulsive(u, v, 1); // odpudiva sila beznej velkosti
+				addRepulsiveProj(u, v, 3);
 			}
 		}
 	}
 
 	//hrany
 	for (EdgeIt i = edges->constBegin(); i != edges->constEnd(); i++) {
-		addAttractive(i.value(), 1); // pritazliva sila beznej velkosti
+		Edge* e = i.value();
+		float factor = 1;
+		//		if (e->getSrcNode()->isExpanded()) factor /= 2;
+		//		if (e->getDstNode()->isExpanded()) factor /= 2;
+		addAttractive(e, factor); // pritazliva sila beznej velkosti
 	}
 
-	//	if (state == PAUSED) { // XXX
-	//		return true;
-	//	}
-
 	// aplikuj sily na uzly
-
-
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		Node* u = i.value();
 		if (!u->isFrozen() && !u->isFixed()) {
@@ -243,18 +200,6 @@ bool FRAlgorithm::iterate() {
 			changed = false;
 		}
 	}
-
-	//	// aplikuj sily na metauzly
-	//	{
-	//		QMap<qlonglong, osg::ref_ptr<Node> >::iterator j;
-	//		j = graph->getMetaNodes()->begin();
-	//		for (int i = 0; i < graph->getMetaNodes()->count(); i++, ++j) { // pre vsetky metauzly..
-	//			if (!j.value()->isFixed()) {
-	//				bool fo = applyForces(j.value());
-	//				changed = changed || fo;
-	//			}
-	//		}
-	//	}
 
 	// vracia true ak sa ma pokracovat dalsou iteraciou
 	return changed;
@@ -269,22 +214,23 @@ bool FRAlgorithm::applyForces(Node* node) {
 	if (l > MIN_MOVEMENT) { // nie je sila primala?
 		if (l > MAX_MOVEMENT) { // je sila privelka?
 			fv.normalize();
-			fv *= 5;
-//			std::cout << "max movement (5 used)" << std::endl;
+			fv *= MAX_MOVEMENT;
+			//			std::cout << "max movement (5 used)" << std::endl;
 		}
 		// pricitame aktualnu rychlost
 		fv += node->getVelocity();
+
 		// ulozime novu polohu
 		node->setTargetPosition(node->getTargetPosition() + fv);
 
 		// energeticka strata = 1-flexibilita
 		fv *= flexibility;
 		node->setVelocity(fv); // ulozime novu rychlost
-		//node->setForce(*fv);
 		return true;
 	} else {
 		node->resetVelocity(); // vynulovanie rychlosti
-		return false;
+		//		return false;
+		return true; // XXX algoritm will never freeze!
 	}
 }
 
@@ -322,7 +268,7 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 	vp = v->getTargetPosition();
 	dist = distance(up, vp);
 	if (useMaxDistance && dist > MAX_DISTANCE) {
-//		std::cout << "max dist" << std::endl;
+		//		std::cout << "max dist" << std::endl;
 		return;
 	}
 	if (dist == 0) {
@@ -332,9 +278,72 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 		dist = distance(up, vp);
 	}
 	fv = (vp - up);// smer sily
+
 	fv.normalize();
 	fv *= rep(dist) * factor;// velkost sily
-	u->addForce(fv);
+	u->addForce(fv); // iba k jednemu uzlu!
+}
+
+/* Pricitanie projektvnych odpudivych sil */
+void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
+	if (camera == NULL)
+		return;
+
+	// TODO return if any of nodes is not on screen
+
+	up = u->getCurrentPosition(false);
+	vp = v->getCurrentPosition(false);
+
+	osg::Matrixd viewM = camera->getViewMatrix();
+
+	// test if the expanded node is befind the other node
+	osg::Vec3f upRot = viewM.getRotate() * up;
+	osg::Vec3f vpRot = viewM.getRotate() * vp;
+	if (!(u->isExpanded() && upRot.z() <= vpRot.z()) && !(v->isExpanded()
+			&& vpRot.z() <= upRot.z())) {
+		return;
+	}
+	// NOTE: z decreases when going away from camera
+
+	osg::Matrixd projM = camera->getProjectionMatrix();
+	osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
+	osg::Matrixd m = viewM * projM * windM; // complete transformation matrix from world so screen coordinates
+
+	// determine (projected) radius of each node
+	osg::Vec3f r = up + osg::Vec3f(u->getRadius(), 0, 0);
+	float radU = ((up * m) - (r * m)).length(); // TODO this might not be the correct/best way
+	r = vp + osg::Vec3f(v->getRadius(), 0, 0);
+	float radV = ((vp * m) - (r * m)).length();
+
+	// determine distance between projected nodes
+	fv = (vp * m) - (up * m);
+	dist = fv.length();
+
+	if (dist > radU + radV) { // are projections overlapping?
+		return;
+	}
+
+	// transform dist back to world coordinates
+	dist = dist * (u->getRadius() / radU) * (v->getRadius() / radV);
+	// TODO this might not be the correct/best way but seems to work
+
+	if (dist < 1) {
+		dist = 1;
+//		std::cout << "was zero!!! " << dist << std::endl;
+	}
+//	std::cout << "dist: " << dist << std::endl;
+
+	// use only view rotation to find force direction
+	fv = viewM.getRotate() * (vp - up);// smer sily
+	fv.z() = 0;
+
+	fv.normalize(); // force direction
+
+	fv *= rep(dist) * factor; // force size
+
+	fv = viewM.getRotate().inverse() * fv; // transform fv back
+
+	u->addForce(fv); // add to node (u only!)
 }
 
 /* Vzorec na vypocet odpudivej sily */

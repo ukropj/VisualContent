@@ -78,14 +78,17 @@ void Edge::updateGeometry(osg::Vec3 viewVec) {
 	x.set(srcNode->getCurrentPosition());
 	y.set(dstNode->getCurrentPosition());
 
-//	float rx = srcNode->getRadius();
-//	float ry = dstNode->getRadius();
+	float rx = srcNode->getRadius() * 0.6f;
+	float ry = dstNode->getRadius() * 0.6f;
 
-//	osg::Vec3d offset = x - y;
-//	float origLength = offset.normalize();
-	//	if (origLength < rx + ry) return false;
-//	x += -offset * rx; TODO
-//	y += offset * ry;
+	osg::Vec3d offset = x - y;
+	float origLength = offset.normalize();
+	if (origLength > rx + ry) {
+	x += -offset * rx;
+	y += offset * ry;
+	} else {
+		y = x; // TODO
+	}
 
 	osg::Vec3d edgeDir = x - y;
 	length = edgeDir.length();
@@ -153,4 +156,34 @@ osg::ref_ptr<osgText::FadeText> Edge::createLabel(QString text) {
 	label->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	return label;
+}
+
+osg::ref_ptr<osg::StateSet> Edge::createStateSet(bool oriented) {
+	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet;
+
+	if (!oriented) {
+		edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+		edgeStateSet->setTextureAttributeAndModes(0,
+				Util::TextureWrapper::getEdgeTexture(), osg::StateAttribute::ON);
+		edgeStateSet->setAttributeAndModes(new osg::BlendFunc,
+				osg::StateAttribute::ON);
+	} else {
+		edgeStateSet->setTextureAttributeAndModes(0,
+				Util::TextureWrapper::getOrientedEdgeTexture(),
+				osg::StateAttribute::ON);
+		edgeStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+	}
+
+	edgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	edgeStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
+	depth->setWriteMask(false);
+	edgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
+
+	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
+	cull->setMode(osg::CullFace::BACK);
+	edgeStateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
+
+	return edgeStateSet;
 }

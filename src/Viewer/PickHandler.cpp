@@ -47,7 +47,7 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& event,
 	switch (event.getEventType()) {
 
 	case osgGA::GUIEventAdapter::PUSH: {
-		qDebug() << "Mouse pressed";
+		//		qDebug() << "Mouse pressed";
 		//		releaseEvent = NULL;
 		// ak dojde push a nie je zapnuty timer tak spusti sa timer a ulozia eventy
 		//		if (!timer->isActive()) {
@@ -83,7 +83,7 @@ bool PickHandler::handle(const osgGA::GUIEventAdapter& event,
 	}
 
 	case osgGA::GUIEventAdapter::RELEASE: {
-		qDebug() << "Mouse released";
+		//		qDebug() << "Mouse released";
 		//ak je release a je timer aktivny tak sa ulozi event a nevyvola sa
 		//		if (timer->isActive()) {
 		//			releaseEvent = &event;
@@ -121,7 +121,7 @@ void PickHandler::mouseTimerTimeout() {
 
 bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
-	qDebug() << " push handled";
+	//	qDebug() << " push handled";
 
 	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
 		return false;
@@ -165,11 +165,8 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 
 	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
 		return false;
-	qDebug() << " release handled\n";
+	//	qDebug() << " release handled\n";
 
-	//	osgViewer::Viewer* viewer = getViewer(action);
-	//	if (!viewer)
-	//		return false;
 	originPos.set(event.getX(), event.getY());
 
 	if (isDrawingSelectionQuad) {
@@ -213,9 +210,8 @@ bool PickHandler::handleDoubleclick(const osgGA::GUIEventAdapter& event,
 
 bool PickHandler::handleMove(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
-	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
-		return false;
-	//	lastPos.set(event.getX(), event.getY());
+	std::cout << event.getX() << "," << event.getY() << std::endl; // XXX ???
+
 	return false;
 }
 
@@ -230,7 +226,8 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 	case NONE:
 		return false;
 	case SELECT:
-		if (!selectedNodes.isEmpty() && !multiPickEnabled) { // drag node(s)
+		if (!selectedNodes.isEmpty() && !multiPickEnabled
+				&& !isDrawingSelectionQuad) { // drag node(s)
 			NodeList::const_iterator i = selectedNodes.constBegin();
 
 			while (i != selectedNodes.constEnd()) {
@@ -279,16 +276,44 @@ osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos,
 	return newPosition * compositeMi;
 }
 
+// XXX temp
+void printVect(osg::Vec3f vec) {
+	qDebug() << "[" << vec.x() << "," << vec.y() << "," << vec.z() << "]";
+}
+
 Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
 		const osgGA::GUIEventAdapter& event) {
 	if (viewer == NULL)
 		return NULL;
 
 	Model::Node* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
-	if (pickedNode == NULL)
-		qDebug() << "NO PICK";
-	else {
-		qDebug() << "NODE PICKED";
+	if (pickedNode == NULL) {
+//		qDebug() << "NO PICK";
+	} else {
+//		qDebug() << "NODE PICKED";
+#if 0
+		osg::Camera* camera = viewer->getCamera();
+		osg::Matrixd viewM = camera->getViewMatrix();
+		osg::Matrixd projM = camera->getProjectionMatrix();
+		osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
+
+		osg::Vec3f pos = pickedNode->getCurrentPosition(false);
+
+		qDebug() << "XY: " << event.getX() << "," << event.getY();
+//		qDebug() << "normXY: " << event.getXnormalized() << ","
+//				<< event.getYnormalized();
+		printVect(pos);
+		printVect((pos * viewM));
+//		printVect((viewM.getRotate() *pos));
+//		printVect((pos * (viewM * projM)));
+		osg::Matrixd m = viewM * projM * windM;
+		pos = pos * m;
+		printVect(pos);
+		printVect((pos * osg::Matrixd::inverse(m)));
+		osg::Vec3f pos2 = osg::Vec3f(event.getX(), event.getY(), 0.999958f);
+		printVect(pos2);
+		printVect((pos2 * osg::Matrixd::inverse(m)));
+#endif
 	}
 	return pickedNode;
 }
@@ -406,7 +431,7 @@ bool PickHandler::select(Model::Node* node) {
 			node->setSelected(false);
 			node->setFrozen(false);
 			selectedNodes.removeOne(node);
-			qDebug() << " one deselected";
+			//			qDebug() << " one deselected";
 			return true;
 		} else { // add to nodes
 			selectedNodes.append(node);
@@ -416,7 +441,7 @@ bool PickHandler::select(Model::Node* node) {
 		selectedNodes.append(node);
 	}
 
-	qDebug() << " one selected";
+	//	qDebug() << " one selected";
 	node->setSelected(true);
 	return true;
 }
@@ -428,7 +453,7 @@ void PickHandler::deselectAll() {
 		(*i)->setFrozen(false);
 		++i;
 	}
-	qDebug() << " all deselected";
+	//	qDebug() << " all deselected";
 
 	selectedNodes.clear();
 }
@@ -580,7 +605,6 @@ osg::Vec3 PickHandler::getSelectionCenter(bool nodesOnly) {
 
 bool PickHandler::isShift(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
-	qDebug() << key;
 	if (key & osgGA::GUIEventAdapter::MODKEY_SHIFT) {
 		//		StatusLogger::log(StatusLogger::KEYS, "SHIFT");
 		qDebug() << "SHIFT";

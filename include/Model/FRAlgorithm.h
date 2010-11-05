@@ -10,6 +10,8 @@
 #include <sstream>
 #include <string.h>
 #include <osg/Vec3f>
+#include <osg/Matrixd>
+#include <osg/Camera>
 #include <QMap>
 #include <math.h>
 #include <ctime>
@@ -65,6 +67,10 @@ public:
 		ALPHA = val;
 	}
 
+	void setCamera(osg::Camera* camera) {
+		this->camera = camera;
+	}
+
 	/**
 	 *  \fn public  IsRunning
 	 *  \brief Returns if layout algorithm is running or not
@@ -104,6 +110,7 @@ protected:
 	void run();
 
 private:
+	osg::Camera* camera;
 
 	/**
 	 *  Graph * graph
@@ -304,6 +311,7 @@ private:
 	 *  \param  factor  multiplicer of repulsive force
 	 */
 	void addRepulsive(Node* u, Node* v, float factor);
+	void addRepulsiveProj(Node* u, Node* v, float factor);
 
 	/**
 	 *  \fn private  rep(double distance)

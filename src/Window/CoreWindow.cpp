@@ -26,9 +26,10 @@ CoreWindow::CoreWindow(QWidget *parent) :
 
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
+	layout->setCamera(viewerWidget->getCamera());
 
 	nodeLabelsVisible = edgeLabelsVisible = false;
-	singleSelectB->click();
+	noSelectB->click();
 
 	// testing only:
 	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",

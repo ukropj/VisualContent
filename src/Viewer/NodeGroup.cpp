@@ -10,7 +10,7 @@ NodeGroup::NodeGroup(QMap<qlonglong, osg::ref_ptr<Node> > *nodes) {
 	this->nodes = nodes;
 	this->nodeTransforms
 			= new QMap<qlonglong, osg::ref_ptr<osg::AutoTransform> > ;
-	this->addedEdges = new QMap<qlonglong, osg::ref_ptr<Model::Edge> > ;
+	this->addedEdgeIds.clear();
 
 	initNodes();
 }
@@ -58,15 +58,15 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 			if (*edgeI != parentEdge) {
 				osg::ref_ptr<Node> otherNode = NULL;
 
-//				if (!addedEdges->contains((*edgeI)->getId())) {
-//					addedEdges->insert((*edgeI)->getId(), edgeI.value());
+//				if (!addedEdgeIds->contains((*edgeI)->getId())) {
+//					addedEdgeIds->insert((*edgeI)->getId());
 //					osg::ref_ptr<osg::Group> edgeGroup = new osg::Group;
 //					edgeGroup->setName("edges_group");
-//					edgeGroup->setStateSet(EdgeGroup::createStateSet(false));
+//					edgeGroup->setStateSet(Edge::createStateSet((*edgeI)->isOriented()));
 //					edgeGroup->addChild(edgeI.value());
 //					group->addChild(edgeGroup);
 //				} else {
-//					qDebug() << "edge already in";
+// //				qDebug() << "edge already in";
 //				}
 
 				if (node->getId() == (*edgeI)->getSrcNode()->getId())

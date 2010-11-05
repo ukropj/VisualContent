@@ -226,6 +226,8 @@ public:
 		return label;
 	}
 
+	static osg::ref_ptr<osg::StateSet> createStateSet(bool oriented); // XXX
+
 private:
 	/**
 	 *  Graph * graph

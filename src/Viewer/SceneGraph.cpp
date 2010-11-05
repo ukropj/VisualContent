@@ -94,6 +94,8 @@ SceneGraph::SceneGraph(Model::Graph* graph) {
 
 	reload(graph);
 //	customNodeList.append(experiments());
+
+//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
 }
 
 void SceneGraph::reload(Model::Graph * newGraph) {

@@ -49,7 +49,7 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph,
 	expanded = false;
 
 	nodeSmall = createTextureNode(type->getTexture(), type->getScale());
-	nodeLarge = createTextureNode(type->getDevil(), type->getScale() * 3);
+	nodeLarge = createTextureNode(type->getDevil(), type->getScale() * 2);
 	square = createSquare(type->getScale());
 	label = createLabel(labelText, type->getScale());
 
@@ -78,7 +78,7 @@ Node::~Node(void) {
 		{
 			edges->value(i)->unlinkNodes();
 		}
-	edges->clear(); //staci to ?? netreba spravit delete/remove ???
+	edges->clear();
 
 	delete edges;
 }
@@ -229,7 +229,7 @@ osg::ref_ptr<osg::StateSet> Node::createStateSet() {
 	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
-	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
 	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
@@ -308,6 +308,8 @@ bool Node::setSelected(bool flag) {
 	else {
 		setNodeColor(0, color);
 	}
+
+	graph->setFrozen(false);
 }
 
 bool Node::setFixed(bool flag) {
@@ -321,7 +323,7 @@ float Node::getRadius() const {
 	if (getChildValue(nodeLarge)) {
 		return nodeLarge->getBound().radius();
 	} else {
-		return nodeSmall->getBound().radius() - 8.0f; // XXX temp magic
+		return nodeSmall->getBound().radius(); // XXX temp magic
 	}
 }
 
@@ -342,20 +344,13 @@ osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed)
 		float graphScale = Util::Config::getInstance()->getValue(
 				"Viewer.Display.NodeDistanceScale").toFloat();
 
-		//		currentPosition = osg::Vec3(targetPosition * graphScale);
 		osg::Vec3 directionVector = osg::Vec3(targetPosition.x(),
 				targetPosition.y(), targetPosition.z()) * graphScale
 				- currentPosition;
-		//		if (usingInterpolation) {
-//		float length = directionVector.normalize();
+
 		currentPosition = osg::Vec3(directionVector
 				* (usingInterpolation ? interpolationSpeed : 1)
 				+ currentPosition);
-		//			currentPosition += (length < 10.0f ? directionVector * length / 2
-		//					: directionVector * 10.0f);
-		//		} else {
-		//			currentPosition += directionVector;
-		//		}
 	}
 
 	return osg::Vec3(currentPosition);

@@ -95,7 +95,7 @@ private:
 	 */
 	osg::ref_ptr<osg::Group> group;
 
-	QMap<qlonglong, osg::ref_ptr<Model::Edge> > *addedEdges;
+	QSet<qlonglong> addedEdgeIds;
 
 	/**
 	 *  \fn private  initNodes
