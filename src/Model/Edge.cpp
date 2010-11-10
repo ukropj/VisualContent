@@ -23,9 +23,8 @@ Edge::Edge(qlonglong id, QString name, Graph* graph,
 	this->oriented = isOriented;
 	this->selected = false;
 
-
 	geometry = createGeometry();
-//	updateGeometry();
+	//	updateGeometry();
 
 	label = createLabel(name);
 	addDrawable(geometry);
@@ -78,14 +77,14 @@ void Edge::updateGeometry(osg::Vec3 viewVec) {
 	x.set(srcNode->getCurrentPosition());
 	y.set(dstNode->getCurrentPosition());
 
-	float rx = srcNode->getRadius() * 0.6f;
-	float ry = dstNode->getRadius() * 0.6f;
+	float rx = srcNode->getRadius() * 0.5f;
+	float ry = dstNode->getRadius() * 0.5f;
 
 	osg::Vec3d offset = x - y;
 	float origLength = offset.normalize();
 	if (origLength > rx + ry) {
-	x += -offset * rx;
-	y += offset * ry;
+		x += -offset * rx;
+		y += offset * ry;
 	} else {
 		y = x; // TODO
 	}
@@ -122,8 +121,8 @@ void Edge::updateGeometry(osg::Vec3 viewVec) {
 
 osg::ref_ptr<osg::Geometry> Edge::createGeometry() {
 	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
-	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS,
-			0, 4));
+	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
+			4));
 
 	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
 	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -186,4 +185,19 @@ osg::ref_ptr<osg::StateSet> Edge::createStateSet(bool oriented) {
 	edgeStateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
 	return edgeStateSet;
+}
+
+osg::ref_ptr<osg::StateSet> Edge::stateSet = NULL;
+osg::ref_ptr<osg::StateSet> Edge::stateSetOriented = NULL;
+
+osg::ref_ptr<osg::StateSet> Edge::getStateSetInstance(bool oriented) {
+	if (!oriented) {
+		if (stateSet == NULL)
+			stateSet = createStateSet(false);
+		return stateSet;
+	} else {
+		if (stateSetOriented == NULL)
+			stateSetOriented = createStateSet(true);
+		return stateSetOriented;
+	}
 }

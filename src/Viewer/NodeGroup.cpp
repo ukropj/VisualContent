@@ -2,6 +2,7 @@
 #include "Util/Config.h"
 #include "Viewer/EdgeGroup.h"
 #include <QDebug>
+#include <iostream>
 
 using namespace Vwr;
 using namespace Model;
@@ -10,7 +11,7 @@ NodeGroup::NodeGroup(QMap<qlonglong, osg::ref_ptr<Node> > *nodes) {
 	this->nodes = nodes;
 	this->nodeTransforms
 			= new QMap<qlonglong, osg::ref_ptr<osg::AutoTransform> > ;
-	this->addedEdgeIds.clear();
+	this->addedEdgeIds = new QSet<qlonglong> ;
 
 	initNodes();
 }
@@ -29,13 +30,22 @@ void NodeGroup::initNodes() {
 
 	QMapIterator<qlonglong, osg::ref_ptr<Node> > i(*nodes);
 
+	//	if (i.hasNext()) {
+	//		i.next();
+	//		nodeGroup->addChild(wrapNode(i.value(), graphScale));
+	//		nodeGroup->addChild(getNodeGroup(i.value(), graphScale));
+	//	}
+
+
+
 	while (i.hasNext()) {
 		i.next();
 
 		osg::ref_ptr<osg::Group> g = getNodeGroup(i.value(), NULL, graphScale);
 
-		if (g != NULL)
+		if (g != NULL) {
 			nodeGroup->addChild(g);
+		}
 	}
 
 	nodeGroup->setName("nodes_group");
@@ -48,27 +58,20 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 
 	if (!nodeTransforms->contains(node->getId())) {
 		group = new osg::Group;
-
-		group->addChild(wrapChild(node, graphScale));
+		group->addChild(wrapNode(node, graphScale));
 
 		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator edgeI =
 				node->getEdges()->begin();
 
 		while (edgeI != node->getEdges()->end()) {
 			if (*edgeI != parentEdge) {
-				osg::ref_ptr<Node> otherNode = NULL;
-
 //				if (!addedEdgeIds->contains((*edgeI)->getId())) {
-//					addedEdgeIds->insert((*edgeI)->getId());
-//					osg::ref_ptr<osg::Group> edgeGroup = new osg::Group;
-//					edgeGroup->setName("edges_group");
-//					edgeGroup->setStateSet(Edge::createStateSet((*edgeI)->isOriented()));
-//					edgeGroup->addChild(edgeI.value());
-//					group->addChild(edgeGroup);
+//					group->addChild(wrapEdge(*edgeI));
 //				} else {
-// //				qDebug() << "edge already in";
+//					//	qDebug() << "edge already in";
 //				}
 
+				osg::ref_ptr<Node> otherNode = NULL;
 				if (node->getId() == (*edgeI)->getSrcNode()->getId())
 					otherNode = (*edgeI)->getDstNode();
 				else
@@ -84,11 +87,54 @@ osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
 			edgeI++;
 		}
 	}
+	return group;
+}
+
+osg::ref_ptr<osg::Group> NodeGroup::getNodeGroup(osg::ref_ptr<Node> node,
+		float graphScale) { // alternative SG construction
+	osg::ref_ptr<osg::Group> group = NULL;
+
+	QLinkedList<osg::ref_ptr<Node> > nodesAdded;
+
+	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator edgeI =
+			node->getEdges()->begin();
+
+	while (edgeI != node->getEdges()->end()) {
+		if (addedEdgeIds->contains((*edgeI)->getId())) {
+			edgeI++;
+			continue;
+		}
+		if (group == NULL)
+			group = new osg::Group;
+		group->addChild(wrapEdge(*edgeI));
+
+		osg::ref_ptr<Node> otherNode = NULL;
+		if (node->getId() == (*edgeI)->getSrcNode()->getId())
+			otherNode = (*edgeI)->getDstNode();
+		else
+			otherNode = (*edgeI)->getSrcNode();
+
+		if (!nodeTransforms->contains(otherNode->getId())) {
+			group->addChild(wrapNode(otherNode, graphScale));
+			nodesAdded.append(otherNode);
+		}
+		edgeI++;
+	}
+
+	QLinkedList<osg::ref_ptr<Model::Node> >::iterator nodeI =
+			nodesAdded.begin();
+
+	while (nodeI != nodesAdded.end()) {
+		osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(*nodeI, graphScale);
+		if (nodeGroup != NULL)
+			group->addChild(nodeGroup);
+		nodeI++;
+	}
 
 	return group;
 }
 
-osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapChild(osg::ref_ptr<Node> node,
+osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapNode(osg::ref_ptr<Node> node,
 		float graphScale) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
 	at->setPosition(node->getTargetPosition() * graphScale);
@@ -97,7 +143,23 @@ osg::ref_ptr<osg::AutoTransform> NodeGroup::wrapChild(osg::ref_ptr<Node> node,
 	nodeTransforms->insert(node->getId(), at);
 	at->addChild(node);
 
+	//	qDebug() << node->getName() << "wrapped";
 	return at;
+}
+
+osg::ref_ptr<osg::Group> NodeGroup::wrapEdge(osg::ref_ptr<Edge> edge) {
+	addedEdgeIds->insert(edge->getId());
+	osg::ref_ptr<osg::Group> edgeGroup = new osg::Group;
+
+	edgeGroup->setName("edge_group");
+	edgeGroup->setStateSet(Edge::getStateSetInstance(edge->isOriented()));
+	edgeGroup->addChild(edge);
+
+	//	edgeGroup->addChild(edge->getLabel());
+
+	//	qDebug() << edge->getName() << "wrapped";
+
+	return edgeGroup;
 }
 
 void NodeGroup::synchronizeNodes() { // is never called, was used for metanodes...
@@ -123,7 +185,7 @@ void NodeGroup::synchronizeNodes() { // is never called, was used for metanodes.
 			"Viewer.Display.NodeDistanceScale").toFloat();
 
 	while (i != result.constEnd()) {
-		group->addChild(wrapChild(nodes->value(*i), graphScale));
+		group->addChild(wrapNode(nodes->value(*i), graphScale));
 		++i;
 	}
 }

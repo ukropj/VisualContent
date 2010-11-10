@@ -268,7 +268,7 @@ osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos,
 			scale =
 					Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
 
-	osg::Vec3f screenPoint = origPos * compositeM; // TODO change to currnet pos
+	osg::Vec3f screenPoint = origPos * compositeM; // TODO change to current pos
 	osg::Vec3f newPosition = osg::Vec3f(screenPoint.x() - (originPos.x()
 			- lastPos.x()) / scale, screenPoint.y() - (originPos.y()
 			- lastPos.y()) / scale, screenPoint.z());
@@ -287,11 +287,11 @@ Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
 		return NULL;
 
 	Model::Node* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
+#if 1
 	if (pickedNode == NULL) {
-//		qDebug() << "NO PICK";
+		qDebug() << "NO PICK";
 	} else {
-//		qDebug() << "NODE PICKED";
-#if 0
+		qDebug() << "NODE PICKED";
 		osg::Camera* camera = viewer->getCamera();
 		osg::Matrixd viewM = camera->getViewMatrix();
 		osg::Matrixd projM = camera->getProjectionMatrix();
@@ -304,17 +304,19 @@ Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
 //				<< event.getYnormalized();
 		printVect(pos);
 		printVect((pos * viewM));
-//		printVect((viewM.getRotate() *pos));
 //		printVect((pos * (viewM * projM)));
 		osg::Matrixd m = viewM * projM * windM;
-		pos = pos * m;
-		printVect(pos);
-		printVect((pos * osg::Matrixd::inverse(m)));
-		osg::Vec3f pos2 = osg::Vec3f(event.getX(), event.getY(), 0.999958f);
-		printVect(pos2);
-		printVect((pos2 * osg::Matrixd::inverse(m)));
-#endif
+		printVect(pos * m);
+//		printVect(((pos * m) * osg::Matrixd::inverse(m)));
+//		osg::Vec3f pos2 = osg::Vec3f(event.getX(), event.getY(), 0.0f);
+//		pos2 = pos2 * osg::Matrixd::inverse(m);
+//		printVect(pos2);
+
+		osg::Vec3f r = pos + osg::Vec3f(pickedNode->getRadius(), 0, 0);
+		float rad = ((pos * m) - (r * m)).length();
+		qDebug() << "r: " << rad;
 	}
+#endif
 	return pickedNode;
 }
 

@@ -12,6 +12,8 @@ using namespace Window;
 CoreWindow::CoreWindow(QWidget *parent) :
 	QMainWindow(parent) {
 
+	Util::Config::getInstance(); // XXX
+
 	createStatusBar();
 	//inicializacia premennych
 	layout = new Model::FRAlgorithm();
@@ -31,7 +33,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	nodeLabelsVisible = edgeLabelsVisible = false;
 	noSelectB->click();
 
-	// testing only:
+	// XXX testing only:
 	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",
 			messageWindows);
 	layout->setGraph(graph);
@@ -176,7 +178,7 @@ void CoreWindow::createToolBar() {
 	slider = new QSlider(Qt::Vertical, this);
 	slider->setTickPosition(QSlider::TicksAbove);
 	slider->setTickInterval(5);
-	slider->setValue(5);
+	slider->setValue(Util::Config::getValue("Layout.Algorithm.Alpha").toFloat() * 1000);
 	slider->setFocusPolicy(Qt::NoFocus);
 	connect(slider, SIGNAL(valueChanged(int)), this,
 			SLOT(sliderValueChanged(int)));
@@ -315,18 +317,21 @@ void CoreWindow::unFixNodes() {
 //}
 
 void CoreWindow::loadFile() {
+	layout->pause();
+
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open GraphML"),
 			".", tr("GraphML Files (*.graphml)"));
 
 	Model::Graph* graph = manager->loadGraph(fileName, messageWindows);
 
 	if (graph == NULL) {
+		layout->play();
 		messageWindows->showMessageBox("Chyba",
 				"Zvoleny subor nie je validny GraphML subor.", true);
 		return;
 	}
 
-	layout->pause();
+
 	layout->setGraph(graph);
 	layout->setParameters(10, 0.7, 1, true);
 
@@ -337,7 +342,7 @@ void CoreWindow::loadFile() {
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
-	log(NORMAL, "Graph loaded");
+	log(NORMAL, "Graph loaded" + graph->toString());
 }
 
 void CoreWindow::labelOnOff(bool) {

@@ -340,6 +340,13 @@ bool Node::isPickable(osg::Geode* geode) {
 }
 
 osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed) {
+	/// XXX
+//	float graphScale = Util::Config::getInstance()->getValue(
+//					"Viewer.Display.NodeDistanceScale").toFloat();
+//	currentPosition = osg::Vec3(targetPosition.x(),
+//			targetPosition.y(), targetPosition.z()) * graphScale;
+//	return osg::Vec3(currentPosition);
+
 	if (calculateNew) {
 		float graphScale = Util::Config::getInstance()->getValue(
 				"Viewer.Display.NodeDistanceScale").toFloat();

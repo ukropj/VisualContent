@@ -179,7 +179,7 @@ qlonglong Graph::getMaxEleIdFromElements() {
 
 QString Graph::toString() const {
 	QString str;
-	QTextStream(&str) << " name:" << name << " max current ele ID:"
+	QTextStream(&str) << " name: " << name << " elements: "
 			<< ele_id_counter;
 	return str;
 }

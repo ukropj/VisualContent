@@ -222,11 +222,14 @@ public:
 		return graph;
 	}
 
-	osg::ref_ptr<osgText::FadeText> getLabel() {
-		return label;
+	void showLabel(bool visible) {
+		if (this->containsDrawable(label) && !visible)
+			removeDrawable(label);
+		if (!this->containsDrawable(label) && visible)
+			addDrawable(label);
 	}
 
-	static osg::ref_ptr<osg::StateSet> createStateSet(bool oriented); // XXX
+	static osg::ref_ptr<osg::StateSet> getStateSetInstance(bool oriented);
 
 private:
 	/**
@@ -301,6 +304,10 @@ private:
 	osg::ref_ptr<osg::Geometry> createGeometry();
 
 	osg::ref_ptr<osgText::FadeText> createLabel(QString text);
+
+	static osg::ref_ptr<osg::StateSet> stateSet;
+	static osg::ref_ptr<osg::StateSet> stateSetOriented;
+	static osg::ref_ptr<osg::StateSet> createStateSet(bool oriented);
 };
 }
 

@@ -78,6 +78,10 @@ namespace Util
 			 */
 			static QString getValue(QString key);
 
+			QString getMapValue(QString key) {
+				return _map.value(key);
+			}
+
 			/**
 			*  \fn public  getList
 			*  \brief

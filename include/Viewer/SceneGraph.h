@@ -164,13 +164,6 @@ private:
 	Model::Graph * graph;
 
 	/**
-	 *  \fn private  initEdgeLabels
-	 *  \brief inits edge labels
-	 *  \return osg::ref_ptr
-	 */
-	osg::ref_ptr<osg::Group> initEdgeLabels();
-
-	/**
 	 *  \fn private  initCustomNodes
 	 *  \brief inits custom nodes
 	 *  \return osg::ref_ptr
@@ -244,12 +237,6 @@ private:
 	 *  \brief metaedges groups position
 	 */
 	int qmetaEdgesPosition;
-
-	/**
-	 *  int labelsPosition
-	 *  \brief labels group position
-	 */
-	int labelsPosition;
 
 	/**
 	 *  int customNodesPosition

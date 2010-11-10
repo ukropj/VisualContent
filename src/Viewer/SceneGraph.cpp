@@ -127,13 +127,13 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 	//	root->addChild(qmetaEdgesGroup->getGroup());
 	//	qmetaEdgesPosition = currentPos++;
 
-	root->addChild(initEdgeLabels());
-	labelsPosition = currentPos++;
+//	root->addChild(initEdgeLabels());
+//	labelsPosition = currentPos++;
 
 	customNodesPosition = currentPos;
 
 	osgUtil::Optimizer opt;
-	opt.optimize(edgesGroup->getGroup(), osgUtil::Optimizer::CHECK_GEOMETRY);
+	opt.optimize(root, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
 
 	nodesFreezed = false;
 }
@@ -188,23 +188,23 @@ osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
 	return clearNode;
 }
 
-osg::ref_ptr<osg::Group> SceneGraph::initEdgeLabels() {
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	geode->setName("edges_labels");
-
-	QMapIterator<qlonglong, osg::ref_ptr<Model::Edge> > i(*graph->getEdges());
-
-	while (i.hasNext()) {
-		i.next();
-		geode->addDrawable(i.value()->getLabel());
-	}
-
-	osg::ref_ptr<osg::Group> labels = new osg::Group;
-	labels->addChild(geode);
-	labels->setNodeMask(0);
-
-	return labels;
-}
+//osg::ref_ptr<osg::Group> SceneGraph::initEdgeLabels() {
+//	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+//	geode->setName("edges_labels");
+//
+//	QMapIterator<qlonglong, osg::ref_ptr<Model::Edge> > i(*graph->getEdges());
+//
+//	while (i.hasNext()) {
+//		i.next();
+//		geode->addDrawable(i.value()->getLabel());
+//	}
+//
+//	osg::ref_ptr<osg::Group> labels = new osg::Group;
+//	labels->addChild(geode);
+//	labels->setNodeMask(0);
+//
+//	return labels;
+//}
 
 osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 	osg::ref_ptr<osg::Group> customNodes = new osg::Group;
@@ -220,7 +220,7 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 }
 
 void SceneGraph::update() {
-	root->removeChildren(customNodesPosition, 1);
+	root->removeChildren(customNodesPosition, 1); // XXX
 
 	synchronize();
 
@@ -239,7 +239,7 @@ void SceneGraph::update() {
 
 	edgesGroup->updateEdgeCoords(getViewVector());
 //	qDebug() << "Edge group updated";
-	//	qmetaEdgesGroup->updateEdgeCoords();
+//		qmetaEdgesGroup->updateEdgeCoords();
 	root->addChild(initCustomNodes());
 }
 
@@ -251,8 +251,9 @@ osg::Vec3d SceneGraph::getViewVector() {
 	if (camera != NULL) {
 		camera->getViewMatrixAsLookAt(eye, center, up);
 		viewVec = eye - center;
-		//		qDebug() << eye.x() << " " << eye.y() << " " << eye.z() << "\n";
-		//		qDebug() << center.x() << " " << center.y() << " " << center.z() << "\n";
+//		qDebug() << "eye " << eye.x() << " " << eye.y() << " " << eye.z();
+//		qDebug() << "center " << center.x() << " " << center.y() << " " << center.z();
+//		qDebug() << "up " << up.x() << " " << up.y() << " " << up.z();
 	} else {
 		qWarning("SceneGraph::getViewVector camera == NULL");
 	}
@@ -266,7 +267,11 @@ void SceneGraph::synchronize() {
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
-	root->getChild(labelsPosition)->setNodeMask(visible);
+	QMapIterator<qlonglong, osg::ref_ptr<Model::Edge> > i(*graph->getEdges());
+	while (i.hasNext()) {
+		i.next();
+		i.value()->showLabel(visible);
+	}
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {
@@ -278,6 +283,8 @@ void SceneGraph::setNodeLabelsVisible(bool visible) {
 }
 
 void SceneGraph::reloadConfig() {
+	Util::TextureWrapper::reloadTextures();
+
 	root->setChild(backgroundPosition, createSkyBox());
 
 	QMapIterator<qlonglong, osg::ref_ptr<Model::Node> > i(*graph->getNodes());
@@ -286,8 +293,8 @@ void SceneGraph::reloadConfig() {
 		i.value()->reloadConfig();
 	}
 
-	root->setChild(labelsPosition, initEdgeLabels());
-	Util::TextureWrapper::reloadTextures();
+//	root->setChild(labelsPosition, initEdgeLabels());
+
 }
 
 SceneGraph::~SceneGraph() {

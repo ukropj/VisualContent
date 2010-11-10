@@ -82,6 +82,10 @@ public:
 		setSceneData(sceneGr->getScene()); // TODO move to ViewerQT
 	}
 
+	~ViewerQT() {
+		_timer.stop();
+	}
+
 	/**
 	 *  \fn inline public constant  getPickHandler
 	 *  \brief Returns pick handler

@@ -14,10 +14,14 @@ typedef QMap<qlonglong, osg::ref_ptr<Edge> >::const_iterator EdgeIt;
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
 	PI = acos((double) -1);
-	ALPHA = 0.005; // XXX try changing
-	MIN_MOVEMENT = 0.05;
-	MAX_MOVEMENT = 30;
-	MAX_DISTANCE = 400;
+	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
+	MIN_MOVEMENT
+			= Util::Config::getValue("Layout.Algorithm.MinMovement").toFloat();
+	MAX_MOVEMENT
+			= Util::Config::getValue("Layout.Algorithm.MaxMovement").toFloat();
+	MAX_DISTANCE
+			= Util::Config::getValue("Layout.Algorithm.MaxDistance").toFloat();
+
 	state = NO_GRAPH;
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 	notEnd = true;
@@ -56,9 +60,10 @@ void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
 
 /* Urci pokojovu dlzku strun */
 double FRAlgorithm::computeCalm() {
-	double R = 300;
-	float n = graph->getNodes()->count();
-	return sizeFactor * pow((4 * R * R * R * PI) / (n * 3), 1 / 3);
+	//	double R = 300;
+	//	float n = graph->getNodes()->count();
+	//	return sizeFactor * pow((4 * R * R * R * PI) / (n * 3), 1 / 3);
+	return sizeFactor * 1;
 }
 /* Rozmiestni uzly na nahodne pozicie */
 void FRAlgorithm::randomize() {
@@ -175,7 +180,7 @@ bool FRAlgorithm::iterate() {
 			Node* v = j.value();
 			if (!u->equals(v)) {
 				addRepulsive(u, v, 1); // odpudiva sila beznej velkosti
-				addRepulsiveProj(u, v, 3);
+				addRepulsiveProj(u, v, 1);
 			}
 		}
 	}
@@ -202,6 +207,7 @@ bool FRAlgorithm::iterate() {
 	}
 
 	// vracia true ak sa ma pokracovat dalsou iteraciou
+	return true; // XXX algoritm will never freeze!
 	return changed;
 }
 
@@ -229,8 +235,7 @@ bool FRAlgorithm::applyForces(Node* node) {
 		return true;
 	} else {
 		node->resetVelocity(); // vynulovanie rychlosti
-		//		return false;
-		return true; // XXX algoritm will never freeze!
+		return false;
 	}
 }
 
@@ -285,11 +290,10 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 }
 
 /* Pricitanie projektvnych odpudivych sil */
+// TODO refactor this method
 void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	if (camera == NULL)
 		return;
-
-	// TODO return if any of nodes is not on screen
 
 	up = u->getCurrentPosition(false);
 	vp = v->getCurrentPosition(false);
@@ -297,10 +301,10 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	osg::Matrixd viewM = camera->getViewMatrix();
 
 	// test if the expanded node is befind the other node
-	osg::Vec3f upRot = viewM.getRotate() * up;
-	osg::Vec3f vpRot = viewM.getRotate() * vp;
-	if (!(u->isExpanded() && upRot.z() <= vpRot.z()) && !(v->isExpanded()
-			&& vpRot.z() <= upRot.z())) {
+	osg::Vec3f upTemp = viewM.getRotate() * up;
+	osg::Vec3f vpTemp = viewM.getRotate() * vp;
+	if (!(u->isExpanded() && upTemp.z() <= vpTemp.z()) && !(v->isExpanded()
+			&& vpTemp.z() <= upTemp.z())) {
 		return;
 	}
 	// NOTE: z decreases when going away from camera
@@ -309,29 +313,37 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
 	osg::Matrixd m = viewM * projM * windM; // complete transformation matrix from world so screen coordinates
 
+	// return if any of nodes is not on screen
+	upTemp = up * (viewM * projM);
+	vpTemp = vp * (viewM * projM);
+	if (qAbs(upTemp.x()) > 1 || qAbs(upTemp.y()) > 1 ||
+			qAbs(vpTemp.x()) > 1 || qAbs(vpTemp.y()) > 1)
+		return;
+
 	// determine (projected) radius of each node
 	osg::Vec3f r = up + osg::Vec3f(u->getRadius(), 0, 0);
 	float radU = ((up * m) - (r * m)).length(); // TODO this might not be the correct/best way
 	r = vp + osg::Vec3f(v->getRadius(), 0, 0);
 	float radV = ((vp * m) - (r * m)).length();
 
+	//	if (u->isExpanded())
+	//		std::cout << radU << std::endl;
+
 	// determine distance between projected nodes
 	fv = (vp * m) - (up * m);
 	dist = fv.length();
 
-	if (dist > radU + radV) { // are projections overlapping?
+	if (dist >= radU + radV) { // are projections overlapping?
 		return;
 	}
 
-	// transform dist back to world coordinates
-	dist = dist * (u->getRadius() / radU) * (v->getRadius() / radV);
-	// TODO this might not be the correct/best way but seems to work
+	// transform dist back to world coordinates XXX pseudomath
 
-	if (dist < 1) {
-		dist = 1;
-//		std::cout << "was zero!!! " << dist << std::endl;
-	}
-//	std::cout << "dist: " << dist << std::endl;
+	dist -= (radU + radV);
+	dist = (-dist) * (u->getRadius() / radU);
+	//	dist = dist * (u->getRadius()+v->getRadius()) / (radU +radV);
+
+	std::cout << dist * K << std::endl;
 
 	// use only view rotation to find force direction
 	fv = viewM.getRotate() * (vp - up);// smer sily
@@ -339,7 +351,11 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 
 	fv.normalize(); // force direction
 
-	fv *= rep(dist) * factor; // force size
+
+	fv *= -(dist * K) * factor; // force size
+
+	//	if (u->isExpanded())
+	//			std::cout << "len: " << fv.length() << "  "<< dist<<std::endl;
 
 	fv = viewM.getRotate().inverse() * fv; // transform fv back
 

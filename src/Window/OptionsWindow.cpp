@@ -77,6 +77,7 @@ void OptionsWindow::itemClicked(QModelIndex index) {
 		if (selectedItem) {
 			if (selectedItem != item) {
 				selectedItem->replaceDataColumn(getModelData());
+				qDebug() << getModelData();
 				selectedItem = item;
 			}
 		} else {
@@ -223,6 +224,7 @@ void OptionsWindow::applyChanges(QString path, QString data) {
 //		qDebug(path.toStdString() + att[0].toStdString() + "\t"
 //				+ att[1].toStdString() + "\n");
 	}
-
+	emit configChanged();
+	close();
 }
 

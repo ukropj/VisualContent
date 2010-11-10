@@ -7,6 +7,7 @@
 
 #include <QMap>
 #include <QSet>
+#include <QLinkedList>
 
 #include <osg/ref_ptr>
 #include <osg/AutoTransform>
@@ -95,7 +96,7 @@ private:
 	 */
 	osg::ref_ptr<osg::Group> group;
 
-	QSet<qlonglong> addedEdgeIds;
+	QSet<qlonglong>* addedEdgeIds;
 
 	/**
 	 *  \fn private  initNodes
@@ -110,8 +111,10 @@ private:
 	 *  \param      graphScale     graph scale
 	 *  \return osg::ref_ptr node transform
 	 */
-	osg::ref_ptr<osg::AutoTransform> wrapChild(osg::ref_ptr<Model::Node> node,
+	osg::ref_ptr<osg::AutoTransform> wrapNode(osg::ref_ptr<Model::Node> node,
 			float graphScale);
+
+	osg::ref_ptr<osg::Group> wrapEdge(osg::ref_ptr<Model::Edge> edge);
 
 	/**
 	 *  \fn private  getNodeGroup(osg::ref_ptr<Model::Node> node, osg::ref_ptr<Model::Edge> parentEdge, float graphScale)
@@ -123,6 +126,8 @@ private:
 	 */
 	osg::ref_ptr<osg::Group> getNodeGroup(osg::ref_ptr<Model::Node> node,
 			osg::ref_ptr<Model::Edge> parentEdge, float graphScale);
+
+	osg::ref_ptr<osg::Group> getNodeGroup(osg::ref_ptr<Model::Node> node, float graphScale);
 };
 }
 

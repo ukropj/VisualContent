@@ -11,9 +11,9 @@ EdgeGroup::EdgeGroup(QMap<qlonglong, osg::ref_ptr<Edge> > *edges, float scale) {
 
 	edgeGroup = new osg::Group;
 	edgeGroup->setName("edges_group");
-	edgeGroup->setStateSet(Edge::createStateSet(false));
-	// NOTE: all edges are shown as unoriented for now!
-
+	edgeGroup->setStateSet(Edge::getStateSetInstance(false));
+//	// NOTE: all edges are shown as unoriented for now!
+//
 	QMap<qlonglong, osg::ref_ptr<Edge> >::iterator i = edges->begin();
 	while (i != edges->end()) {
 		edgeGroup->addChild(i.value());
