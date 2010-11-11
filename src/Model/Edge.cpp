@@ -92,6 +92,9 @@ void Edge::updateGeometry(osg::Vec3 viewVec) {
 	osg::Vec3d edgeDir = x - y;
 	length = edgeDir.length();
 
+	viewVec = viewVec - (x + y) / 2;
+	viewVec.normalize();
+
 	osg::Vec3d up = edgeDir ^ viewVec;
 	up.normalize();
 

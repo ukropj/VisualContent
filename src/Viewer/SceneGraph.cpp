@@ -258,7 +258,8 @@ osg::Vec3d SceneGraph::getViewVector() {
 		qWarning("SceneGraph::getViewVector camera == NULL");
 	}
 	viewVec.normalize();
-	return viewVec;
+//	return viewVec;
+	return eye;
 }
 
 void SceneGraph::synchronize() {
