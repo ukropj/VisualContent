@@ -4,6 +4,7 @@
  */
 #include "Model/Graph.h"
 #include "Model/Type.h"
+#include "Model/Edge.h"
 
 
 using namespace Model;
@@ -14,9 +15,9 @@ Graph::Graph(QString name, qlonglong ele_id_counter) {
 
 	//pre Misa
 	this->nodes = new QMap<qlonglong, osg::ref_ptr<Node> > ();
-	this->edges = new QMap<qlonglong, osg::ref_ptr<Edge> > ();
+	this->edges = new QMap<qlonglong, Edge* > ();
 	this->types = new QMap<qlonglong, Type*> ();
-	this->metaEdges = new QMap<qlonglong, osg::ref_ptr<Edge> > ();
+	this->metaEdges = new QMap<qlonglong, Edge* > ();
 	this->metaNodes = new QMap<qlonglong, osg::ref_ptr<Node> > ();
 	this->frozen = false;
 	this->typesByName = new QMultiMap<QString, Type*> ();
@@ -95,10 +96,10 @@ osg::ref_ptr<Node> Graph::addNode(QString name, Type* type,
 	return node;
 }
 
-osg::ref_ptr<Edge> Graph::addEdge(QString name,
+Edge* Graph::addEdge(QString name,
 		osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode,
 		Type* type, bool isOriented) {
-	osg::ref_ptr<Edge> edge = new Edge(this->incEleIdCounter(),
+	Edge* edge = new Edge(this->incEleIdCounter(),
 			name, this, srcNode, dstNode, type, isOriented);
 
 	edge->linkNodes(&this->newEdges);
@@ -148,7 +149,7 @@ qlonglong Graph::getMaxEleIdFromElements() {
 	}
 
 	if (this->nodes != NULL && !this->edges->isEmpty()) {
-		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator iEdges =
+		QMap<qlonglong, Edge* >::iterator iEdges =
 				this->edges->end();
 		iEdges--;
 
@@ -166,7 +167,7 @@ qlonglong Graph::getMaxEleIdFromElements() {
 	}
 
 	if (this->nodes != NULL && !this->metaEdges->isEmpty()) {
-		QMap<qlonglong, osg::ref_ptr<Edge> >::iterator iMetaEdges =
+		QMap<qlonglong, Edge* >::iterator iMetaEdges =
 				this->metaEdges->end();
 		iMetaEdges--;
 
@@ -255,7 +256,7 @@ void Graph::removeType(Type* type) {
 }
 
 void Graph::removeAllEdgesOfType(Type* type) {
-	QList<osg::ref_ptr<Edge> > edgesToKill;
+	QList<Edge*> edgesToKill;
 	if (type->isMeta())
 		edgesToKill = this->metaEdgesByType.values(type->getId());
 	else
@@ -285,7 +286,7 @@ void Graph::removeAllNodesOfType(Type* type) {
 	}
 }
 
-void Graph::removeEdge(osg::ref_ptr<Edge> edge) {
+void Graph::removeEdge(Edge* edge) {
 	if (edge != NULL && edge->getGraph() == this) {
 		this->edges->remove(edge->getId());
 		this->metaEdges->remove(edge->getId());

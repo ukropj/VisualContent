@@ -17,7 +17,6 @@
 #include <osg/Vec3f>
 
 #include "Model/Node.h"
-#include "Model/Edge.h"
 
 #define METASTRENGTH 1
 
@@ -113,7 +112,7 @@ public:
 	 *  \param   isOriented   true, if the Edge is oriented
 	 *  \return osg::ref_ptr the added Edge
 	 */
-	osg::ref_ptr<Edge> addEdge(QString name, osg::ref_ptr<Node> srcNode,
+	Edge* addEdge(QString name, osg::ref_ptr<Node> srcNode,
 			osg::ref_ptr<Node> dstNode, Type* type, bool isOriented);
 
 	/**
@@ -133,11 +132,11 @@ public:
 	void removeNode(osg::ref_ptr<Node> node);
 
 	/**
-	 *  \fn public  removeEdge(osg::ref_ptr<Edge> edge)
+	 *  \fn public  removeEdge(Edge* edge)
 	 *  \brief Removes an Edge from the Graph
 	 *  \param       edge the Edge to be removed from the Graph
 	 */
-	void removeEdge(osg::ref_ptr<Edge> edge);
+	void removeEdge(Edge* edge);
 
 	/**
 	 *  \fn public  removeType(Type* type)
@@ -158,9 +157,9 @@ public:
 	/**
 	 *  \fn inline public constant  getEdges
 	 *  \brief Returns QMap of the Edges assigned to the Graph
-	 *  \return QMap<qlonglong,osg::ref_ptr<Edge> > * Edges assigned to the Graph
+	 *  \return QMap<qlonglong,Edge* > * Edges assigned to the Graph
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> >* getEdges() const {
+	QMap<qlonglong, Edge* >* getEdges() const {
 		return edges;
 	}
 
@@ -176,9 +175,9 @@ public:
 	/**
 	 *  \fn inline public constant  getMetaEdges
 	 *  \brief Returns meta-Edges assigned to the Graph
-	 *  \return QMap<qlonglong,osg::ref_ptr<Edge> > * meta-Edges assigned to the Graph
+	 *  \return QMap<qlonglong,Edge* > * meta-Edges assigned to the Graph
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> >* getMetaEdges() const {
+	QMap<qlonglong, Edge* >* getMetaEdges() const {
 		return metaEdges;
 	}
 
@@ -300,10 +299,10 @@ private:
 	QMap<qlonglong, Type*> newTypes;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Edge> > newEdges
+	 *  QMap<qlonglong,Edge* > newEdges
 	 *  \brief New Edges that have been added to the Graph but are not yet in database
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> > newEdges;
+	QMap<qlonglong, Edge* > newEdges;
 
 	/**
 	 *  QMap<qlonglong,osg::ref_ptr<Node> > * nodes
@@ -312,10 +311,10 @@ private:
 	QMap<qlonglong, osg::ref_ptr<Node> >* nodes;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Edge> > * edges
+	 *  QMap<qlonglong,Edge* > * edges
 	 *  \brief Edges in the Graph
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> >* edges;
+	QMap<qlonglong, Edge* >* edges;
 
 	/**
 	 *  QMap<qlonglong,osg::ref_ptr<Node> > * metaNodes
@@ -324,10 +323,10 @@ private:
 	QMap<qlonglong, osg::ref_ptr<Node> >* metaNodes;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Edge> > * metaEdges
+	 *  QMap<qlonglong,Edge* > * metaEdges
 	 *  \brief Meta-Edges in the Graph
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> >* metaEdges;
+	QMap<qlonglong, Edge* >* metaEdges;
 
 	/**
 	 *  QMap<qlonglong,Type*> * types
@@ -342,10 +341,10 @@ private:
 	bool frozen;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Edge> > edgesByType
+	 *  QMap<qlonglong,Edge* > edgesByType
 	 *  \brief Edges in the Graph sorted by their Type
 	 */
-	QMultiMap<qlonglong, osg::ref_ptr<Edge> > edgesByType;
+	QMultiMap<qlonglong, Edge* > edgesByType;
 
 	/**
 	 *  QMap<qlonglong,osg::ref_ptr<Node> > nodesByType
@@ -354,10 +353,10 @@ private:
 	QMultiMap<qlonglong, osg::ref_ptr<Node> > nodesByType;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Edge> > metaEdgesByType
+	 *  QMap<qlonglong,Edge* > metaEdgesByType
 	 *  \brief Meta-Edges in the Graph sorted by their Type
 	 */
-	QMultiMap<qlonglong, osg::ref_ptr<Edge> > metaEdgesByType;
+	QMultiMap<qlonglong, Edge* > metaEdgesByType;
 
 	/**
 	 *  QMap<qlonglong,osg::ref_ptr<Node> > metaNodesByType

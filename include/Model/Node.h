@@ -18,9 +18,8 @@
 #include <osg/BlendFunc>
 #include <osg/Depth>
 #include <osg/CullFace>
+#include <osg/AutoTransform>
 #include <osgText/Text>
-
-#include "Model/Edge.h"
 
 namespace Model {
 class Type;
@@ -148,6 +147,12 @@ public:
 		currentPosition.set(val);
 	}
 
+	void updatePosition(float interpolationSpeed);
+
+	void setNodeTansform(osg::ref_ptr<osg::AutoTransform> transform) {
+		this->nodeTransform = transform;
+	}
+
 	/**
 	 *	\fn public removeAllEdges
 	 *	\brief Removes all Edges which connect to the Node
@@ -159,28 +164,19 @@ public:
 	/**
 	 *  \fn inline public constant  getEdges
 	 *  \brief Returns all Edges connected to the Node
-	 *  \return QMap<qlonglong,osg::ref_ptr<Edge> > * Edges connected to the Node
+	 *  \return QMap<qlonglong,Edge* > * Edges connected to the Node
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> > * getEdges() const {
+	QMap<qlonglong, Edge* > * getEdges() const {
 		return edges;
 	}
 
 	/**
-	 *  \fn inline public  setEdges(QMap<qlonglong, osg::ref_ptr<Edge> > *val)
-	 *  \brief Sets (overrides) new Edges which are connected to the Node
-	 *  \param   val   new Edges
-	 */
-	void setEdges(QMap<qlonglong, osg::ref_ptr<Edge> > *val) {
-		edges = val;
-	}
-
-	/**
-	 *  \fn public  addEdge(osg::ref_ptr<Edge> edge)
+	 *  \fn public  addEdge(Edge* edge)
 	 *  \brief Adds new Edge to the Node
 	 *  \param    edge   new Edge
 	 */
-	void addEdge(osg::ref_ptr<Edge> edge);
-	void removeEdge(osg::ref_ptr<Edge> edge);
+	void addEdge(Edge* edge);
+	void removeEdge(Edge* edge);
 
 	/**
 	 *  \fn inline public  setForce(osg::Vec3f v)
@@ -433,10 +429,10 @@ private:
 	osg::Vec3f currentPosition;
 
 	/**
-	 *  QMap<qlonglong, osg::ref_ptr<Edge> > * edges
+	 *  QMap<qlonglong, Edge* > * edges
 	 *  \brief Edges connected to the Node
 	 */
-	QMap<qlonglong, osg::ref_ptr<Edge> > * edges;
+	QMap<qlonglong, Edge* > * edges;
 
 	/**
 	 *  osg::Vec3f force
@@ -512,6 +508,8 @@ private:
 	 *  \brief Text show in the label
 	 */
 	QString labelText;
+
+	osg::ref_ptr<osg::AutoTransform> nodeTransform;
 
 	osg::ref_ptr<osg::Geode> label;
 	osg::ref_ptr<osg::Geode> square;

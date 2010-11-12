@@ -9,7 +9,7 @@
 using namespace Model;
 
 typedef QMap<qlonglong, osg::ref_ptr<Node> >::const_iterator NodeIt;
-typedef QMap<qlonglong, osg::ref_ptr<Edge> >::const_iterator EdgeIt;
+typedef QMap<qlonglong, Edge* >::const_iterator EdgeIt;
 
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
@@ -165,7 +165,7 @@ void FRAlgorithm::run() {
 bool FRAlgorithm::iterate() {
 	bool changed = false;
 	QMap<qlonglong, osg::ref_ptr<Node> >* nodes = graph->getNodes();
-	QMap<qlonglong, osg::ref_ptr<Edge> >* edges = graph->getEdges();
+	QMap<qlonglong, Edge* >* edges = graph->getEdges();
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		i.value()->resetForce();
@@ -343,7 +343,7 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	dist = (-dist) * (u->getRadius() / radU);
 	//	dist = dist * (u->getRadius()+v->getRadius()) / (radU +radV);
 
-	std::cout << dist * K << std::endl;
+//	std::cout << dist << "," << K <<std::endl;
 
 	// use only view rotation to find force direction
 	fv = viewM.getRotate() * (vp - up);// smer sily
@@ -352,7 +352,7 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	fv.normalize(); // force direction
 
 
-	fv *= -(dist * K) * factor; // force size
+	fv *= -(dist* K)  * factor; // force size
 
 	//	if (u->isExpanded())
 	//			std::cout << "len: " << fv.length() << "  "<< dist<<std::endl;

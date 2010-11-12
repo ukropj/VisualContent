@@ -27,8 +27,10 @@ class Graph;
 }
 
 namespace Vwr {
-class NodeGroup;
+class SceneElements;
 class EdgeGroup;
+class OsgNode;
+class OsgEdge;
 
 /*!
  * \brief
@@ -57,7 +59,7 @@ public:
 	 * Konstruktor triedy.
 	 *
 	 */
-	SceneGraph(Model::Graph * graph);
+	SceneGraph(Model::Graph* graph);
 	/*!
 	 * Destruktor.
 	 */
@@ -68,7 +70,7 @@ public:
 	 *  \brief
 	 *  \param   graph
 	 */
-	void reload(Model::Graph * graph = 0);
+	void reload(Model::Graph* graph = 0);
 
 	/**
 	 *  \fn public  reloadConfig
@@ -96,7 +98,7 @@ public:
 	 * Metoda, ktora vracia odkaz na koren grafu.
 	 * \returns vrati odkaz na scenu
 	 */
-	osg::ref_ptr<osg::Group> const getScene() {
+	osg::ref_ptr<osg::Group> const getRoot() {
 		return root;
 	}
 
@@ -129,33 +131,24 @@ public:
 	void setFrozen(bool val);
 
 	void setNodesFreezed(bool val);
-	bool nodesFreezed;
+
+	QList<osg::Vec3f> getViewCoords() {
+		osg::Vec3f eye, center, up;
+		camera->getViewMatrixAsLookAt(eye, center, up);
+		QList<osg::Vec3f> vects;
+		vects << eye << center << up;
+		return vects;
+	}
 
 private:
 
-	/**
-	 *  Vwr::EdgeGroup * edgesGroup
-	 *  \brief edge group
-	 */
-	Vwr::EdgeGroup * edgesGroup;
-
-	/**
-	 *  Vwr::EdgeGroup * qmetaEdgesGroup
-	 *  \brief metaedge group
-	 */
-	//	Vwr::EdgeGroup * qmetaEdgesGroup;
+	bool nodesFreezed;
 
 	/**
 	 *  Vwr::NodeGroup * nodesGroup
 	 *  \brief node group
 	 */
-	Vwr::NodeGroup * nodesGroup;
-
-	/**
-	 *  Vwr::NodeGroup * qmetaNodesGroup
-	 *  \brief metanode group
-	 */
-	//	Vwr::NodeGroup * qmetaNodesGroup;
+	Vwr::SceneElements * sceneElements;
 
 	/**
 	 *  Model::Graph * graph
@@ -195,12 +188,7 @@ private:
 	 */
 	QLinkedList<osg::ref_ptr<osg::Node> > customNodeList;
 
-	osg::Vec3d getViewVector();
-	/**
-	 *  \fn private  synchronize
-	 *  \brief Synchronizes nodes and edges
-	 */
-	void synchronize();
+	osg::Vec3d getEye();
 
 	/**
 	 *  \fn private  cleanUp
@@ -218,25 +206,7 @@ private:
 	 *  int nodesPosition
 	 *  \brief nodes group position
 	 */
-	int nodesPosition;
-
-	/**
-	 *  int edgesPosition
-	 *  \brief edges group position
-	 */
-	int edgesPosition;
-
-	/**
-	 *  int qmetaNodesPosition
-	 *  \brief metanodes group position
-	 */
-	int qmetaNodesPosition;
-
-	/**
-	 *  int qmetaEdgesPosition
-	 *  \brief metaedges groups position
-	 */
-	int qmetaEdgesPosition;
+	int elementsPosition;
 
 	/**
 	 *  int customNodesPosition

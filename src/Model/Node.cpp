@@ -6,6 +6,7 @@
  * nemam cas, takze sa raz k tomu vratim 8)
  */
 #include "Model/Node.h"
+#include "Model/Edge.h"
 #include "Model/Type.h"
 #include "Model/Graph.h"
 #include "Util/Config.h"
@@ -27,7 +28,7 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph,
 	this->currentPosition = position * Util::Config::getInstance()->getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();
 	this->graph = graph;
-	this->edges = new QMap<qlonglong, osg::ref_ptr<Edge> > ;
+	this->edges = new QMap<qlonglong, Edge*> ;
 
 	int pos = 0;
 	int cnt = 0;
@@ -71,6 +72,8 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph,
 	float b = type->getValue("color.B").toFloat();
 	float a = type->getValue("color.A").toFloat();
 	this->setColor(osg::Vec4(r, g, b, a));
+
+	nodeTransform = NULL;
 }
 
 Node::~Node(void) {
@@ -83,11 +86,11 @@ Node::~Node(void) {
 	delete edges;
 }
 
-void Node::addEdge(osg::ref_ptr<Edge> edge) {
+void Node::addEdge(Edge* edge) {
 	edges->insert(edge->getId(), edge);
 }
 
-void Node::removeEdge(osg::ref_ptr<Edge> edge) {
+void Node::removeEdge(Edge* edge) {
 	edges->remove(edge->getId());
 }
 
@@ -341,11 +344,12 @@ bool Node::isPickable(osg::Geode* geode) {
 
 osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed) {
 	/// XXX
-//	float graphScale = Util::Config::getInstance()->getValue(
-//					"Viewer.Display.NodeDistanceScale").toFloat();
-//	currentPosition = osg::Vec3(targetPosition.x(),
-//			targetPosition.y(), targetPosition.z()) * graphScale;
-//	return osg::Vec3(currentPosition);
+	//	float graphScale = Util::Config::getInstance()->getValue(
+	//					"Viewer.Display.NodeDistanceScale").toFloat();
+	//	currentPosition = osg::Vec3(targetPosition.x(),
+	//			targetPosition.y(), targetPosition.z()) * graphScale;
+	//	return osg::Vec3(currentPosition);
+//	qDebug() << interpolationSpeed; //TODO monitor this
 
 	if (calculateNew) {
 		float graphScale = Util::Config::getInstance()->getValue(
@@ -359,6 +363,12 @@ osg::Vec3f Node::getCurrentPosition(bool calculateNew, float interpolationSpeed)
 				* (usingInterpolation ? interpolationSpeed : 1)
 				+ currentPosition);
 	}
-
 	return osg::Vec3(currentPosition);
+}
+
+void Node::updatePosition(float interpolationSpeed) {
+	if (nodeTransform == NULL)
+		return;
+	osg::Vec3f vec = getCurrentPosition(true, interpolationSpeed);
+	nodeTransform->setPosition(vec);
 }

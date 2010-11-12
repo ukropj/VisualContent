@@ -79,7 +79,7 @@ public:
 		connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
 
 		_timer.start(10);
-		setSceneData(sceneGr->getScene()); // TODO move to ViewerQT
+		setSceneData(sceneGr->getRoot()); // TODO move to ViewerQT
 	}
 
 	~ViewerQT() {
@@ -147,15 +147,16 @@ private:
 	 *  Vwr::CameraManipulator * manipulator
 	 *  \brief camera manipulator
 	 */
-	Vwr::CameraManipulator * manipulator;
+	Vwr::CameraManipulator* manipulator;
 
 	/**
 	 *  Vwr::PickHandler * pickHandler
 	 *  \brief pick handler
 	 */
-	Vwr::PickHandler * pickHandler;
+	Vwr::PickHandler* pickHandler;
 
 };
 }
 
 #endif
+

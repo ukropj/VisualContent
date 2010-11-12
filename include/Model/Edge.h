@@ -11,13 +11,6 @@
 #include <QTextStream>
 #include <QtCore/QMap>
 
-#include <osg/PrimitiveSet>
-#include <osg/Stateset>
-#include <osgText/Text>
-#include <osgText/FadeText>
-
-#include "Model/Node.h"
-
 namespace Model {
 class Type;
 class Node;
@@ -29,32 +22,15 @@ class Graph;
  *  \author Aurel Paulovic, Michal Paprcka
  *  \date 29. 4. 2010
  */
-class Edge: public osg::Geode {
+class Edge {
 public:
 
-	/**
-	 * \fn public constructor Edge(qlonglong id, QString name, Graph* graph, osg::ref_ptr<Model::Node> srcNode, osg::ref_ptr<Model::Node> dstNode, Type* type, bool isOriented, int pos = 0, osg::ref_ptr<osg::Camera> camera = 0)
-	 * \brief  Creates new Edge object connecting two Nodes
-	 *
-	 * \param id	ID of the Edge
-	 * \param name 		name of the Edge
-	 * \param graph 	Graph to which the Edge belongs
-	 * \param srcNode 		starting Node
-	 * \param dstNode 	ending Node
-	 * \param type 		Type of the Edge.
-	 * \param isOriented 		true if the Edge is oriented.
-	 * \param pos int		first coordinate in Drawable coordinates array
-	 * \param camera 	current camera used in viewer
-	 */
 	Edge(qlonglong id, QString name, Graph* graph,
-			osg::ref_ptr<Model::Node> srcNode,
-			osg::ref_ptr<Model::Node> dstNode, Model::Type* type,
-			bool isOriented, int pos = 0);
+			Model::Node* srcNode,
+			Model::Node* dstNode,
+			Type* type,
+			bool isOriented);
 
-	/**
-	 *  \fn public destructor  ~Edge
-	 *  \brief Destroys the Edge object
-	 */
 	~Edge(void);
 
 	/**
@@ -86,29 +62,34 @@ public:
 	}
 
 	/**
-	 * \fn inline public constant getSrcNode
-	 * \brief  Returns the starting Node of the Edge
-	 * \return osg::ref_ptr<Model::Node> starting Node of the Edge
+	 * \fn inline public constant getSrcModel::Node
+	 * \brief  Returns the starting Model::Node of the Edge
+	 * \return osg::ref_ptr<Model::Model::Node> starting Model::Node of the Edge
 	 */
-	osg::ref_ptr<Model::Node> getSrcNode() const {
+	Model::Node* getSrcNode() const {
 		return srcNode;
 	}
 
 	/**
-	 * \fn inline public constant getDstNode
-	 * \brief  Returns ending Node of the Edge
-	 * \return osg::ref_ptr<Model::Node> ending Node of the Edge
+	 * \fn inline public constant getDstModel::Node
+	 * \brief  Returns ending Model::Node of the Edge
+	 * \return osg::ref_ptr<Model::Model::Node> ending Model::Node of the Edge
 	 */
-	osg::ref_ptr<Model::Node> getDstNode() const {
+	Model::Node* getDstNode() const {
 		return dstNode;
 	}
+
+	/**
+	 * Retruns the other node of this edge.
+	 */
+	Model::Node* getOtherNode(Model::Node* node) const;
 
 	/**
 	 * \fn inline public constant getType
 	 * \brief  Returns the Type of the Edge
 	 * \return Type * Type of the Edge
 	 */
-	Model::Type* getType() const {
+	Type* getType() const {
 		return type;
 	}
 
@@ -122,21 +103,21 @@ public:
 	}
 
 	/**
-	 * \fn public linkNodes(QMap<qlonglong, osg::ref_ptr<Edge> > *edges)
-	 * \brief  Links the Edge to it's Nodes and adds itself to the edges
+	 * \fn public linkModel::Nodes(QMap<qlonglong, osg::ref_ptr<Edge> > *edges)
+	 * \brief  Links the Edge to it's Model::Nodes and adds itself to the edges
 	 * \param  edges
 	 */
-	void linkNodes(QMap<qlonglong, osg::ref_ptr<Edge> > *edges);
+	void linkNodes(QMap<qlonglong, Edge* > *edges);
 
 	/**
-	 * \fn public unlinkNodes
-	 * \brief Unlinks the Edge from the Nodes
+	 * \fn public unlinkModel::Nodes
+	 * \brief Unlinks the Edge from the Model::Nodes
 	 */
 	void unlinkNodes();
 
 	/**
-	 * \fn public unlinkNodesAndRemoveFromGraph
-	 * \brief Unlinks the Edge from the Nodes and removes the Edge from it's Graph
+	 * \fn public unlinkModel::NodesAndRemoveFromGraph
+	 * \brief Unlinks the Edge from the Model::Nodes and removes the Edge from it's Graph
 	 */
 	void unlinkNodesAndRemoveFromGraph();
 
@@ -156,62 +137,9 @@ public:
 	 *  \brief Returns length of the Edge
 	 *  \return float length of the Edge
 	 */
-	float getLength() const {
-		return length;
-	}
-
-	/**
-	 *  \fn public  updateCoordinates(osg::Vec3 srcPos, osg::Vec3 dstNode)
-	 *  \brief Updates coordinates of the Edge
-	 *  \param    srcPos    new coordinates of the starting Node
-	 *  \param   dstNode    new coordinates of the ending Node
-	 */
-	void updateGeometry(osg::Vec3 viewVec = osg::Vec3d(0, 0, 1));
-
-	/**
-	 *  \fn inline public constant  getEdgeColor
-	 *  \brief Returns the color of the Edge
-	 *  \return osg::Vec4 color of the Edge
-	 */
-	osg::Vec4 getEdgeColor() const {
-		if (selected)
-			return osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f);
-		else
-			return edgeColor;
-	}
-
-	/**
-	 *  \fn inline public  setEdgeColor(osg::Vec4 val)
-	 *  \brief Sets the color of the Edge
-	 *  \param     val   new color
-	 */
-	void setEdgeColor(osg::Vec4 color) {
-		edgeColor = color;
-		if (geometry != NULL) {
-			osg::Vec4Array * colorArray =
-					dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
-			colorArray->pop_back();
-			colorArray->push_back(color);
-		}
-	}
-
-	/**
-	 *  \fn inline public constant  isSelected
-	 *  \brief Returns selected flag
-	 *  \return bool true, if the Edge is selected
-	 */
-	bool isSelected() const {
-		return selected;
-	}
-
-	/**
-	 *  \fn inline public  setSelected(bool val)
-	 *  \brief Sets the selected flag of the Edge
-	 *  \param       val   true, if the Edge is selected
-	 */
-	void setSelected(bool val) {
-		selected = val;
-	}
+//	float getLength() const {
+//		return (srcModel::Node->getCurrentPosition() - dstModel::Node->getCurrentPosition()).length();
+//	}
 
 	/**
 	 *  \fn inline public  getGraph
@@ -221,15 +149,6 @@ public:
 	Graph* getGraph() {
 		return graph;
 	}
-
-	void showLabel(bool visible) {
-		if (this->containsDrawable(label) && !visible)
-			removeDrawable(label);
-		if (!this->containsDrawable(label) && visible)
-			addDrawable(label);
-	}
-
-	static osg::ref_ptr<osg::StateSet> getStateSetInstance(bool oriented);
 
 private:
 	/**
@@ -252,22 +171,22 @@ private:
 	QString name;
 
 	/**
-	 *  osg::ref_ptr<Model::Node> srcNode
-	 *  \brief Starting Node of the Edge
+	 *  osg::ref_ptr<Model::Model::Node> srcModel::Node
+	 *  \brief Starting Model::Node of the Edge
 	 */
-	osg::ref_ptr<Model::Node> srcNode;
+	Model::Node* srcNode;
 
 	/**
-	 *  osg::ref_ptr<Model::Node> dstNode
-	 *  \brief Ending Node of the Edge
+	 *  osg::ref_ptr<Model::Model::Node> dstModel::Node
+	 *  \brief Ending Model::Node of the Edge
 	 */
-	osg::ref_ptr<Model::Node> dstNode;
+	Model::Node* dstNode;
 
 	/**
 	 *  Type * type
 	 *  \brief Type of the Edge
 	 */
-	Model::Type* type;
+	Type* type;
 
 	/**
 	 *  bool oriented
@@ -285,29 +204,6 @@ private:
 	 *  bool selected
 	 *  \brief True, if edge is picked
 	 */
-	bool selected;
-
-	osg::ref_ptr<osg::Geometry> geometry;
-
-	/**
-	 *  osg::ref_ptr label
-	 *  \brief Label of the Edge
-	 */
-	osg::ref_ptr<osgText::FadeText> label;
-
-	/**
-	 *  osg::Vec4 edgeColor
-	 *  \brief Color of the Edge
-	 */
-	osg::Vec4 edgeColor;
-
-	osg::ref_ptr<osg::Geometry> createGeometry();
-
-	osg::ref_ptr<osgText::FadeText> createLabel(QString text);
-
-	static osg::ref_ptr<osg::StateSet> stateSet;
-	static osg::ref_ptr<osg::StateSet> stateSetOriented;
-	static osg::ref_ptr<osg::StateSet> createStateSet(bool oriented);
 };
 }
 
