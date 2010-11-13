@@ -13,8 +13,10 @@
 #include <osg/AutoTransform>
 #include <osg/Group>
 
-#include "Model/Node.h"
-#include "Model/Edge.h"
+namespace Model {
+class Node;
+class Edge;
+}
 
 namespace Vwr {
 class SceneGraph;
@@ -31,11 +33,12 @@ class SceneElements {
 public:
 
 	/**
-	 *  \fn public constructor  NodeGroup(QMap<qlonglong, osg::ref_ptr<Model::Node> > *nodes)
+	 *  \fn public constructor  NodeGroup(QMap<qlonglong, Model::Node* > *nodes)
 	 *  \brief Creates node group
 	 *  \param  nodes    nodes to wrap
 	 */
-	SceneElements(QMap<qlonglong, osg::ref_ptr<Model::Node> > *nodes, SceneGraph* sceneGraph);
+	SceneElements(QMap<qlonglong, Model::Node* > *nodes,
+			SceneGraph* sceneGraph);
 
 	/**
 	 *  \fn public destructor  ~NodeGroup
@@ -48,29 +51,17 @@ public:
 	void updateEdgeCoords();
 
 	/**
-	 *  \fn public  synchronizeNodes
-	 *  \brief Synchronizes all drawn nodes with given node map
-	 */
-	void synchronizeNodes();
-
-	/**
-	 *  \fn public  freezeNodePositions
-	 *  \brief Freezes nodes
-	 */
-	void freezeNodePositions();
-
-	/**
 	 *  \fn inline public  getGroup
 	 *  \brief Returns wrapped nodes group
 	 *  \return osg::ref_ptr nodes group
 	 */
-	osg::ref_ptr<osg::Group> getGroup() {
+	osg::ref_ptr<osg::Group> getElementsGroup() {
 		return group;
 	}
 
-//	QMap<qlonglong, osg::ref_ptr<OsgNode> >* getNode() {
-//			return &nodes;
-//	}
+	QMap<qlonglong, osg::ref_ptr<OsgNode> >* getNodes() {
+		return &nodes;
+	}
 
 	QMap<qlonglong, osg::ref_ptr<OsgEdge> >* getEdges() {
 		return &edges;
@@ -83,7 +74,7 @@ private:
 	 *  QMap<qlonglong,osg::ref_ptr<OsgNode> > nodes
 	 *  \brief wrapped nodes
 	 */
-	QMap<qlonglong, osg::ref_ptr<Model::Node> > nodes;
+	QMap<qlonglong, osg::ref_ptr<OsgNode> > nodes;
 	QMap<qlonglong, osg::ref_ptr<OsgEdge> > edges;
 
 	/**
@@ -99,29 +90,28 @@ private:
 	void initNodes();
 
 	/**
-	 *  \fn private  wrapChild(osg::ref_ptr<Model::Node> node, float graphScale)
+	 *  \fn private  wrapChild(Model::Node* node, float graphScale)
 	 *  \brief Wraps node as a transform
 	 *  \param      node    node to wrap
 	 *  \param      graphScale     graph scale
 	 *  \return osg::ref_ptr node transform
 	 */
-	osg::ref_ptr<osg::AutoTransform> wrapNode(osg::ref_ptr<Model::Node> node,
-			float graphScale);
+	osg::ref_ptr<osg::AutoTransform> wrapNode(Model::Node* node);
 
 	osg::ref_ptr<osg::Group> wrapEdge(Model::Edge* edge);
 
 	/**
-	 *  \fn private  getNodeGroup(osg::ref_ptr<Model::Node> node, osg::ref_ptr<Model::Edge> parentEdge, float graphScale)
+	 *  \fn private  getNodeGroup(Model::Node* node, osg::ref_ptr<Model::Edge> parentEdge, float graphScale)
 	 *  \brief Recursively traverses all node and its children and creates a group from them
 	 *  \param       node    node to group
 	 *  \param       parentEdge    Edge with which was this node connected to its parent
 	 *  \param       graphScale     graph scale
 	 *  \return osg::ref_ptr nodes group
 	 */
-	osg::ref_ptr<osg::Group> getNodeGroup(osg::ref_ptr<Model::Node> node,
-			Model::Edge* parentEdge, float graphScale);
+	osg::ref_ptr<osg::Group> getNodeGroup(Model::Node* node,
+			Model::Edge* parentEdge);
 
-	osg::ref_ptr<osg::Group> getNodeGroup(osg::ref_ptr<Model::Node> node, float graphScale);
+	osg::ref_ptr<osg::Group> getNodeGroup(Model::Node* node);
 };
 }
 

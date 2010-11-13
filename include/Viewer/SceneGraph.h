@@ -19,9 +19,6 @@
 #include <QMap>
 #include <QLinkedList>
 
-#include "Model/Edge.h"
-#include "Model/Node.h"
-
 namespace Model {
 class Graph;
 }
@@ -32,37 +29,9 @@ class EdgeGroup;
 class OsgNode;
 class OsgEdge;
 
-/*!
- * \brief
- * Trieda vykreslujuca aktualny graf.
- *
- * \author
- * Michal Paprcka
- * \version
- * 3.0
- * \date
- * 7.12.2009
- */
 class SceneGraph {
 public:
-	/*!
-	 *
-	 * \param in_nodes
-	 * Zoznam uzlov
-	 *
-	 * \param in_edges
-	 * Zoznam hran
-	 *
-	 * \param in_types
-	 * Zoznam typov
-	 *
-	 * Konstruktor triedy.
-	 *
-	 */
 	SceneGraph(Model::Graph* graph);
-	/*!
-	 * Destruktor.
-	 */
 	~SceneGraph();
 
 	/**
@@ -130,7 +99,7 @@ public:
 	 */
 	void setFrozen(bool val);
 
-	void setNodesFreezed(bool val);
+	void setUpdating(bool val);
 
 	QList<osg::Vec3f> getViewCoords() {
 		osg::Vec3f eye, center, up;
@@ -142,7 +111,7 @@ public:
 
 private:
 
-	bool nodesFreezed;
+	bool isUpdating;
 
 	/**
 	 *  Vwr::NodeGroup * nodesGroup

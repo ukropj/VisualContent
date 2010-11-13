@@ -3,8 +3,6 @@
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
 #include "Viewer/SkyTransform.h"
-
-#include "Util/DataHelper.h"
 #include "Util/TextureWrapper.h"
 #include "Util/Config.h"
 #include "Model/Graph.h"
@@ -13,6 +11,7 @@
 #include <osg/Geode>
 #include <osg/Node>
 #include <osg/Group>
+#include <osg/ShapeDrawable>
 #include <osgWidget/Box>
 #include <osgWidget/Label>
 #include <osgWidget/Window>
@@ -28,7 +27,6 @@ using namespace Vwr;
 
 osg::ref_ptr<osg::Node> experiments() {
 
-
 	osgWidget::Label* label = new osgWidget::Label("", "");
 	label->addSize(22.0f, 22.0f);
 	label->setColor(1.0f, 1.0f, 1.0f, 0.5f);
@@ -41,16 +39,16 @@ osg::ref_ptr<osg::Node> experiments() {
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(label);
 
-//	osgWidget::Window* widget = new osgWidget::Widget("");
-//	osgWidget::Box* widget = new osgWidget::Box("");
-//	widget->addWidget(label);
+	//	osgWidget::Window* widget = new osgWidget::Widget("");
+	//	osgWidget::Box* widget = new osgWidget::Box("");
+	//	widget->addWidget(label);
 	//	widget->attachMoveCallback();
 	//	widget->attachScaleCallback();
 	//	widget->resize();
 
 
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
-	at->setPosition(osg::Vec3f(0,0,0));
+	at->setPosition(osg::Vec3f(0, 0, 0));
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 	at->addChild(geode);
 
@@ -95,12 +93,13 @@ SceneGraph::SceneGraph(Model::Graph* graph) {
 	backgroundPosition = 0;
 
 	reload(graph);
-//	customNodeList.append(experiments());
+	//	customNodeList.append(experiments());
 
-//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
+	//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
 }
 
 void SceneGraph::reload(Model::Graph * newGraph) {
+	isUpdating = false;
 	cleanUp();
 	int currentPos = 1;
 
@@ -112,7 +111,7 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 	graph = newGraph;
 
 	sceneElements = new SceneElements(graph->getNodes(), this);
-	root->addChild(sceneElements->getGroup());
+	root->addChild(sceneElements->getElementsGroup());
 	elementsPosition = currentPos++;
 
 	customNodesPosition = currentPos;
@@ -120,7 +119,9 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 	osgUtil::Optimizer opt;
 	opt.optimize(root, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
 
-	nodesFreezed = false;
+	isUpdating = true;
+
+//	qDebug() << "scene on for graph " << graph->getName();
 }
 
 void SceneGraph::cleanUp() {
@@ -186,33 +187,32 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 }
 
 void SceneGraph::update() {
-	root->removeChildren(customNodesPosition, 1); // XXX
+	if (!isUpdating)
+		return;
 
-	float graphScale = Util::Config::getValue(
-			"Viewer.Display.NodeDistanceScale").toFloat();
+	root->removeChildren(customNodesPosition, 1); // XXX why?
 
-	if (!this->nodesFreezed) {
-		float interpolationSpeed = Util::Config::getValue(
-				"Viewer.Display.InterpolationSpeed").toFloat();
-		sceneElements->updateNodeCoords(interpolationSpeed);
-	} else {
-		sceneElements->updateNodeCoords(1);
-	}
-
+	float interpolationSpeed = Util::Config::getValue(
+			"Viewer.Display.InterpolationSpeed").toFloat();
+	sceneElements->updateNodeCoords(interpolationSpeed);
 	sceneElements->updateEdgeCoords();
+
 	root->addChild(initCustomNodes());
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
-	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(*sceneElements->getEdges());
+	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(
+			*sceneElements->getEdges());
 	while (i.hasNext()) {
 		i.next();
 		i.value()->showLabel(visible);
 	}
+	qDebug() << "edge values shown";
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {
-	QMapIterator<qlonglong, osg::ref_ptr<Model::Node> > i(*graph->getNodes());
+	QMapIterator<qlonglong, osg::ref_ptr<OsgNode> > i(
+			*sceneElements->getNodes());
 	while (i.hasNext()) {
 		i.next();
 		i.value()->showLabel(visible);
@@ -224,7 +224,8 @@ void SceneGraph::reloadConfig() {
 
 	root->setChild(backgroundPosition, createSkyBox());
 
-	QMapIterator<qlonglong, osg::ref_ptr<Model::Node> > i(*graph->getNodes());
+	QMapIterator<qlonglong, osg::ref_ptr<OsgNode> > i(
+			*sceneElements->getNodes());
 	while (i.hasNext()) {
 		i.next();
 		i.value()->reloadConfig();
@@ -235,9 +236,8 @@ SceneGraph::~SceneGraph() {
 	cleanUp();
 }
 
-void SceneGraph::setNodesFreezed(bool val) {
-	this->nodesFreezed = val;
-	sceneElements->freezeNodePositions();
+void SceneGraph::setUpdating(bool val) {
+	isUpdating = val;
 }
 
 void SceneGraph::setFrozen(bool val) {

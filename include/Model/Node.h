@@ -5,21 +5,14 @@
 #ifndef DATA_NODE_DEF
 #define DATA_NODE_DEF 1
 
+#include <osg/Vec3f>
 #include <vector>
 #include <string>
 #include <QMap>
 #include <QString>
 #include <QTextStream>
 
-#include <osg/Vec3f>
-#include <osg/Geode>
-#include <osg/Switch>
-#include <osg/Geometry>
-#include <osg/BlendFunc>
-#include <osg/Depth>
-#include <osg/CullFace>
-#include <osg/AutoTransform>
-#include <osgText/Text>
+#include "Viewer/OsgNode.h"
 
 namespace Model {
 class Type;
@@ -32,25 +25,10 @@ class Graph;
  *  \author Aurel Paulovic, Michal Paprcka
  *  \date 29. 4. 2010
  */
-class Node: public osg::Switch {
+class Node {
 public:
 
-	/**
-	 *  \fn public constructor  Node(qlonglong id, QString name, Type* type, Graph* graph, osg::Vec3f position)
-	 *  \brief Creates new Node object
-	 *  \param  id     ID of the Node
-	 *  \param  name     name of the Node
-	 *  \param  type    Type of the Node
-	 *  \param  graph   Graph to which the Node belongs
-	 *  \param  position    Node position in space
-	 */
-	Node(qlonglong id, QString name, Type* type, Graph* graph,
-			osg::Vec3f position);
-
-	/**
-	 *  \fn public virtual destructor  ~Node
-	 *  \brief Destroys the Node object
-	 */
+	Node(qlonglong id, QString name, Type* type, Graph* graph);
 	~Node(void);
 
 	/**
@@ -87,7 +65,6 @@ public:
 	 */
 	void setName(QString val) {
 		name = val;
-		osg::Group::setName(val.toStdString());
 	}
 
 	/**
@@ -113,8 +90,8 @@ public:
 	 *  \brief Returns node target position in space
 	 *  \return osg::Vec3f node position
 	 */
-	osg::Vec3f getTargetPosition() const {
-		return osg::Vec3(targetPosition);
+	osg::Vec3f getPosition() const {
+		return osg::Vec3f(position);
 	}
 
 	/**
@@ -122,35 +99,8 @@ public:
 	 *  \brief Sets node target position in space
 	 *  \param      val   new position
 	 */
-	void setTargetPosition(osg::Vec3f val) {
-		targetPosition.set(val);
-	}
-
-	/**
-	 *  \fn public  getCurrentPosition(bool calculateNew = false, float interpolationSpeed = 1.0f)
-	 *  \brief Returns node actual position
-	 *  \param      calculateNew    If true, new position will be calculated through interpolation
-	 *  \param      float   interpolation speed
-	 *  \return osg::Vec3f actual position
-	 *
-	 *
-	 */
-	osg::Vec3f getCurrentPosition(bool calculateNew = false,
-			float interpolationSpeed = 1.0f);
-
-	/**
-	 *  \fn inline public  setCurrentPosition(osg::Vec3f val)
-	 *  \brief Sets current node position
-	 *  \param   val  current node position
-	 */
-	void setCurrentPosition(osg::Vec3f val) {
-		currentPosition.set(val);
-	}
-
-	void updatePosition(float interpolationSpeed);
-
-	void setNodeTansform(osg::ref_ptr<osg::AutoTransform> transform) {
-		this->nodeTransform = transform;
+	void setPosition(osg::Vec3f pos) {
+		position.set(pos);
 	}
 
 	/**
@@ -218,7 +168,11 @@ public:
 	 *  \brief Sets node fixed state
 	 *  \param     fixed     fixed state
 	 */
-	bool setFixed(bool flag);
+	bool setFixed(bool flag) {
+		if (flag == isFixed())
+			return false;
+		fixed = flag;
+	}
 
 	/**
 	 *  \fn inline public constant  isFixed
@@ -231,7 +185,6 @@ public:
 
 	void setFrozen(bool flag) {
 		frozen = flag;
-		setUsingInterpolation(!frozen);
 	}
 
 	/**
@@ -241,22 +194,6 @@ public:
 	 */
 	bool isFrozen() const {
 		return frozen;
-	}
-
-	/**
-	 *  \fn inline public  setSelected(bool selected)
-	 *  \brief Sets node picked state
-	 *  \param     selected     picked state
-	 */
-	bool setSelected(bool flag);
-
-	/**
-	 *  \fn inline public constant  isSelected
-	 *  \brief Returns if the Node is selected
-	 *  \return bool true, if the Node is selected
-	 */
-	bool isSelected() const {
-		return selected;
 	}
 
 	/**
@@ -277,16 +214,6 @@ public:
 		return ignore;
 	}
 
-	bool isExpanded() const {
-		return expanded;
-	}
-
-	void toggleExpanded() {
-		setExpanded(!expanded);
-	}
-
-	bool setExpanded(bool flag);
-
 	/**
 	 *  \fn inline public  setVelocity(osg::Vec3f v)
 	 *  \brief Sets node force for next iteration
@@ -301,7 +228,7 @@ public:
 	 *  \brief Reset node force for next iteration
 	 */
 	void resetVelocity() {
-		velocity = osg::Vec3(0, 0, 0);
+		velocity = osg::Vec3f(0, 0, 0);
 	}
 
 	/**
@@ -329,69 +256,27 @@ public:
 	QString toString() const {
 		QString str;
 		QTextStream(&str) << "N" << id << " " << name << "["
-				<< targetPosition.x() << "," << targetPosition.y() << ","
-				<< targetPosition.z() << "]" << (isFixed() ? "fixed" : "");
+				<< position.x() << "," << position.y() << ","
+				<< position.z() << "]" << (isFixed() ? "fixed" : "");
 		return str;
 	}
 
-	/**
-	 *  \fn inline public  setColor(osg::Vec4 color)
-	 *  \brief Sets default node color
-	 *  \param     color   default color
-	 */
-	void setColor(osg::Vec4 color) {
-		this->color = color;
-
-		if (!selected)
-			setNodeColor(0, color);
+	QString getLabel() const {
+		return labelText;
 	}
 
-	/**
-	 *  \fn inline public constant  getColor
-	 *  \brief Returns color of the Node
-	 *  \return osg::Vec4 color of the Node
-	 */
-	osg::Vec4 getColor() const {
-		return color;
+	void setOsgNode(osg::ref_ptr<Vwr::OsgNode> osgNode) {
+		this->osgNode = osgNode;
 	}
 
-	float getRadius() const;
-
-	/**
-	 *  \fn public  showLabel(bool visible)
-	 *  \brief If true, node name will be shown.
-	 *  \param     visible     node name shown
-	 */
-	void showLabel(bool visible);
-
-	/**
-	 *  \fn inline public constant  isUsingInterpolation
-	 *  \brief Returns if the Node is using interpolation or not
-	 *  \return bool true, if the Node is using interpolation
-	 */
-	bool isUsingInterpolation() const {
-		return usingInterpolation;
+	osg::ref_ptr<Vwr::OsgNode> getOsgNode() {
+		return osgNode;
 	}
 
-	/**
-	 *  \fn inline public  setUsingInterpolation(bool val)
-	 *  \brief Sets if the Node is using interpolation or not
-	 *  \param      val
-	 */
-	void setUsingInterpolation(bool val) {
-		usingInterpolation = val;
-	}
-
-	/**
-	 *  \fn public  reloadConfig
-	 *  \brief Reloads node configuration
-	 */
-	void reloadConfig();
-
-	bool isPickable(osg::Geode* geode);
 
 private:
 
+	osg::ref_ptr<Vwr::OsgNode> osgNode;
 	/**
 	 *	qlonglong id
 	 *	\brief ID of the Node
@@ -403,6 +288,7 @@ private:
 	 *  \brief Name of the Node
 	 */
 	QString name;
+	QString labelText;
 
 	/**
 	 *  Type * type
@@ -420,13 +306,7 @@ private:
 	 *  osg::Vec3f targetPosition
 	 *  \brief node target position
 	 */
-	osg::Vec3f targetPosition;
-
-	/**
-	 *  osg::Vec3f currentPosition
-	 *  \brief node current position
-	 */
-	osg::Vec3f currentPosition;
+	osg::Vec3f position;
 
 	/**
 	 *  QMap<qlonglong, Edge* > * edges
@@ -466,56 +346,6 @@ private:
 	 */
 	bool ignore;
 
-	/**
-	 *  bool selected
-	 *  \brief node selected state - node was selected by user
-	 */
-	bool selected;
-
-	/**
-	 *  bool usingInterpolation
-	 *  \brief node interpolation usage
-	 */
-	bool usingInterpolation;
-
-	bool expanded;
-
-	osg::ref_ptr<osg::StateSet> createStateSet();
-
-	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<
-			osg::Texture2D> texture, const float scale = 1);
-
-	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
-
-	osg::ref_ptr<osg::Geode> createSquare(const float scale = 1);
-
-	/**
-	 *  osg::Vec4 color
-	 *  \brief Color of the Node
-	 */
-	osg::Vec4 color;
-
-	/**
-	 *  \fn private  setDrawableColor(int pos, osg::Vec4 color)
-	 *  \brief Sets drawble color
-	 *  \param     pos     drawable position
-	 *  \param     color     drawable color
-	 */
-	void setNodeColor(int pos, osg::Vec4 color);
-
-	/**
-	 *  QString labelText
-	 *  \brief Text show in the label
-	 */
-	QString labelText;
-
-	osg::ref_ptr<osg::AutoTransform> nodeTransform;
-
-	osg::ref_ptr<osg::Geode> label;
-	osg::ref_ptr<osg::Geode> square;
-
-	osg::ref_ptr<osg::Geode> nodeSmall;
-	osg::ref_ptr<osg::Geode> nodeLarge;
 };
 }
 

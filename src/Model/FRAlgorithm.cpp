@@ -4,12 +4,13 @@
 #include "Model/Graph.h"
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
+#include "Viewer/OsgNode.h"
 #include <iostream>
 
 using namespace Model;
 
-typedef QMap<qlonglong, osg::ref_ptr<Node> >::const_iterator NodeIt;
-typedef QMap<qlonglong, Edge* >::const_iterator EdgeIt;
+typedef QMap<qlonglong, Node*>::const_iterator NodeIt;
+typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
 
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
@@ -77,7 +78,7 @@ void FRAlgorithm::randomize() {
 		Node* node = i.value();
 		if (!node->isFixed()) {
 			osg::Vec3f randPos = getRandomLocation();
-			node->setTargetPosition(randPos);
+			node->setPosition(randPos);
 		}
 	}
 	state = orig;
@@ -164,7 +165,7 @@ void FRAlgorithm::run() {
 
 bool FRAlgorithm::iterate() {
 	bool changed = false;
-	QMap<qlonglong, osg::ref_ptr<Node> >* nodes = graph->getNodes();
+	QMap<qlonglong, Node*>* nodes = graph->getNodes();
 	QMap<qlonglong, Edge* >* edges = graph->getEdges();
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
@@ -198,7 +199,7 @@ bool FRAlgorithm::iterate() {
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		Node* u = i.value();
 		if (!u->isFrozen() && !u->isFixed()) {
-			last = u->getTargetPosition();
+			last = u->getPosition();
 			bool fo = applyForces(u);
 			changed = changed || fo;
 		} else {
@@ -227,7 +228,7 @@ bool FRAlgorithm::applyForces(Node* node) {
 		fv += node->getVelocity();
 
 		// ulozime novu polohu
-		node->setTargetPosition(node->getTargetPosition() + fv);
+		node->setPosition(node->getPosition() + fv);
 
 		// energeticka strata = 1-flexibilita
 		fv *= flexibility;
@@ -241,8 +242,8 @@ bool FRAlgorithm::applyForces(Node* node) {
 
 /* Pricitanie pritazlivych sil */
 void FRAlgorithm::addAttractive(Edge* edge, float factor) {
-	up = edge->getSrcNode()->getTargetPosition();
-	vp = edge->getDstNode()->getTargetPosition();
+	up = edge->getSrcNode()->getPosition();
+	vp = edge->getDstNode()->getPosition();
 	dist = distance(up, vp);
 	if (dist == 0)
 		return;
@@ -254,23 +255,10 @@ void FRAlgorithm::addAttractive(Edge* edge, float factor) {
 	edge->getDstNode()->addForce(fv);
 }
 
-/* Pricitanie pritazlivych sil od metazla */
-void FRAlgorithm::addMetaAttractive(Node* u, Node* meta, float factor) {
-	up = u->getTargetPosition();
-	vp = meta->getTargetPosition();
-	dist = distance(up, vp);
-	if (dist == 0)
-		return;
-	fv = vp - up;// smer sily
-	fv.normalize();
-	fv *= attr(dist) * factor;// velkost sily
-	u->addForce(fv);
-}
-
 /* Pricitanie odpudivych sil */
 void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
-	up = u->getTargetPosition();
-	vp = v->getTargetPosition();
+	up = u->getPosition();
+	vp = v->getPosition();
 	dist = distance(up, vp);
 	if (useMaxDistance && dist > MAX_DISTANCE) {
 		//		std::cout << "max dist" << std::endl;
@@ -295,15 +283,20 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	if (camera == NULL)
 		return;
 
-	up = u->getCurrentPosition(false);
-	vp = v->getCurrentPosition(false);
+	Vwr::OsgNode* ou = u->getOsgNode();
+	Vwr::OsgNode* ov = v->getOsgNode();
+	if (ou== NULL || ov ==NULL)
+		return;
+
+	up = ou->getPosition();
+	vp = ov->getPosition();
 
 	osg::Matrixd viewM = camera->getViewMatrix();
 
 	// test if the expanded node is befind the other node
 	osg::Vec3f upTemp = viewM.getRotate() * up;
 	osg::Vec3f vpTemp = viewM.getRotate() * vp;
-	if (!(u->isExpanded() && upTemp.z() <= vpTemp.z()) && !(v->isExpanded()
+	if (!(ou->isExpanded() && upTemp.z() <= vpTemp.z()) && !(ov->isExpanded()
 			&& vpTemp.z() <= upTemp.z())) {
 		return;
 	}
@@ -321,9 +314,10 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 		return;
 
 	// determine (projected) radius of each node
-	osg::Vec3f r = up + osg::Vec3f(u->getRadius(), 0, 0);
+	osg::Vec3f r;
+	r= up + osg::Vec3f(ou->getRadius(), 0, 0);
 	float radU = ((up * m) - (r * m)).length(); // TODO this might not be the correct/best way
-	r = vp + osg::Vec3f(v->getRadius(), 0, 0);
+	r = vp + osg::Vec3f(ov->getRadius(), 0, 0);
 	float radV = ((vp * m) - (r * m)).length();
 
 	//	if (u->isExpanded())
@@ -340,7 +334,7 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	// transform dist back to world coordinates XXX pseudomath
 
 	dist -= (radU + radV);
-	dist = (-dist) * (u->getRadius() / radU);
+	dist = (-dist) * (ou->getRadius() / radU);
 	//	dist = dist * (u->getRadius()+v->getRadius()) / (radU +radV);
 
 //	std::cout << dist << "," << K <<std::endl;

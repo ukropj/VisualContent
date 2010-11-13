@@ -4,6 +4,8 @@
  */
 
 #include "Core/IOManager.h"
+#include "Model/Graph.h"
+#include "Util/Config.h"
 
 using namespace AppCore;
 using namespace Model;
@@ -68,8 +70,8 @@ Graph* IOManager::loadGraph(QString filepath,
 		Type *edgeType = newGraph->addType("edge");
 		Type *nodeType = newGraph->addType("node");
 
-		QMap<QString, osg::ref_ptr<Node> >* readNodes = new QMap<QString,
-				osg::ref_ptr<Node> > ();
+		QMap<QString, Node* >* readNodes = new QMap<QString,
+				Node* > ();
 		// skusal som aj cez QList, ale vobec mi to neslo, tak som to spravil len takto jednoducho cez pole
 		int colors = 6;
 		// pole farieb FIXME prerobit cez nejaky QList alebo nieco take, oddelit farby hran od farieb uzlov
@@ -172,7 +174,7 @@ Graph* IOManager::loadGraph(QString filepath,
 					}
 
 					// ak nebol najdeny ziaden typ, tak pouzijeme defaultny typ
-					osg::ref_ptr<Node> node;
+					Node* node;
 					if (newNodeType == NULL)
 						node = newGraph->addNode(name, nodeType);
 					else
@@ -377,9 +379,9 @@ void IOManager::runTestCase(qint32 action) {/*
  }
  }
 
- QMap<qlonglong, osg::ref_ptr<Node> >* gNodes = g->getNodes();
- osg::ref_ptr<Node> n1;
- osg::ref_ptr<Node> n2;
+ QMap<qlonglong, Node* >* gNodes = g->getNodes();
+ Node* n1;
+ Node* n2;
  qlonglong iteration = 0;
  foreach(qlonglong i, gNodes->keys()) {
  if(iteration==0) {
@@ -422,7 +424,7 @@ void IOManager::runTestCase(qint32 action) {/*
  case 2:
  qDebug() << "Starting testCase 2";
 
- osg::ref_ptr<Node> selectedNode = g->getNodes()->values().at(10);
+ Node* selectedNode = g->getNodes()->values().at(10);
 
  qDebug() << "Removing node: " << selectedNode->toString();
  g->removeNode(selectedNode);
@@ -451,8 +453,8 @@ void IOManager::runTestCase(qint32 action) {/*
  Graph* g = Model::GraphDAO::addGraph("testCase1",this->db->tmpGetConn()); //vytvorenie grafu
  Type* t1 = g->addType("type");
  Type* t2 = g->addType("type2");
- osg::ref_ptr<Node> n1 = g->addNode("node1",t1);
- osg::ref_ptr<Node> n2 = g->addNode("node2",t1);
+ Node* n1 = g->addNode("node1",t1);
+ Node* n2 = g->addNode("node2",t1);
  osg::ref_ptr<Edge> e1 = g->addEdge("edge1",n1,n2,t2,true);
  g->addEdge("edge2",n1,n2,t2,true);
  g->addEdge("edge3",n1,n2,t2,true);
@@ -473,8 +475,8 @@ void IOManager::runTestCase(qint32 action) {/*
  Graph* g = Model::GraphDAO::addGraph("testCase1",this->db->tmpGetConn()); //vytvorenie grafu
  Type* t1 = g->addType("type");
  Type* t2 = g->addType("type2");
- osg::ref_ptr<Node> n1 = g->addNode("node1",t1);
- osg::ref_ptr<Node> n2 = g->addNode("node2",t1);
+ Node* n1 = g->addNode("node1",t1);
+ Node* n2 = g->addNode("node2",t1);
  osg::ref_ptr<Edge> e1 = g->addEdge("edge1",n1,n2,t2,true);
  g->removeEdge(e1);
  e1 = NULL;
@@ -494,8 +496,8 @@ void IOManager::runTestCase(qint32 action) {/*
  Type* t1 = g->addType("type");
  MetaType* t2 = g->addMetaType("type2");
  Type* t3 = g->addType("type3");
- osg::ref_ptr<Node> n1 = g->addNode("node1",t1);
- osg::ref_ptr<Node> n2 = g->addNode("node2",t1);
+ Node* n1 = g->addNode("node1",t1);
+ Node* n2 = g->addNode("node2",t1);
  osg::ref_ptr<Edge> e1 = g->addEdge("edge1",n1,n2,t2,true);
  g->addEdge("edge2",n1,n2,t2,true);
  g->addEdge("edge3",n1,n2,t3,true);

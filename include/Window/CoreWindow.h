@@ -94,7 +94,7 @@ public slots:
 	 *  \brief Center the view
 	 *  \param   checked     flag if button is checked
 	 */
-	void centerView(bool checked);
+	void centerView();
 
 	/**
 	 *  \fn public  fixNodes
@@ -145,6 +145,7 @@ public slots:
 
 protected:
 	void closeEvent(QCloseEvent *event);
+	void setSelectedFixed(bool fixed);
 
 private:
 
@@ -188,7 +189,7 @@ private:
 	 *  QPushButton * multiSelect
 	 *  \brief Action for multi-select mode
 	 */
-	QPushButton * multiSelectB;
+	QPushButton * randomizeB;
 
 	/**
 	 *  QPushButton * center

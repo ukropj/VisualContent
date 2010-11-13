@@ -1,6 +1,8 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
+#include "Model/Node.h"
+#include "Model/Edge.h"
 #include "Util/Config.h"
 
 #include <QDebug>
@@ -9,7 +11,7 @@
 using namespace Vwr;
 using namespace Model;
 
-SceneElements::SceneElements(QMap<qlonglong, osg::ref_ptr<Node> > *nodes,
+SceneElements::SceneElements(QMap<qlonglong, Node*> *nodes,
 		SceneGraph* sceneGraph) {
 	this->sceneGraph = sceneGraph;
 
@@ -21,25 +23,23 @@ SceneElements::SceneElements(QMap<qlonglong, osg::ref_ptr<Node> > *nodes,
 	float graphScale = Util::Config::getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();
 
-	QMapIterator<qlonglong, osg::ref_ptr<Node> > i(*nodes);
+	QMapIterator<qlonglong, Node* > i(*nodes);
 
 	//	if (i.hasNext()) {
 	//		i.next();
-	//		nodeGroup->addChild(wrapNode(i.value(), graphScale));
-	//		nodeGroup->addChild(getNodeGroup(i.value(), graphScale));
+	//		nodeGroup->addChild(wrapNode(i.value()));
+	//		nodeGroup->addChild(getNodeGroup(i.value()));
 	//	}
 
 	while (i.hasNext()) {
 		i.next();
 
-		osg::ref_ptr<osg::Group> g = getNodeGroup(i.value(), NULL, graphScale);
+		osg::ref_ptr<osg::Group> g = getNodeGroup(i.value(), NULL);
 
 		if (g != NULL) {
 			nodeGroup->addChild(g);
 		}
 	}
-
-	qDebug() << "scene on";
 
 	nodeGroup->setName("nodes_group");
 	this->group = nodeGroup;
@@ -48,13 +48,13 @@ SceneElements::SceneElements(QMap<qlonglong, osg::ref_ptr<Node> > *nodes,
 SceneElements::~SceneElements(void) {
 }
 
-osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(osg::ref_ptr<Node> node,
-		Edge* parentEdge, float graphScale) {
+osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(Node* node,
+		Edge* parentEdge) {
 	osg::ref_ptr<osg::Group> group = NULL;
 
 	if (!nodes.contains(node->getId())) {
 		group = new osg::Group;
-		group->addChild(wrapNode(node, graphScale));
+		group->addChild(wrapNode(node));
 
 		QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
 
@@ -66,14 +66,14 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(osg::ref_ptr<Node> node,
 					//	qDebug() << "edge already in";
 				}
 
-				osg::ref_ptr<Node> otherNode = NULL;
+				Node* otherNode = NULL;
 				if (node->getId() == (*edgeI)->getSrcNode()->getId())
 					otherNode = (*edgeI)->getDstNode();
 				else
 					otherNode = (*edgeI)->getSrcNode();
 
 				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(otherNode,
-						*edgeI, graphScale);
+						*edgeI);
 
 				if (nodeGroup != NULL)
 					group->addChild(nodeGroup);
@@ -85,11 +85,10 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(osg::ref_ptr<Node> node,
 	return group;
 }
 
-osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(osg::ref_ptr<Node> node,
-		float graphScale) { // alternative SG construction
+osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(Node* node) { // alternative SG construction
 	osg::ref_ptr<osg::Group> group = NULL;
 
-	QLinkedList<osg::ref_ptr<Node> > nodesAdded;
+	QLinkedList<Node*> nodesAdded;
 
 	QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
 
@@ -102,24 +101,24 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(osg::ref_ptr<Node> node,
 			group = new osg::Group;
 		group->addChild(wrapEdge(*edgeI));
 
-		osg::ref_ptr<Node> otherNode = NULL;
+		Node* otherNode = NULL;
 		if (node->getId() == (*edgeI)->getSrcNode()->getId())
 			otherNode = (*edgeI)->getDstNode();
 		else
 			otherNode = (*edgeI)->getSrcNode();
 
 		if (!nodes.contains(otherNode->getId())) {
-			group->addChild(wrapNode(otherNode, graphScale));
+			group->addChild(wrapNode(otherNode));
 			nodesAdded.append(otherNode);
 		}
 		edgeI++;
 	}
 
-	QLinkedList<osg::ref_ptr<Model::Node> >::iterator nodeI =
+	QLinkedList<Node*>::iterator nodeI =
 			nodesAdded.begin();
 
 	while (nodeI != nodesAdded.end()) {
-		osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(*nodeI, graphScale);
+		osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup(*nodeI);
 		if (nodeGroup != NULL)
 			group->addChild(nodeGroup);
 		nodeI++;
@@ -128,15 +127,15 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(osg::ref_ptr<Node> node,
 	return group;
 }
 
-osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(
-		osg::ref_ptr<Node> node, float graphScale) {
+osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
-	at->setPosition(node->getTargetPosition() * graphScale);
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 
-	nodes.insert(node->getId(), node);
-	at->addChild(node);
-	node->setNodeTansform(at);
+	osg::ref_ptr<OsgNode> osgNode = new OsgNode(node, sceneGraph, at);
+	nodes.insert(node->getId(), osgNode);
+
+	at->setName("node_transform");
+	at->addChild(osgNode);
 
 	return at;
 }
@@ -154,7 +153,8 @@ osg::ref_ptr<osg::Group> SceneElements::wrapEdge(Edge* edge) {
 }
 
 void SceneElements::updateNodeCoords(float interpolationSpeed) {
-	QMap<qlonglong, osg::ref_ptr<Node> >::const_iterator i = nodes.constBegin();
+	QMap<qlonglong, osg::ref_ptr<OsgNode> >::const_iterator i =
+			nodes.constBegin();
 
 	while (i != nodes.constEnd()) {
 		i.value()->updatePosition(interpolationSpeed);
@@ -172,11 +172,3 @@ void SceneElements::updateEdgeCoords() {
 	}
 }
 
-void SceneElements::freezeNodePositions() {
-	QMap<qlonglong, osg::ref_ptr<Node> >::const_iterator i = nodes.constBegin();
-
-	while (i != nodes.constEnd()) {
-		i.value()->updatePosition(1);
-		++i;
-	}
-}

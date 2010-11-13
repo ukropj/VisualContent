@@ -46,3 +46,11 @@ Type::~Type(void) {
 	delete settings;
 	settings = NULL;
 }
+
+osg::Vec4f Type::getColor() const {
+	float r = getValue("color.R").toFloat();
+	float g = getValue("color.G").toFloat();
+	float b = getValue("color.B").toFloat();
+	float a = getValue("color.A").toFloat();
+	return osg::Vec4(r, g, b, a);
+}

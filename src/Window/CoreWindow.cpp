@@ -4,8 +4,10 @@
 #include "Window/ViewerQT.h"
 #include "Window/MessageWindows.h"
 #include "Model/FRAlgorithm.h"
+#include "Model/Graph.h"
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
+#include "Viewer/OsgNode.h"
 
 using namespace Window;
 
@@ -41,7 +43,9 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	sceneGraph->reload(graph);
 	layout->play();
 
-
+	viewerWidget->getCameraManipulator()->home(0);
+	viewerWidget->getCameraManipulator()->setDistance(100);
+	log(NORMAL, "Graph loaded" + graph->toString());
 }
 
 void CoreWindow::createActions() {
@@ -114,17 +118,17 @@ void CoreWindow::createActions() {
 	connect(singleSelectB, SIGNAL(clicked(bool)), this,
 			SLOT(singleSelectClicked(bool)));
 
-	multiSelectB = new QPushButton();
-	multiSelectB->setIcon(QIcon("img/gui/multiselect.png"));
-	multiSelectB->setToolTip(tr("Randomize"));
-	multiSelectB->setFocusPolicy(Qt::NoFocus);
-	connect(multiSelectB, SIGNAL(clicked()), this, SLOT(randomize()));
+	randomizeB = new QPushButton();
+	randomizeB->setIcon(QIcon("img/gui/multiselect.png"));
+	randomizeB->setToolTip(tr("Randomize"));
+	randomizeB->setFocusPolicy(Qt::NoFocus);
+	connect(randomizeB, SIGNAL(clicked()), this, SLOT(randomize()));
 
 	centerB = new QPushButton();
 	centerB->setIcon(QIcon("img/gui/center.png"));
 	centerB->setToolTip(tr("Center view"));
 	centerB->setFocusPolicy(Qt::NoFocus);
-	connect(centerB, SIGNAL(clicked(bool)), this, SLOT(centerView(bool)));
+	connect(centerB, SIGNAL(clicked()), this, SLOT(centerView()));
 }
 
 void CoreWindow::createMenus() {
@@ -154,7 +158,7 @@ void CoreWindow::createToolBar() {
 
 	frame = createHorizontalFrame();
 	toolBar->addWidget(frame);
-	frame->layout()->addWidget(multiSelectB);
+	frame->layout()->addWidget(randomizeB);
 	frame->layout()->addWidget(centerB);
 	toolBar->addWidget(nodeTypeCB);
 	toolBar->addSeparator();
@@ -212,11 +216,11 @@ void CoreWindow::playPause() {
 	if (layout->isPlaying()) {
 		playAction->setIcon(QIcon("img/gui/play.png"));
 		layout->pause();
-		sceneGraph->setNodesFreezed(true);
+		sceneGraph->setUpdating(false);
 		log(NORMAL, "Layout paused");
 	} else {
 		playAction->setIcon(QIcon("img/gui/pause.png"));
-		sceneGraph->setNodesFreezed(false);
+		sceneGraph->setUpdating(true);
 		layout->play();
 		log(NORMAL, "Layout unpaused");
 	}
@@ -229,98 +233,48 @@ void CoreWindow::randomize() {
 
 void CoreWindow::noSelectClicked(bool checked) {
 	viewerWidget->getPickHandler()->setPickMode(Vwr::PickHandler::NONE);
-	singleSelectB->setChecked(false);
-	multiSelectB->setChecked(false);
-	centerB->setChecked(false);
+	singleSelectB->setChecked(false);//XXX
 }
 
 void CoreWindow::singleSelectClicked(bool checked) {
 	viewerWidget->getPickHandler()->setPickMode(Vwr::PickHandler::SELECT);
-	noSelectB->setChecked(false);
-	multiSelectB->setChecked(false);
-	centerB->setChecked(false);
+	noSelectB->setChecked(false);//XXX
 }
 
-void CoreWindow::centerView(bool checked) {
-	noSelectB->setChecked(false);
-	singleSelectB->setChecked(false);
-	multiSelectB->setChecked(false);
-
-	viewerWidget->getCameraManipulator()->setCenter(
-			viewerWidget->getPickHandler()->getSelectionCenter(false));
+void CoreWindow::centerView() {
+	osg::Vec3f eye, center, up;
+	center = viewerWidget->getPickHandler()->getSelectionCenter();
+	viewerWidget->getCameraManipulator()->setCenter(center);
 }
 
 void CoreWindow::fixNodes() {
-	NodeList nodes = viewerWidget->getPickHandler()->getSelectedNodes();
-	NodeList::const_iterator i = nodes.constBegin();
-
-	while (i != nodes.constEnd()) {
-//		(*i)->setTargetPosition((*i)->getCurrentPosition() / graphScale);
-		(*i)->setFixed(true);
-		++i;
-	}
+	setSelectedFixed(true);
 }
 
 void CoreWindow::unFixNodes() {
-	NodeList nodes = viewerWidget->getPickHandler()->getSelectedNodes();
-	NodeList::const_iterator i = nodes.constBegin();
-
-	while (i != nodes.constEnd()) {
-		(*i)->setFixed(false);
-		++i;
-	}
-	layout->wakeUp();
+	setSelectedFixed(false);
 }
 
-//void CoreWindow::addMetaNode() {
-//	Graph::Graph * currentGraph = manager->getActiveGraph();
-//
-//	if (currentGraph != NULL) {
-//		osg::Vec3 position =
-//				viewerWidget->getPickHandler()->getSelectionCenter(true);
-//
-//		osg::ref_ptr<Graph::Node> metaNode = currentGraph->addNode("metaNode",
-//				currentGraph->getNodeMetaType(), position);
-//		QLinkedList<osg::ref_ptr<Graph::Node> > * selectedNodes =
-//				viewerWidget->getPickHandler()->getSelectedNodes();
-//
-//		QLinkedList<osg::ref_ptr<Graph::Node> >::const_iterator i =
-//				selectedNodes->constBegin();
-//
-//		while (i != selectedNodes->constEnd()) {
-//			Graph::Edge * e = currentGraph->addEdge("metaEdge", (*i), metaNode,
-//					currentGraph->getEdgeMetaType(), true);
-//			e->setCamera(viewerWidget->getCamera());
-//			++i;
-//		}
-//
-//		if (isPlaying)
-//			layout->play();
-//	}
-//}
+void CoreWindow::setSelectedFixed(bool fixed) {
+	QLinkedList<Vwr::OsgNode* > nodes = viewerWidget->getPickHandler()->getSelectedNodes();
+	QLinkedList<Vwr::OsgNode* >::const_iterator i = nodes.constBegin();
 
-//void CoreWindow::removeMetaNodes() {
-//	QLinkedList<osg::ref_ptr<Graph::Node> > * selectedNodes =
-//			viewerWidget->getPickHandler()->getSelectedNodes();
-//	Graph::Graph * currentGraph = manager->getActiveGraph();
-//
-//	QLinkedList<osg::ref_ptr<Graph::Node> >::const_iterator i =
-//			selectedNodes->constBegin();
-//
-//	while (i != selectedNodes->constEnd()) {
-//		if ((*i)->getType()->isMeta())
-//			currentGraph->removeNode((*i));
-//		++i;
-//	}
-//
-//		layout->wakeUp();
-//}
+	while (i != nodes.constEnd()) {
+		(*i)->setFixed(fixed);
+		++i;
+	}
+	if (!fixed)
+		layout->wakeUp();
+}
 
 void CoreWindow::loadFile() {
 	layout->pause();
 
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open GraphML"),
 			".", tr("GraphML Files (*.graphml)"));
+
+	if (fileName == NULL || fileName.isEmpty())
+		return;
 
 	Model::Graph* graph = manager->loadGraph(fileName, messageWindows);
 
@@ -331,17 +285,16 @@ void CoreWindow::loadFile() {
 		return;
 	}
 
-
 	layout->setGraph(graph);
 	layout->setParameters(10, 0.7, 1, true);
 
 	sceneGraph->reload(graph);
 
-	messageWindows->closeLoadingDialog();
-
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
+//	qDebug() << sceneGraph->getRoot()->getBound().radius();
+//	viewerWidget->getCameraManipulator()->setDistance(sceneGraph->getRoot()->getBound().radius());
 	log(NORMAL, "Graph loaded" + graph->toString());
 }
 

@@ -11,6 +11,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QtCore/QMap>
+#include <QDebug>
 
 #include <osg/PrimitiveSet>
 #include <osg/Geode>
@@ -18,7 +19,9 @@
 #include <osgText/Text>
 #include <osgText/FadeText>
 
-#include "Model/Edge.h"
+namespace Model {
+class Edge;
+}
 
 namespace Vwr {
 class SceneGraph;
@@ -29,44 +32,27 @@ public:
 	OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph);
 	~OsgEdge();
 
-	qlonglong getId() const {
-		return edge->getId();
-	}
-
-	QString getName() const {
-		return edge->getName();
-	}
-
-//	bool isOriented() const {
-//		return oriented;
-//	}
-
-//	void linkNodes(QMap<qlonglong, osg::ref_ptr<Edge> > *edges);
-//	void unlinkNodes();
-//	void unlinkNodesAndRemoveFromGraph();
-
-	QString toString() const {
-		QString str;
-		QTextStream(&str) << "edge id:" << getId() << " name:" << getName();
-		return str;
-	}
+	QString toString() const;
 
 	void updateGeometry();
 
 	osg::Vec4 getEdgeColor() const {
 		if (selected)
-			return osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			return osg::Vec4f(1.0f, 0.0f, 0.0f, 1.0f);
 		else
 			return edgeColor;
 	}
 
 	void setColor(osg::Vec4 color) {
 		edgeColor = color;
+//		qDebug() << color.x() << ", " << color.y() << ", "<< color.z()<< ", " << color.w();
 		if (geometry != NULL) {
 			osg::Vec4Array * colorArray =
 					dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
 			colorArray->pop_back();
 			colorArray->push_back(color);
+		} else {
+			qDebug() << "edge geometry was null";
 		}
 	}
 

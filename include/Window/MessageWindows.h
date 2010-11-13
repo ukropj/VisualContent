@@ -63,13 +63,13 @@ public:
 	 *  \brief Show user loading dialog
 	 *  \param message QString    message of the dialog
 	 */
-	void showLoadingDialog(QString message);
+	void showLoadingDialog(QString message); // UNUSED
 
 	/**
 	 *  \fn public  closeLoadingDialog
 	 *  \brief Close the loading dialog
 	 */
-	void closeLoadingDialog();
+	void closeLoadingDialog(); //UNUSED
 
 private:
 	/**

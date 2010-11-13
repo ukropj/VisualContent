@@ -6,7 +6,6 @@
 #define DATA_EDGE_DEF 1
 
 #include <string>
-
 #include <QString>
 #include <QTextStream>
 #include <QtCore/QMap>

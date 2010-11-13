@@ -11,10 +11,11 @@
 #include <QtXml/QDomElement>
 #include <QFile>
 
-#include "Model/Graph.h"
 #include "Window/MessageWindows.h"
 
-#include "Util/Config.h"
+namespace Model {
+class Graph;
+}
 
 namespace AppCore {
 

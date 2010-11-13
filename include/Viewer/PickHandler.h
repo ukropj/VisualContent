@@ -17,15 +17,11 @@
 #include <QLinkedList>
 #include <QTimer>
 
-#include "Model/Node.h"
-#include "Model/Edge.h"
-#include "Window/CoreWindow.h"\
-
-typedef QLinkedList<osg::ref_ptr<Model::Node> > NodeList;
-
 namespace Vwr {
 class CameraManipulator;
 class SceneGraph;
+class OsgNode;
+class OsgEdge;
 
 /**
  *  \class PickHandler
@@ -33,6 +29,8 @@ class SceneGraph;
  */
 class PickHandler: public QObject, public osgGA::GUIEventHandler {
 Q_OBJECT
+
+typedef QLinkedList<OsgNode* > NodeList;
 
 public:
 
@@ -101,7 +99,7 @@ public:
 	 *  \param       nodesOnly     if true, mass will be calculated form nodes only
 	 *  \return osg::Vec3
 	 */
-	osg::Vec3 getSelectionCenter(bool nodesOnly);
+	osg::Vec3 getSelectionCenter();
 
 	/**
 	 *  \fn inline public  getSelectedNodes
@@ -115,9 +113,9 @@ public:
 	/**
 	 *  \fn inline public  getSelectedEdges
 	 *  \brief Returns selected edges
-	 *  \return QLinkedList<osg::ref_ptr<Model::Edge> > * selected edges
+	 *  \return QLinkedList<osg::ref_ptr<OsgEdge> > * selected edges
 	 */
-	//	QLinkedList<osg::ref_ptr<Model::Edge> > getSelectedEdges() {
+	//	QLinkedList<osg::ref_ptr<OsgEdge> > getSelectedEdges() {
 	//		return selectedEdges;
 	//	}
 
@@ -131,17 +129,17 @@ private:
 	bool leftButtonPressed; // not used now
 
 	// Perform a pick operation.
-	Model::Node* pickOne(osgViewer::Viewer* viewer,
+	OsgNode* pickOne(osgViewer::Viewer* viewer,
 			const osgGA::GUIEventAdapter& event);
-	QSet<Model::Node*> pickMore(osgViewer::Viewer* viewer,
+	QSet<OsgNode*> pickMore(osgViewer::Viewer* viewer,
 			const osgGA::GUIEventAdapter& event);
 
-	Model::Node* getNodeAt(osgViewer::Viewer* viewer, const double x,
+	OsgNode* getNodeAt(osgViewer::Viewer* viewer, const double x,
 			const double y);
-	QSet<Model::Node*> getNodesInQuad(osgViewer::Viewer* viewer,
+	QSet<OsgNode*> getNodesInQuad(osgViewer::Viewer* viewer,
 			const double xMin, const double yMin, const double xMax,
 			const double yMax);
-	Model::Edge* getEdgeAt(osgViewer::Viewer* viewer, const double x,
+	OsgEdge* getEdgeAt(osgViewer::Viewer* viewer, const double x,
 			const double y);//todo implement ..
 
 	void createSelectionQuad();
@@ -165,15 +163,14 @@ private:
 	 *  \brief picked nodes list
 	 */
 	NodeList selectedNodes;
-	//	osg::ref_ptr<Model::Node> selectedNode;
 
 	bool multiPickEnabled;
 
 	/**
-	 *  QLinkedList<osg::ref_ptr<Model::Edge> > pickedEdges
+	 *  QLinkedList<osg::ref_ptr<OsgEdge> > pickedEdges
 	 *  \brief picked edges list
 	 */
-	//	QLinkedList<osg::ref_ptr<Model::Edge> > pickedEdges;
+	//	QLinkedList<osg::ref_ptr<OsgEdge> > pickedEdges;
 
 	/**
 	 *  osg::ref_ptr projection
@@ -209,7 +206,7 @@ private:
 		return dynamic_cast<osgViewer::Viewer*> (&aa);
 	}
 
-	osg::Vec3f getMousePos(osg::Vec3f origPos, osgViewer::Viewer* viewer);
+	osg::Vec3f getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector, osgViewer::Viewer* viewer);
 	/**
 	 *  int pickMode
 	 *  \brief current pick mode
@@ -222,11 +219,11 @@ private:
 	 */
 	SelectionType selectionType;
 
-	bool select(Model::Node* node = NULL);
+	bool select(OsgNode* node = NULL);
 
 	void deselectAll();
 
-	bool toggle(Model::Node* node = NULL);
+	bool toggle(OsgNode* node = NULL);
 
 	/**
 	 *  \fn private  handlePush( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )

@@ -7,8 +7,9 @@
 #include "Viewer/PickHandler.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/CameraManipulator.h"
+#include "Viewer/OsgNode.h"
+#include "Viewer/OsgEdge.h"
 #include "Window/CoreWindow.h"
-#include "Util/DataHelper.h"
 #include "Util/Config.h"
 #include <iostream>
 
@@ -36,7 +37,7 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 	isDrawingSelectionQuad = false;
 	isManipulatingNodes = false;
 	mode = NONE;
-	selectionType = NODE;
+	selectionType = ALL;
 
 	multiPickEnabled = false;
 	createSelectionQuad();
@@ -128,7 +129,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 	originPos.set(event.getX(), event.getY());
 	originNormPos.set(event.getXnormalized(), event.getYnormalized());
-	Model::Node* node = NULL;
+	OsgNode* node = NULL;
 	bool ret;
 	NodeList::const_iterator i;
 
@@ -175,8 +176,8 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 
 		if (!multiPickEnabled)
 			deselectAll();
-		QSet<Model::Node*> nodes = pickMore(getViewer(action), event);
-		QSet<Model::Node*>::const_iterator ni = nodes.constBegin();
+		QSet<OsgNode*> nodes = pickMore(getViewer(action), event);
+		QSet<OsgNode*>::const_iterator ni = nodes.constBegin();
 		multiPickEnabled = true; // temp to select form quad
 		while (ni != nodes.constEnd()) {
 			select(*ni); // select node found in quad
@@ -200,7 +201,7 @@ bool PickHandler::handleDoubleclick(const osgGA::GUIEventAdapter& event,
 	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
 		return false;
 	qDebug() << "doubleClick";
-	//	Model::Node* node = pick(event, action);
+	//	OsgNode* node = pick(event, action);
 	//	if (node != NULL) {
 	//		node->toggleExpanded();
 	//		return true;
@@ -229,10 +230,10 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 		if (!selectedNodes.isEmpty() && !multiPickEnabled
 				&& !isDrawingSelectionQuad) { // drag node(s)
 			NodeList::const_iterator i = selectedNodes.constBegin();
+			osg::Vec2f dragVect = lastPos - originPos;
 
 			while (i != selectedNodes.constEnd()) {
-				(*i)->setTargetPosition(//todo current
-						getMousePos((*i)->getTargetPosition(),
+				(*i)->setPosition(getMousePos((*i)->getPosition(), dragVect,
 								getViewer(action)));
 				++i;
 			}
@@ -255,7 +256,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 	return false;
 }
 
-osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos,
+osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector,
 		osgViewer::Viewer* viewer) {
 	osg::Camera* cam = viewer->getCamera();
 	osg::Matrixd& viewM = cam->getViewMatrix();
@@ -264,14 +265,11 @@ osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos,
 	osg::Matrixd compositeM = viewM * projM * screenM;
 	osg::Matrixd compositeMi = compositeMi.inverse(compositeM);
 
-	float
-			scale =
-					Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
-
-	osg::Vec3f screenPoint = origPos * compositeM; // TODO change to current pos
-	osg::Vec3f newPosition = osg::Vec3f(screenPoint.x() - (originPos.x()
-			- lastPos.x()) / scale, screenPoint.y() - (originPos.y()
-			- lastPos.y()) / scale, screenPoint.z());
+	osg::Vec3f screenPoint = origPos * compositeM;
+	osg::Vec3f newPosition = osg::Vec3f(
+			screenPoint.x() + dragVector.x(),
+			screenPoint.y() + dragVector.y(),
+			screenPoint.z() + 0);
 
 	return newPosition * compositeMi;
 }
@@ -281,17 +279,18 @@ void printVect(osg::Vec3f vec) {
 	qDebug() << "[" << vec.x() << "," << vec.y() << "," << vec.z() << "]";
 }
 
-Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
+OsgNode* PickHandler::pickOne(osgViewer::Viewer* viewer,
 		const osgGA::GUIEventAdapter& event) {
 	if (viewer == NULL)
 		return NULL;
 
-	Model::Node* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
-#if 1
+	OsgNode* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
+
 	if (pickedNode == NULL) {
 		qDebug() << "NO PICK";
 	} else {
 		qDebug() << "NODE PICKED";
+#if 0
 		osg::Camera* camera = viewer->getCamera();
 		osg::Matrixd viewM = camera->getViewMatrix();
 		osg::Matrixd projM = camera->getProjectionMatrix();
@@ -315,14 +314,15 @@ Model::Node* PickHandler::pickOne(osgViewer::Viewer* viewer,
 		osg::Vec3f r = pos + osg::Vec3f(pickedNode->getRadius(), 0, 0);
 		float rad = ((pos * m) - (r * m)).length();
 		qDebug() << "r: " << rad;
-	}
 #endif
+	}
+
 	return pickedNode;
 }
 
-QSet<Model::Node*> PickHandler::pickMore(osgViewer::Viewer* viewer,
+QSet<OsgNode*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 		const osgGA::GUIEventAdapter& event) {
-	QSet<Model::Node*> pickedNodes;
+	QSet<OsgNode*> pickedNodes;
 	if (viewer == NULL)
 		return pickedNodes;
 
@@ -354,7 +354,7 @@ QSet<Model::Node*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 	return pickedNodes;
 }
 
-Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
+OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 		const double y) {
 	osgUtil::LineSegmentIntersector::Intersections intersections;
 
@@ -365,8 +365,8 @@ Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 				continue;
 			osg::NodePath nodePath = hitr->nodePath;
 
-			Model::Node* n =
-					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 2]);
+			OsgNode* n =
+					dynamic_cast<OsgNode *> (nodePath[nodePath.size() - 2]);
 			// NOTE: 2 because structure is Node-Geode-(Drawable)
 			// Node is second to last
 			if (n != NULL) {
@@ -379,10 +379,10 @@ Model::Node* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 	return NULL;
 }
 
-QSet<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
+QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 		const double xMin, const double yMin, const double xMax,
 		const double yMax) {
-	QSet<Model::Node*> nodes;
+	QSet<OsgNode*> nodes;
 
 	osgUtil::PolytopeIntersector* picker = new osgUtil::PolytopeIntersector(
 			osgUtil::Intersector::PROJECTION, xMin, yMin, xMax, yMax);
@@ -401,8 +401,8 @@ QSet<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 			//			<< ": \"" << nodePath.back()->getName() << "\""
 			//			<< std::endl;
 
-			Model::Node* n =
-					dynamic_cast<Model::Node *> (nodePath[nodePath.size() - 2]);
+			OsgNode* n =
+					dynamic_cast<OsgNode *> (nodePath[nodePath.size() - 2]);
 			if (n != NULL) {
 				osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
 				if (n->isPickable(g))
@@ -413,7 +413,7 @@ QSet<Model::Node*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 	return nodes;
 }
 
-bool PickHandler::select(Model::Node* node) {
+bool PickHandler::select(OsgNode* node) {
 	if (node == NULL) {
 		if (!selectedNodes.isEmpty() && !multiPickEnabled) {
 			coreGraph->setFrozen(false);
@@ -455,7 +455,6 @@ void PickHandler::deselectAll() {
 		(*i)->setFrozen(false);
 		++i;
 	}
-	//	qDebug() << " all deselected";
 
 	selectedNodes.clear();
 }
@@ -471,8 +470,8 @@ void PickHandler::deselectAll() {
 //		osg::Geometry * geometry = d->asGeometry();
 //
 //		if (geometry != NULL) {
-//			Model::Edge * e =
-//					dynamic_cast<Model::Edge *> (geometry->getPrimitiveSet(
+//			OsgEdge * e =
+//					dynamic_cast<OsgEdge *> (geometry->getPrimitiveSet(
 //							primitiveIndex));
 //
 //			if (e != NULL) {
@@ -573,36 +572,18 @@ void PickHandler::drawSelectionQuad() {
 	selectionQuad->getDrawable(0)->asGeometry()->setVertexArray(coordinates);
 }
 
-osg::Vec3 PickHandler::getSelectionCenter(bool nodesOnly) {
-	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
-	float
-			scale =
-					Util::Config::getValue("Viewer.Display.NodeDistanceScale").toFloat();
-
-	//	if (!nodesOnly) {
-	//		QLinkedList<osg::ref_ptr<Model::Edge> >::const_iterator ei =
-	//				pickedEdges.constBegin();
-	//
-	//		while (ei != pickedEdges.constEnd()) {
-	//			coordinates->push_back(Util::DataHelper::getMassCenter(
-	//					(*ei)->getCooridnates()));
-	//			++ei;
-	//		}
-	//	}
+osg::Vec3 PickHandler::getSelectionCenter() {
 
 	NodeList::const_iterator ni = selectedNodes.constBegin();
+	osg::Vec3f sum(0,0,0);
 
 	while (ni != selectedNodes.constEnd()) {
-		coordinates->push_back((*ni)->getTargetPosition());
+		sum += (*ni)->getPosition();
 		++ni;
 	}
+	int num = selectedNodes.size();
 
-	osg::Vec3 center;
-
-	if (coordinates->size() > 0)
-		center = Util::DataHelper::getMassCenter(coordinates);
-
-	return center;
+	return osg::Vec3f(sum.x() / num, sum.y() / num, sum.z() / num);
 }
 
 bool PickHandler::isShift(const osgGA::GUIEventAdapter& event) {

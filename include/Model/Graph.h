@@ -16,14 +16,13 @@
 #include <osg/ref_ptr>
 #include <osg/Vec3f>
 
-#include "Model/Node.h"
-
 #define METASTRENGTH 1
 
 namespace Model  {
 class Type;
 class Node;
 class Edge;
+class Node;
 
 /**
  *  \class Graph
@@ -99,11 +98,10 @@ public:
 	 *  \param   position     position of the Node
 	 *  \return osg::ref_ptr the added Node
 	 */
-	osg::ref_ptr<Node> addNode(QString name, Type* type, osg::Vec3f position =
-			osg::Vec3f(0, 0, 0));
+	Node* addNode(QString name, Type* type);
 
 	/**
-	 *  \fn public  addEdge(QString name, osg::ref_ptr<Node> srcNode, osg::ref_ptr<Node> dstNode, Type* type, bool isOriented)
+	 *  \fn public  addEdge(QString name, Node* srcNode, Node* dstNode, Type* type, bool isOriented)
 	 *  \brief Creates new Edge and adds it to the Graph
 	 *  \param   name     name of the Edge
 	 *  \param   srcNode    starting Node of the Edge
@@ -112,8 +110,8 @@ public:
 	 *  \param   isOriented   true, if the Edge is oriented
 	 *  \return osg::ref_ptr the added Edge
 	 */
-	Edge* addEdge(QString name, osg::ref_ptr<Node> srcNode,
-			osg::ref_ptr<Node> dstNode, Type* type, bool isOriented);
+	Edge* addEdge(QString name, Node* srcNode,
+			Node* dstNode, Type* type, bool isOriented);
 
 	/**
 	 *  \fn public  addType(QString name, QMap <QString, QString> *settings = 0)
@@ -125,11 +123,11 @@ public:
 	Type* addType(QString name, QMap<QString, QString> *settings = 0); //implemented
 
 	/**
-	 *  \fn public  removeNode(osg::ref_ptr<Node> node)
+	 *  \fn public  removeNode(Node* node)
 	 *  \brief Removes a Node from the Graph
 	 *  \param      node   the Node to be removed from the Graph
 	 */
-	void removeNode(osg::ref_ptr<Node> node);
+	void removeNode(Node* node);
 
 	/**
 	 *  \fn public  removeEdge(Edge* edge)
@@ -148,9 +146,9 @@ public:
 	/**
 	 *  \fn inline public constant  getNodes
 	 *  \brief Returns QMap of the Nodes assigned to the Graph
-	 *  \return QMap<qlonglong,osg::ref_ptr<Node> > * Nodes assigned to the Graph
+	 *  \return QMap<qlonglong,Node* > * Nodes assigned to the Graph
 	 */
-	QMap<qlonglong, osg::ref_ptr<Node> >* getNodes() const {
+	QMap<qlonglong, Node* >* getNodes() const {
 		return nodes;
 	}
 
@@ -161,24 +159,6 @@ public:
 	 */
 	QMap<qlonglong, Edge* >* getEdges() const {
 		return edges;
-	}
-
-	/**
-	 *  \fn inline public constant  getMetaNodes
-	 *  \brief Returns QMap of the meta-Nodes assigned to the Graph
-	 *  \return QMap<qlonglong,osg::ref_ptr<Node> > * meta-Nodes assigned to the Graph
-	 */
-	QMap<qlonglong, osg::ref_ptr<Node> >* getMetaNodes() const {
-		return metaNodes;
-	}
-
-	/**
-	 *  \fn inline public constant  getMetaEdges
-	 *  \brief Returns meta-Edges assigned to the Graph
-	 *  \return QMap<qlonglong,Edge* > * meta-Edges assigned to the Graph
-	 */
-	QMap<qlonglong, Edge* >* getMetaEdges() const {
-		return metaEdges;
 	}
 
 	/**
@@ -223,19 +203,6 @@ public:
 	 */
 	QString toString() const;
 
-	/**
-	 *  \fn public  getNodeMetaType
-	 *  \brief Returns MetaType for meta-Nodes
-	 *  \return Type * MetaType for the Nodes
-	 */
-	Type* getNodeMetaType();
-
-	/**
-	 *  \fn public  getEdgeMetaType
-	 *  \brief Returns MetaType for meta-Edges
-	 *  \return Type * MetaType for the Edges
-	 */
-	Type* getEdgeMetaType();
 private:
 
 	/**
@@ -287,10 +254,10 @@ private:
 	QMultiMap<QString, Type*>* typesByName;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Node> > newNodes
+	 *  QMap<qlonglong,Node* > newNodes
 	 *  \brief New Nodes that have been added to the Graph but are not yet in database
 	 */
-	QMap<qlonglong, osg::ref_ptr<Node> > newNodes;
+	QMap<qlonglong, Node* > newNodes;
 
 	/**
 	 *  QMap<qlonglong,Type*> newTypes
@@ -305,28 +272,16 @@ private:
 	QMap<qlonglong, Edge* > newEdges;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Node> > * nodes
+	 *  QMap<qlonglong,Node* > * nodes
 	 *  \brief Nodes in the Graph
 	 */
-	QMap<qlonglong, osg::ref_ptr<Node> >* nodes;
+	QMap<qlonglong, Node* >* nodes;
 
 	/**
 	 *  QMap<qlonglong,Edge* > * edges
 	 *  \brief Edges in the Graph
 	 */
 	QMap<qlonglong, Edge* >* edges;
-
-	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Node> > * metaNodes
-	 *  \brief Meta-Nodes in the Graph
-	 */
-	QMap<qlonglong, osg::ref_ptr<Node> >* metaNodes;
-
-	/**
-	 *  QMap<qlonglong,Edge* > * metaEdges
-	 *  \brief Meta-Edges in the Graph
-	 */
-	QMap<qlonglong, Edge* >* metaEdges;
 
 	/**
 	 *  QMap<qlonglong,Type*> * types
@@ -347,67 +302,12 @@ private:
 	QMultiMap<qlonglong, Edge* > edgesByType;
 
 	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Node> > nodesByType
+	 *  QMap<qlonglong,Node* > nodesByType
 	 *  \brief Nodes in the Graph sorted by their Type
 	 */
-	QMultiMap<qlonglong, osg::ref_ptr<Node> > nodesByType;
+	QMultiMap<qlonglong, Node* > nodesByType;
 
-	/**
-	 *  QMap<qlonglong,Edge* > metaEdgesByType
-	 *  \brief Meta-Edges in the Graph sorted by their Type
-	 */
-	QMultiMap<qlonglong, Edge* > metaEdgesByType;
-
-	/**
-	 *  QMap<qlonglong,osg::ref_ptr<Node> > metaNodesByType
-	 *  \brief Meta-Nodes in the Graph sorted by their Type
-	 */
-	QMultiMap<qlonglong, osg::ref_ptr<Node> > metaNodesByType;
 };
 }
 
 #endif
-
-/* POZNAMKY
-
- QUERY na vyber stromovej hierarchie uzlov s urcenym ci je uzol meta na zaklade parenta (type_id) ktory je metauzlom
-
- WITH RECURSIVE q AS (
- SELECT node_id, type_id, "name", meta, CAST("name" As varchar(1000)) As fullname
- FROM nodes
- WHERE node_id = type_id
- UNION ALL
- SELECT n.node_id, n.type_id, n."name", (CASE WHEN n.meta OR q.meta THEN true ELSE false END) AS meta,
- CAST(q.fullname || '->' || n."name" As varchar(1000)) As fullname
- FROM nodes AS n
- INNER JOIN q ON
- n.type_id = q.node_id AND n.type_id != n.node_id
- )
- SELECT node_id, type_id, "name", meta, fullname
- FROM q
- ORDER BY fullname
-
-
- WITH RECURSIVE q AS (
- SELECT node_id, type_id, "name", meta, layout_id
- FROM nodes
- WHERE node_id = type_id
- UNION ALL
- SELECT n.node_id, n.type_id, n."name",
- (n.meta OR q.meta) AS meta,
- COALESCE(n.layout_id, q.layout_id) AS layout_id
- FROM nodes AS n
- INNER JOIN q ON
- n.type_id = q.node_id AND n.type_id != n.node_id
- )
- SELECT node_id, type_id, "name", meta, layout_id
- FROM q
-
- */
-
-/*
- EXPLAIN ANALYZE SELECT * FROM crosstab(
- 'SELECT graph_id, val_name, val FROM graph_settings ORDER BY 1,2',
- 'SELECT val_name FROM graph_settings GROUP BY val_name'
- ) AS (graph_id bigint, layout_count text,"name" text,file_size text,path text)
- */

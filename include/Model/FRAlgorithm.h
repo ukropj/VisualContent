@@ -18,8 +18,6 @@
 #include <QMutex>
 #include <QThread>
 
-#include "Window/CoreWindow.h"
-
 namespace Util {
 class Config;
 }
@@ -293,15 +291,6 @@ private:
 	 *  \param  factor  multiplicer of attaractive force
 	 */
 	void addAttractive(Edge* edge, float factor);
-
-	/**
-	 *  \fn private  addMetaAttractive(Node* u, Node* meta, float factor)
-	 *  \brief Adds attractive force between node U and meta node
-	 *  \param   u  node U
-	 *  \param   meta meta node
-	 *  \param   factor  multiplicer of attaractive force
-	 */
-	void addMetaAttractive(Node* u, Node* meta, float factor);
 
 	/**
 	 *  \fn private  addRepulsive(Node* u, Node* v, float factor)

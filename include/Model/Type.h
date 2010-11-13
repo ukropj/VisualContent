@@ -70,23 +70,13 @@ public:
 	}
 
 	/**
-	 *	\fn inline public isMeta
-	 *	\brief Returns flag indicating if the Type is an MetaType or not
-	 *	\return bool true, if the Type is an MetaType
-	 */
-	bool isMeta() const {
-		return meta;
-	}
-
-	/**
 	 *  \fn inline public constant  toString
 	 *  \brief Returns human-readable string representing the Type
 	 *  \return QString
 	 */
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "type id:" << id << " name:" << name << " meta:"
-				<< this->isMeta();
+		QTextStream(&str) << "type id:" << id << " name:" << name;
 		return str;
 	}
 
@@ -138,9 +128,11 @@ public:
 	 *  \brief Returns Graph to which is the Type assigned
 	 *  \return Graph *
 	 */
-	Graph* getGraph() {
+	Graph* getGraph() const {
 		return graph;
 	}
+
+	osg::Vec4f getColor() const;
 protected:
 
 	/**
