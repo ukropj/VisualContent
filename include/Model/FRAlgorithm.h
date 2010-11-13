@@ -269,6 +269,12 @@ private:
 	 */
 	double dist;
 
+	osg::Matrixd viewM;
+	osg::Matrixd projM;
+	osg::Matrixd windM;
+	osg::Matrixd fullM; // complete transformation matrix from world so screen coordinates
+
+
 	/**
 	 *  \fn private  iterate
 	 *  \brief performs one iteration of the algorithm

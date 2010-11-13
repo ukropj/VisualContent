@@ -89,6 +89,8 @@ public:
 
 	void reloadConfig();
 
+	bool isObscuredBy(OsgNode* other);
+
 private:
 	Model::Node* node;
 

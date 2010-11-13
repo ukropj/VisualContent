@@ -80,6 +80,10 @@ public:
 		this->camera = camera;
 	}
 
+	osg::ref_ptr<osg::Camera> getCamera() {
+		return camera;
+	}
+
 	/**
 	 *  \fn public  setEdgeLabelsVisible(bool visible)
 	 *  \brief If true, edge labels will be visible

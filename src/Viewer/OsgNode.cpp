@@ -6,6 +6,7 @@
  */
 
 #include "Viewer/OsgNode.h"
+#include "Viewer/SceneGraph.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
 #include "Model/Type.h"
@@ -330,8 +331,41 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 
 void OsgNode::setPosition(osg::Vec3f pos) {
 	float graphScale = Util::Config::getInstance()->getValue(
-				"Viewer.Display.NodeDistanceScale").toFloat();
+			"Viewer.Display.NodeDistanceScale").toFloat();
 	node->setPosition(pos / graphScale);
 	updatePosition();
+}
+
+bool OsgNode::isObscuredBy(OsgNode* other) {
+	bool uExp = this->isExpanded();
+	bool vExp = other->isExpanded();
+	// return false if no node is expanded
+	if (!uExp && !vExp)
+		return false;
+
+	osg::Camera* camera = sceneGraph->getCamera();
+
+	osg::Matrixd viewM = camera->getViewMatrix();
+	osg::Matrixd projM = camera->getProjectionMatrix();
+	osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
+
+	osg::Vec3f up = this->getPosition();
+	osg::Vec3f vp = other->getPosition();
+
+	// test if the expanded node is befind the other node
+	osg::Vec3f upRot = viewM.getRotate() * up;
+	osg::Vec3f vpRot = viewM.getRotate() * vp;
+	if (!(uExp && upRot.z() <= vpRot.z()) && !(vExp && vpRot.z() <= upRot.z()))
+		return false;
+	// NOTE: z decreases when going away from camera
+
+	// return false if any of nodes is not on screen
+	upRot = up * (viewM * projM);
+	vpRot = vp * (viewM * projM);
+	if (qAbs(upRot.x()) > 1 || qAbs(upRot.y()) > 1 || qAbs(vpRot.x()) > 1
+			|| qAbs(vpRot.y()) > 1)
+		return false;
+
+	return true;
 }
 
