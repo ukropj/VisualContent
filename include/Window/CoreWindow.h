@@ -84,12 +84,6 @@ public slots:
 	void singleSelectClicked(bool checked);
 
 	/**
-	 *  \fn public  addMetaNode
-	 *  \brief Add meta node
-	 */
-	//	void addMetaNode();
-
-	/**
 	 *  \fn public  centerView(bool checked
 	 *  \brief Center the view
 	 *  \param   checked     flag if button is checked
@@ -109,12 +103,6 @@ public slots:
 	void unFixNodes();
 
 	void randomize();
-
-	/**
-	 *  \fn public  removeMetaNodes
-	 *  \brief Remove all meta nodes
-	 */
-	//	void removeMetaNodes();
 
 	/**
 	 *  \fn public  loadFile
@@ -155,10 +143,6 @@ private:
 	QAction * optionsAction;
 	QAction * playAction;
 
-	/**
-	 *  QPushButton * addMeta
-	 *  \brief Action for adding meta node
-	 */
 	QPushButton * addMetaB;
 
 	/**
@@ -196,12 +180,6 @@ private:
 	 *  \brief Action for center view
 	 */
 	QPushButton * centerB;
-
-	/**
-	 *  QPushButton * removeMeta
-	 *  \brief Action for removing meta nodes
-	 */
-	QPushButton * removeMetaB;
 
 	/**
 	 *  QAction * load

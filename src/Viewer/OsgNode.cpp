@@ -12,11 +12,15 @@
 #include "Model/Type.h"
 #include "Model/Node.h"
 
+#include <math.h>
 #include <osgText/FadeText>
+#include <qDebug>
 
+using namespace Vwr;
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
-using namespace Vwr;
+//osg::ref_ptr<osg::Geode> OsgNode::square = NULL;
+//osg::ref_ptr<osg::Geode> OsgNode::circle = NULL;
 
 OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 		osg::AutoTransform> nodeTransform) {
@@ -35,16 +39,19 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	nodeSmall = createTextureNode(node->getType()->getTexture(), scale);
 	nodeLarge = createTextureNode(node->getType()->getDevil(), scale * 2);
 	square = createSquare(scale);
+	circle = createCircle(scale * 2);
 	label = createLabel(node->getLabel(), scale);
 
 	nodeSmall->setName("node");
 	nodeLarge->setName("image");
-	square->setName("square");
 	label->setName("label");
+	square->setName("square");
+	circle->setName("circle");
 
 	addChild(nodeSmall);
 	addChild(nodeLarge);
 	addChild(square);
+	addChild(circle);
 	addChild(label);
 
 	setAllChildrenOff();
@@ -153,6 +160,38 @@ osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
 	return geode;
 }
 
+osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float scale) {
+	osg::ref_ptr<osg::StateSet> bbState = createStateSet();
+
+	float r = sqrt(2);
+	r *= scale;
+
+	int sides = 20;
+	osg::ref_ptr<osg::Geometry> nodeCircle = new osg::Geometry;
+	double alpha = 2 * M_PI / (float)sides;
+
+	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
+	for (int i = 0; i <= sides; i++) {
+		coords->push_back(osg::Vec3f(r * sin(i * alpha), r * cos(i * alpha), 0));
+	}
+
+	nodeCircle->setVertexArray(coords);
+	nodeCircle->addPrimitiveSet(new osg::DrawArrays(
+			osg::PrimitiveSet::LINE_STRIP, 0, sides + 1));
+
+	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	nodeCircle->setColorArray(colorArray);
+	nodeCircle->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	nodeCircle->setStateSet(bbState);
+
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(nodeCircle);
+	return geode;
+}
+
 osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 	osg::ref_ptr<osgText::FadeText> textDrawable = new osgText::FadeText();
 	textDrawable->setFadeSpeed(0.04);
@@ -205,14 +244,14 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 void OsgNode::setColor(osg::Vec4 color) {
 	this->color = color;
 	if (!isSelected())
-		setDrawableColor(0, color);
+		setDrawableColor(color);
 }
 
-void OsgNode::setDrawableColor(int pos, osg::Vec4 color) {
+void OsgNode::setDrawableColor(osg::Vec4 color) {
 	osg::Geometry * geometry1 =
-			dynamic_cast<osg::Geometry *> (nodeSmall->getDrawable(pos));
+			dynamic_cast<osg::Geometry *> (nodeSmall->getDrawable(0));
 	osg::Geometry * geometry2 =
-			dynamic_cast<osg::Geometry *> (nodeLarge->getDrawable(pos));
+			dynamic_cast<osg::Geometry *> (circle->getDrawable(0));
 
 	if (geometry1 != NULL) {
 		osg::Vec4Array * colorArray =
@@ -237,6 +276,7 @@ bool OsgNode::setExpanded(bool flag) {
 		return false;
 
 	expanded = flag;
+	setChildValue(circle, expanded);
 	setChildValue(nodeLarge, expanded);
 	setChildValue(nodeSmall, !expanded);
 	return true;
@@ -248,9 +288,9 @@ bool OsgNode::setSelected(bool flag) {
 
 	selected = flag;
 	if (selected)
-		setDrawableColor(0, osg::Vec4(1.0f, 0.0f, 0.0f, 0.5f)); // red
+		setDrawableColor(osg::Vec4(1.0f, 0.0f, 0.0f, 0.5f)); // red
 	else {
-		setDrawableColor(0, color);
+		setDrawableColor(color);
 	}
 
 	//	graph->setFrozen(false);
@@ -280,7 +320,6 @@ bool OsgNode::isFixed() const {
 bool OsgNode::setFixed(bool flag) {
 	if (flag == isFixed())
 		return false;
-	//	fixed = flag;
 	node->setFixed(flag);
 	setChildValue(square, flag);
 }
@@ -289,7 +328,7 @@ float OsgNode::getRadius() const {
 	if (getChildValue(nodeLarge)) {
 		return nodeLarge->getBound().radius();
 	} else {
-		return nodeSmall->getBound().radius(); // XXX temp magic
+		return 0;//nodeSmall->getBound().radius(); // XXX temp magic
 	}
 }
 

@@ -13,7 +13,6 @@ using namespace Window;
 
 CoreWindow::CoreWindow(QWidget *parent) :
 	QMainWindow(parent) {
-	setWindowTitle("3D Graph Content Visualization");
 
 	Util::Config::getInstance(); // XXX
 
@@ -45,6 +44,9 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
+	viewerWidget->getCameraManipulator()->setDistance(500);
+	setWindowFilePath("input/data/grid7.graphml");
+
 	log(NORMAL, "Graph loaded: " + graph->toString());
 }
 
@@ -63,20 +65,6 @@ void CoreWindow::createActions() {
 	playAction->setIcon(QIcon("img/gui/pause.png"));
 	playAction->setToolTip(tr("Play"));
 	connect(playAction, SIGNAL(triggered()), this, SLOT(playPause()));
-
-	addMetaB = new QPushButton();
-	addMetaB->setIcon(QIcon("img/gui/meta.png"));
-	addMetaB->setToolTip("&Add meta node");
-	addMetaB->setFocusPolicy(Qt::NoFocus);
-	addMetaB->setEnabled(false);// FIXME remove
-	//	connect(addMeta, SIGNAL(clicked()), this, SLOT(addMetaNode()));
-
-	removeMetaB = new QPushButton();
-	removeMetaB->setIcon(QIcon("img/gui/removemeta.png"));
-	removeMetaB->setToolTip(tr("Remove meta nodes"));
-	removeMetaB->setFocusPolicy(Qt::NoFocus);
-	removeMetaB->setEnabled(false);//FIXME remove
-	//	connect(removeMeta, SIGNAL(clicked()), this, SLOT(removeMetaNodes()));
 
 	fixB = new QPushButton();
 	fixB->setIcon(QIcon("img/gui/fix.png"));
@@ -162,11 +150,6 @@ void CoreWindow::createToolBar() {
 	frame->layout()->addWidget(centerB);
 	toolBar->addWidget(nodeTypeCB);
 	toolBar->addSeparator();
-
-	//	frame = createHorizontalFrame();
-	//	toolBar->addWidget(frame);
-	//	frame->layout()->addWidget(addMetaB);
-	//	frame->layout()->addWidget(removeMetaB);
 
 	frame = createHorizontalFrame();
 	toolBar->addWidget(frame);
@@ -273,8 +256,10 @@ void CoreWindow::loadFile() {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open GraphML"),
 			".", tr("GraphML Files (*.graphml)"));
 
-	if (fileName == NULL || fileName.isEmpty())
+	if (fileName == NULL || fileName.isEmpty()) {
+		layout->play();
 		return;
+	}
 
 	Model::Graph* graph = manager->loadGraph(fileName, messageWindows);
 
@@ -293,6 +278,8 @@ void CoreWindow::loadFile() {
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
+	viewerWidget->getCameraManipulator()->setDistance(500);
+	setWindowFilePath(fileName);
 
 	log(NORMAL, "Graph loaded: " + graph->toString());
 }

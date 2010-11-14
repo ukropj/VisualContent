@@ -25,10 +25,10 @@ Type::Type(qlonglong id, QString name, Graph* graph,
 				"Viewer.Textures.DefaultNodeScale"));
 		settings->insert("textureFile", appConf->getValue(
 				"Viewer.Textures.Node"));
-		settings->insert("color.R", "1");
-		settings->insert("color.G", "1");
-		settings->insert("color.B", "1");
-		settings->insert("color.A", "1");
+		settings->insert("color.R", "1.0");
+		settings->insert("color.G", "1.0");
+		settings->insert("color.B", "1.0");
+		settings->insert("color.A", "1.0");
 	} else
 		settings = settingsMap;
 

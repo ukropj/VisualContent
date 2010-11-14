@@ -146,7 +146,6 @@ osg::ref_ptr<osg::Group> SceneElements::wrapEdge(Edge* edge) {
 	osg::ref_ptr<osg::Group> edgeGroup = new osg::Group;
 
 	edgeGroup->setName("edge_group");
-	edgeGroup->setStateSet(OsgEdge::getStateSetInstance(edge->isOriented()));
 	edgeGroup->addChild(osgEdge);
 
 	return edgeGroup;

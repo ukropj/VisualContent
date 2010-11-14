@@ -121,7 +121,7 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 
 	isUpdating = true;
 
-//	qDebug() << "scene on for graph " << graph->getName();
+	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
 }
 
 void SceneGraph::cleanUp() {
@@ -187,16 +187,15 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 }
 
 void SceneGraph::update() {
-	if (!isUpdating)
-		return;
-
 	root->removeChildren(customNodesPosition, 1); // XXX why?
 
-	float interpolationSpeed = Util::Config::getValue(
-			"Viewer.Display.InterpolationSpeed").toFloat();
-	sceneElements->updateNodeCoords(interpolationSpeed);
-	sceneElements->updateEdgeCoords();
+	if (isUpdating) {
+		float interpolationSpeed = Util::Config::getValue(
+				"Viewer.Display.InterpolationSpeed").toFloat();
+		sceneElements->updateNodeCoords(interpolationSpeed);
+	}
 
+	sceneElements->updateEdgeCoords();
 	root->addChild(initCustomNodes());
 }
 
@@ -207,7 +206,6 @@ void SceneGraph::setEdgeLabelsVisible(bool visible) {
 		i.next();
 		i.value()->showLabel(visible);
 	}
-	qDebug() << "edge values shown";
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {

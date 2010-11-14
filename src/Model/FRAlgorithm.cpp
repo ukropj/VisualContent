@@ -40,7 +40,8 @@ FRAlgorithm::FRAlgorithm() {
 void FRAlgorithm::setGraph(Graph *graph) {
 	state = PAUSED;
 	while (isIterating)
-		;//XXX
+		qDebug() << "s";
+		//XXX
 	notEnd = true;
 	this->graph = graph;
 	this->randomize();
@@ -70,8 +71,9 @@ double FRAlgorithm::computeCalm() {
 /* Rozmiestni uzly na nahodne pozicie */
 void FRAlgorithm::randomize() {
 	State orig = state;
+	state = PAUSED;
 	while (isIterating)
-		state = PAUSED;
+		qDebug() << "r";
 	;//XXX
 
 	for (NodeIt i = graph->getNodes()->constBegin(); i
@@ -162,6 +164,7 @@ void FRAlgorithm::run() {
 	} else {
 		qWarning("No graph");
 	}
+	isIterating = false;
 }
 
 bool FRAlgorithm::iterate() {
@@ -204,6 +207,9 @@ bool FRAlgorithm::iterate() {
 		//		if (e->getDstNode()->isExpanded()) factor /= 2;
 		addAttractive(e, factor); // pritazliva sila beznej velkosti
 	}
+
+	if (state == PAUSED)
+		return true;
 
 	// aplikuj sily na uzly
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {

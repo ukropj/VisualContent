@@ -29,12 +29,16 @@ class SceneGraph;
 class OsgEdge: public osg::Geode {
 public:
 
+	enum StateSetType {
+		ORIENTED, NONORIENTED, ENDPOINT
+	};
+
 	OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph);
 	~OsgEdge();
 
-	QString toString() const;
-
 	void updateGeometry();
+
+	QString toString() const;
 
 	osg::Vec4 getEdgeColor() const {
 		if (selected)
@@ -71,7 +75,7 @@ public:
 			addDrawable(label);
 	}
 
-	static osg::ref_ptr<osg::StateSet> getStateSetInstance(bool oriented);
+	osg::ref_ptr<osg::StateSet> getStateSetInstance(StateSetType type);
 
 private:
 
@@ -81,15 +85,22 @@ private:
 	bool selected;
 
 	osg::ref_ptr<osg::Geometry> geometry;
+	osg::ref_ptr<osg::Geometry> endPoints;
 	osg::ref_ptr<osgText::FadeText> label;
 	osg::Vec4 edgeColor;
 
+	osg::ref_ptr<osg::Vec3Array> edgeCoords;
+	osg::ref_ptr<osg::Vec2Array> edgeTexCoords;
+	osg::ref_ptr<osg::Vec3Array> endPointCoords;
+
 	osg::ref_ptr<osg::Geometry> createGeometry();
+	osg::ref_ptr<osg::Geometry> createEndpointGeometry();
 	osg::ref_ptr<osgText::FadeText> createLabel(QString text);
 
 	static osg::ref_ptr<osg::StateSet> stateSet;
 	static osg::ref_ptr<osg::StateSet> stateSetOriented;
-	static osg::ref_ptr<osg::StateSet> createStateSet(bool oriented);
+	static osg::ref_ptr<osg::StateSet> stateSetEndpoint;
+	osg::ref_ptr<osg::StateSet> createStateSet(StateSetType type) const;
 };
 }
 

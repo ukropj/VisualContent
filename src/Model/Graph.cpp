@@ -23,6 +23,11 @@ Graph::Graph(QString name, qlonglong ele_id_counter) {
 }
 
 Graph::~Graph(void) {
+//	qDeleteAll(nodes);
+//	qDeleteAll(edges); // TODO
+//	qDeleteAll(types);
+//	return;
+//
 	//uvolnime vsetky Nodes, Edges... su cez osg::ref_ptr takze staci clearnut
 	// FIXME uz nie su :D
 	this->nodes->clear();
