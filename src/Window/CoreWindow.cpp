@@ -13,6 +13,7 @@ using namespace Window;
 
 CoreWindow::CoreWindow(QWidget *parent) :
 	QMainWindow(parent) {
+	setWindowTitle("3D Graph Content Visualization");
 
 	Util::Config::getInstance(); // XXX
 
@@ -44,8 +45,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
-	viewerWidget->getCameraManipulator()->setDistance(100);
-	log(NORMAL, "Graph loaded" + graph->toString());
+	log(NORMAL, "Graph loaded: " + graph->toString());
 }
 
 void CoreWindow::createActions() {
@@ -293,9 +293,8 @@ void CoreWindow::loadFile() {
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
-//	qDebug() << sceneGraph->getRoot()->getBound().radius();
-//	viewerWidget->getCameraManipulator()->setDistance(sceneGraph->getRoot()->getBound().radius());
-	log(NORMAL, "Graph loaded" + graph->toString());
+
+	log(NORMAL, "Graph loaded: " + graph->toString());
 }
 
 void CoreWindow::labelOnOff(bool) {
@@ -368,9 +367,6 @@ void CoreWindow::showStatusMsg(StatusMsgType type, QString msg) {
 	case KEYS:
 		//		keyStatus->setText(msg);
 		break;
-	case MAIN:
-		mainStatus->setText(msg);
-		break;
 	case TEMP:
 		statusBar()->showMessage(msg, 3000); // 3 sec
 		break;
@@ -386,8 +382,6 @@ void CoreWindow::createStatusBar() {
 	algStatus = new QLabel(" --- ");
 	pickStatus = new QLabel(" --- ");
 	keyStatus = new QLabel("");
-	mainStatus = new QLabel("Application ready");
-	statusBar()->addWidget(mainStatus);
 	//	statusBar()->addPermanentWidget(pickStatus);
 	//	statusBar()->addPermanentWidget(keyStatus);
 	statusBar()->addPermanentWidget(algStatus);

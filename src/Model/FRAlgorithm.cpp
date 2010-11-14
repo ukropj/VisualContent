@@ -34,6 +34,7 @@ FRAlgorithm::FRAlgorithm() {
 	up = osg::Vec3f();
 	vp = osg::Vec3f();
 	useMaxDistance = false;
+	camera == NULL;
 }
 
 void FRAlgorithm::setGraph(Graph *graph) {

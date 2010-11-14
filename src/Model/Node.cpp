@@ -11,12 +11,15 @@
 #include "Model/Graph.h"
 #include "Util/Config.h"
 
+#include <qDebug>
+
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
 using namespace Model;
 
 Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 	this->id = id;
+	this->name = name;
 	this->type = nodeType;
 	this->graph = graph;
 	this->edges = new QMap<qlonglong, Edge*> ;

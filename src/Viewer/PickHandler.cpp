@@ -582,6 +582,7 @@ osg::Vec3 PickHandler::getSelectionCenter() {
 		++ni;
 	}
 	int num = selectedNodes.size();
+	if (num == 0) num = 1;
 
 	return osg::Vec3f(sum.x() / num, sum.y() / num, sum.z() / num);
 }
