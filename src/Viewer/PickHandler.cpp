@@ -178,7 +178,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 			deselectAll();
 		QSet<OsgNode*> nodes = pickMore(getViewer(action), event);
 		QSet<OsgNode*>::const_iterator ni = nodes.constBegin();
-		multiPickEnabled = true; // temp to select form quad
+		multiPickEnabled = true; // temporary to select form quad
 		while (ni != nodes.constEnd()) {
 			select(*ni); // select node found in quad
 			++ni;
@@ -274,7 +274,6 @@ osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector,
 	return newPosition * compositeMi;
 }
 
-// XXX temp
 void printVect(osg::Vec3f vec) {
 	qDebug() << "[" << vec.x() << "," << vec.y() << "," << vec.z() << "]";
 }

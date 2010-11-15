@@ -14,6 +14,7 @@
 
 #include <math.h>
 #include <osgText/FadeText>
+#include <osgText/Font>
 #include <qDebug>
 
 using namespace Vwr;
@@ -32,24 +33,29 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	this->nodeTransform = nodeTransform;
 
 	selected = false;
-	usingInterpolation = true;
 	expanded = false;
+	usingInterpolation = true;
 
 	float scale = node->getType()->getScale();
 	nodeSmall = createTextureNode(node->getType()->getTexture(), scale);
-	nodeLarge = createTextureNode(node->getType()->getDevil(), scale * 2);
+	if (node->getId() % 2)
+		nodeLarge = createTextureNode(node->getType()->getDevil(), scale * 2);
+	else
+		nodeLarge = createText(scale * 2);
 	square = createSquare(scale);
-	circle = createCircle(scale * 2);
+	circle = createCircle(nodeLarge->getBound().radius());
 	label = createLabel(node->getLabel(), scale);
 
 	nodeSmall->setName("node");
 	nodeLarge->setName("image");
+	//	textSample->setName("text_sample");
 	label->setName("label");
 	square->setName("square");
 	circle->setName("circle");
 
 	addChild(nodeSmall);
 	addChild(nodeLarge);
+	//	addChild(textSample);
 	addChild(square);
 	addChild(circle);
 	addChild(label);
@@ -148,8 +154,6 @@ osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
 
 	nodeRect->setColorArray(colorArray);
 	nodeRect->setColorIndices(colorIndexArray);
-
-	nodeRect->setColorArray(colorArray);
 	nodeRect->setColorBinding(osg::Geometry::BIND_OVERALL);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
@@ -157,9 +161,10 @@ osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
 	return geode;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float scale) {
-	float r = sqrt(2);
-	r *= scale;
+osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float radius) {
+	//	float r = sqrt(2);
+	float r = radius;
+	//	r *= scale;
 
 	int sides = 20;
 	osg::ref_ptr<osg::Geometry> nodeCircle = new osg::Geometry;
@@ -182,6 +187,60 @@ osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float scale) {
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(nodeCircle);
+	return geode;
+}
+
+osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
+	float width = 5.0f;
+	float height = 5.0f;
+	width *= scale;
+	height *= scale;
+
+	osgText::Font* font = osgText::readFontFile("fonts/arial.ttf");
+	QString
+			text(
+					"2. If someone wants to bring Qt widgets inside their OSG scene (to do HUDs or \nan interface on a computer screen which is inside the 3D scene, or even \nfloating Qt widgets, for example). That's where QGraphicsViewAdapter +\nQWidgetImage will be useful.");
+	text.append("A tento text sa tam uz nezmestil....");
+	osg::ref_ptr<osgText::Text> textD = new osgText::Text();
+
+	float charSize = 5.0f;
+	float margin = 0.2f;
+
+	textD->setFont(font);
+	textD->setMaximumHeight(height);
+	textD->setMaximumWidth(width);
+
+	textD->setText(text.toStdString());
+	textD->setLineSpacing(0.2);
+	//	textDrawable->setAxisAlignment(osgText::Text::SCREEN);
+	textD->setCharacterSize(charSize);
+	textD->setDrawMode(osgText::Text::TEXT);// | osgText::Text::BOUNDINGBOX);
+	textD->setAlignment(osgText::Text::LEFT_CENTER);
+	textD->setPosition(osg::Vec3(-width / 2.0f, 0, 0));
+	textD->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	width += margin *2;
+	height += margin *2;
+
+	osg::ref_ptr<osg::Geometry> nodeRect = new osg::Geometry;
+	osg::ref_ptr<osg::Vec3Array> nodeVerts = new osg::Vec3Array(4);
+
+	(*nodeVerts)[0] = osg::Vec3(-width / 2.0f, -height / 2.0f, 0);
+	(*nodeVerts)[1] = osg::Vec3(width / 2.0f, -height / 2.0f, 0);
+	(*nodeVerts)[2] = osg::Vec3(width / 2.0f, height / 2.0f, 0);
+	(*nodeVerts)[3] = osg::Vec3(-width / 2.0f, height / 2.0f, 0);
+
+	nodeRect->setVertexArray(nodeVerts);
+	nodeRect->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
+			4));
+	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+	colorArray->push_back(osg::Vec4(0.9f, 0.9f, 0.9f, 1.0f));
+	nodeRect->setColorArray(colorArray);
+	nodeRect->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(textD);
+	geode->addDrawable(nodeRect);
 	return geode;
 }
 
@@ -312,7 +371,7 @@ float OsgNode::getRadius() const {
 	if (getChildValue(nodeLarge)) {
 		return nodeLarge->getBound().radius();
 	} else {
-		return nodeSmall->getBound().radius(); // XXX temp magic
+		return nodeSmall->getBound().radius();
 	}
 }
 
@@ -379,12 +438,16 @@ bool OsgNode::isObscuredBy(OsgNode* other) {
 		return false;
 	// NOTE: z decreases when going away from camera
 
-	// return false if any of nodes is not on screen
+	// return false if no expanded node is on screen
 	upRot = up * (viewM * projM);
 	vpRot = vp * (viewM * projM);
-	if (qAbs(upRot.x()) > 1 || qAbs(upRot.y()) > 1 || qAbs(vpRot.x()) > 1
-			|| qAbs(vpRot.y()) > 1)
-		return false;
+	if (!uExp && (qAbs(vpRot.x()) > 1 || qAbs(vpRot.y()) > 1))
+			return false;
+	if (!vExp && (qAbs(upRot.x()) > 1 || qAbs(upRot.y()) > 1))
+			return false;
+//	if (qAbs(upRot.x()) > 1 || qAbs(upRot.y()) > 1 || qAbs(vpRot.x()) > 1
+//			|| qAbs(vpRot.y()) > 1)
+//		return false;
 
 	return true;
 }

@@ -26,7 +26,7 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path) {
 	return texture;
 }
 
-osg::ref_ptr<osg::Texture2D> TextureWrapper::createTexture(// todo private?
+osg::ref_ptr<osg::Texture2D> TextureWrapper::createTexture(
 		osg::ref_ptr<osg::Image> image) {
 	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D;
 

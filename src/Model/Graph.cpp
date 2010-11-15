@@ -13,6 +13,15 @@ Graph::Graph(QString name, qlonglong ele_id_counter) {
 	this->name = name;
 	this->ele_id_counter = ele_id_counter;
 	this->frozen = false;
+	nodes.clear();
+	edges.clear();
+	types.clear();
+	newTypes.clear();
+	newNodes.clear();
+	newEdges.clear();
+	nodesByType.clear();
+	edgesByType.clear();
+	typesByName.clear();
 }
 
 Graph::~Graph() {

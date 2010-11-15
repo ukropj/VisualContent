@@ -40,6 +40,7 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 	ignore = false;
 	frozen = false;
 	osgNode = NULL;
+	edges.clear();
 }
 
 Node::~Node(void) {

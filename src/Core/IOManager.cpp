@@ -318,7 +318,7 @@ Graph* IOManager::loadGraph(QString filepath,
 }
 
 void IOManager::exportGraph(Graph* graph, QString filepath) {
-	// TODO export do GraphML
+	// TODO export to GraphML
 }
 
 Graph* IOManager::createGraph(QString graphname) {

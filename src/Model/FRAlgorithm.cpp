@@ -22,6 +22,7 @@ FRAlgorithm::FRAlgorithm() {
 			= Util::Config::getValue("Layout.Algorithm.MaxDistance").toFloat();
 
 	state = NO_GRAPH;
+	isIterating = false;
 	graph = NULL;
 	camera == NULL;
 	osg::Vec3f p(0, 0, 0);
@@ -310,15 +311,23 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 
 /* Pricitanie projektvnych odpudivych sil */
 void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
+//	return; /// XXX
 	Vwr::OsgNode* ou = u->getOsgNode();
 	Vwr::OsgNode* ov = v->getOsgNode();
 	if (ou == NULL || ov == NULL)
 		return;
 
-	if (!ou->isObscuredBy(ov))
+	if (!ou->isObscuredBy(ov) && !ov->isObscuredBy(ou))
 		return;
 	up = ou->getPosition();
 	vp = ov->getPosition();
+	// NOTE: Problem is that (real) positions are changing during computations.
+	// Normally, node positions are updated all at once in applyForces() but these are
+	// OsgNode positions (constatnly interpolating).
+	// Therefore calling this method for (u,v) and (v,u) yielded different results,
+	// i.e. different forces were added to u and v.
+	// Because of this asymetry the whole graph was moving.
+	// For now solution, is in 3 last lines - force is halved and added to both nodes at once.
 
 	// determine (projected) radius of each node
 	osg::Vec3f r;
@@ -352,7 +361,10 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	fv *= -(dist * K) * factor; // force size
 
 	fv = viewM.getRotate().inverse() * fv; // transform fv back
-	u->addForce(fv); // add to node (u only!)
+
+	fv /= 2.0f;// XXX workaround
+	u->addForce(fv);
+	v->addForce(-fv);
 }
 
 /* Vzorec na vypocet odpudivej sily */

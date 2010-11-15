@@ -108,9 +108,10 @@ private:
 
 	osg::ref_ptr<osg::Geode> createTextureNode(
 			osg::ref_ptr<osg::Texture2D> texture, const float scale = 1);
-	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
 	osg::ref_ptr<osg::Geode> createSquare(const float scale = 1);
 	osg::ref_ptr<osg::Geode> createCircle(const float scale = 1);
+	osg::ref_ptr<osg::Geode> createText(const float scale = 1);
+	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
 
 	osg::Vec4 color;
 
