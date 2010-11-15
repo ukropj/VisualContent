@@ -211,7 +211,7 @@ bool PickHandler::handleDoubleclick(const osgGA::GUIEventAdapter& event,
 
 bool PickHandler::handleMove(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
-	std::cout << event.getX() << "," << event.getY() << std::endl; // XXX ???
+	std::cout << event.getX() << "," << event.getY() << std::endl; // XXX is this never called???
 
 	return false;
 }

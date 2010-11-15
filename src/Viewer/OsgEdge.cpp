@@ -40,7 +40,7 @@ OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
 }
 
 OsgEdge::~OsgEdge() {
-//	edge->setOsgEdge(NULL);
+	//	edge->setOsgEdge(NULL);
 	sceneGraph = NULL;
 }
 
@@ -90,37 +90,47 @@ void OsgEdge::updateGeometry() {
 	b *= 2;
 
 	osg::Vec3f offset = x - y;
-//	offset = sceneGraph->byView(offset, true);
-//	offset.z() = 0;
-//	offset = sceneGraph->byViewInv(offset, true);
+	//	offset = sceneGraph->byView(offset, true);
+	//	offset.z() = 0;
+	//	offset = sceneGraph->byViewInv(offset, true);
 
-//	float origLength =
-			offset.normalize();
+	float origLength = offset.normalize();
 
-//	float rx = srcNode->getRadius();// * 0.7f;
-//	float ry = dstNode->getRadius();// * 0.7f;
+	//	float rx = srcNode->getRadius();// * 0.7f;
+	//	float ry = dstNode->getRadius();// * 0.7f;
 
-//	if (origLength > rx + ry) {
-//		x += -offset * rx;
-//		y += offset * ry;
-//	} else {
-//		y = x; // TODO something usefull
-//	}
+	//	if (origLength > rx + ry) {
+	//		x += -offset * rx;
+	//		y += offset * ry;
+	//	} else {
+	//		y = x; // TODO something usefull
+	//	}
+
+//	osg::Vec3f r;
+//	r = x + osg::Vec3f(srcNode->getRadius(), 0, 0);
+//	float radU = (sceneGraph->byFull(x) - sceneGraph->byFull(r)).length();
+//	r = y + osg::Vec3f(dstNode->getRadius(), 0, 0);
+//	float radV = (sceneGraph->byFull(y) - sceneGraph->byFull(r)).length();
+//
+//	osg::Vec3f fv = sceneGraph->byFull(y) - sceneGraph->byFull(x);
+//	float projLength = fv.length();
 
 	if (srcNode->isExpanded()) {
-		x += -offset * srcNode->getRadius();;
-		(*endPointCoords)[3].set(x - a);
-		(*endPointCoords)[2].set(x + b);
-		(*endPointCoords)[1].set(x + a);
-		(*endPointCoords)[0].set(x + b/2.0);
+//		x += -offset * (origLength * (radU / projLength));
+		x += -offset * srcNode->getRadius();
+		(*endPointCoords)[0].set(x - a);
+		(*endPointCoords)[1].set(x + b / 2.0);
+		(*endPointCoords)[2].set(x + a);
+		(*endPointCoords)[3].set(x + b);
 	} else {
 		for (int i = 0; i < 4; i++)
 			(*endPointCoords)[i].set(0, 0, 0);
 	}
 	if (dstNode->isExpanded()) {
+//		y += offset * (origLength * (radV / projLength));
 		y += offset * dstNode->getRadius();
 		(*endPointCoords)[4].set(y + a);
-		(*endPointCoords)[5].set(y - b/2.0);
+		(*endPointCoords)[5].set(y - b / 2.0);
 		(*endPointCoords)[6].set(y - a);
 		(*endPointCoords)[7].set(y - b);
 	} else {
@@ -189,7 +199,7 @@ osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
 	switch (type) {
 	case NONORIENTED:
 		if (stateSet == NULL) {
-			stateSet = createStateSet(NONORIENTED);
+			stateSet = createStateSet();
 			stateSet->setTextureAttributeAndModes(0,
 					Util::TextureWrapper::getEdgeTexture(),
 					osg::StateAttribute::ON);
@@ -199,7 +209,7 @@ osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
 		return stateSet;
 	case ORIENTED:
 		if (stateSetOriented == NULL) {
-			stateSetOriented = createStateSet(ORIENTED);
+			stateSetOriented = createStateSet();
 			stateSetOriented->setTextureAttributeAndModes(0,
 					Util::TextureWrapper::getOrientedEdgeTexture(),
 					osg::StateAttribute::ON);
@@ -208,7 +218,7 @@ osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
 		return stateSetOriented;
 	case ENDPOINT:
 		if (stateSetEndpoint == NULL) {
-			stateSetEndpoint = createStateSet(ENDPOINT);
+			stateSetEndpoint = createStateSet();
 			//	edgeStateSet->setTextureAttributeAndModes(0, edge->getType()->getTexture(),
 			//			osg::StateAttribute::ON);
 		}
@@ -216,20 +226,8 @@ osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
 	}
 }
 
-osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet(StateSetType type) const {
+osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet() const {
 	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet();
-	edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	edgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-	edgeStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-
-	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
-	depth->setWriteMask(false);
-	edgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
-
-	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
-	cull->setMode(osg::CullFace::BACK);
-	edgeStateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
-
 	return edgeStateSet;
 }
 

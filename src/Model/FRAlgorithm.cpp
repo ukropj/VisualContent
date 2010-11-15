@@ -22,7 +22,8 @@ FRAlgorithm::FRAlgorithm() {
 			= Util::Config::getValue("Layout.Algorithm.MaxDistance").toFloat();
 
 	state = NO_GRAPH;
-	notEnd = true;
+	graph = NULL;
+	camera == NULL;
 	osg::Vec3f p(0, 0, 0);
 	center = p;
 	fv = osg::Vec3f();
@@ -30,24 +31,25 @@ FRAlgorithm::FRAlgorithm() {
 	up = osg::Vec3f();
 	vp = osg::Vec3f();
 	useMaxDistance = false;
-	camera == NULL;
+	notEnd = true;
 
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }
 
 void FRAlgorithm::setGraph(Graph *newGraph) {
-	do {
-		state = PAUSED;
+	state = PAUSED;
+	while (isIterating) {
 		qDebug() << "s";
 		QThread::msleep(100);
-	} while (isIterating);
+		state = PAUSED;
+	}
 
 	notEnd = true;
 
 	qDebug() << "deleting graph:";
 	if (newGraph != NULL) {
 		if (graph != NULL)
-			delete graph;
+			delete graph; // old graph deleted
 		graph = newGraph;
 	}
 	qDebug() << "graph deleted";
@@ -79,11 +81,12 @@ double FRAlgorithm::computeCalm() {
 /* Rozmiestni uzly na nahodne pozicie */
 void FRAlgorithm::randomize() {
 	State origState = state;
-	do {
-		state = PAUSED;
+	state = PAUSED;
+	while (isIterating) {
 		qDebug() << "s";
 		QThread::msleep(100);
-	} while (isIterating);
+		state = PAUSED;
+	}
 
 	for (NodeIt i = graph->getNodes()->constBegin(); i
 			!= graph->getNodes()->constEnd(); i++) {
@@ -144,7 +147,7 @@ void FRAlgorithm::stop() {
 }
 
 void FRAlgorithm::run() {
-	this->sleep(Util::Config::getValue("Layout.Thread.StartSleepTime").toLong());
+	msleep(Util::Config::getValue("Layout.Thread.StartSleepTime").toLong());
 	isIterating = true;
 
 	if (this->graph != NULL) {
@@ -182,7 +185,7 @@ void FRAlgorithm::run() {
 bool FRAlgorithm::iterate() {
 	bool changed = false;
 	QMap<qlonglong, Node*>* nodes = graph->getNodes();
-	QMap<qlonglong, Edge* >* edges = graph->getEdges();
+	QMap<qlonglong, Edge*>* edges = graph->getEdges();
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		i.value()->resetForce();
@@ -306,11 +309,10 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 }
 
 /* Pricitanie projektvnych odpudivych sil */
-// TODO refactor this method
 void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	Vwr::OsgNode* ou = u->getOsgNode();
 	Vwr::OsgNode* ov = v->getOsgNode();
-	if (ou== NULL || ov ==NULL)
+	if (ou == NULL || ov == NULL)
 		return;
 
 	if (!ou->isObscuredBy(ov))
@@ -320,8 +322,8 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 
 	// determine (projected) radius of each node
 	osg::Vec3f r;
-	r= up + osg::Vec3f(ou->getRadius(), 0, 0);
-	float radU = ((up * fullM) - (r * fullM)).length(); // TODO this might not be the correct/best way
+	r = up + osg::Vec3f(ou->getRadius(), 0, 0);
+	float radU = ((up * fullM) - (r * fullM)).length();
 	r = vp + osg::Vec3f(ov->getRadius(), 0, 0);
 	float radV = ((vp * fullM) - (r * fullM)).length();
 
@@ -333,17 +335,21 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 		return;
 	}
 
+	// dist is negative overlapping distance
 	dist -= (radU + radV);
+	// transform dist back to world coordinates
 	dist = (-dist) * (ou->getRadius() / radU);
-	// transform dist back to world coordinates XXX pseudomath
 
-	//	std::cout << dist << "," << K <<std::endl;
+	if (dist != dist) {
+		dist = 0;
+	}
 
 	// use only view rotation to find force direction
 	fv = viewM.getRotate() * (vp - up);// smer sily
 	fv.z() = 0;
 	fv.normalize(); // force direction
-	fv *= -(dist* K)  * factor; // force size
+
+	fv *= -(dist * K) * factor; // force size
 
 	fv = viewM.getRotate().inverse() * fv; // transform fv back
 	u->addForce(fv); // add to node (u only!)

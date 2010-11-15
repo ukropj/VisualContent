@@ -499,7 +499,7 @@ bool Vwr::CameraManipulator::handleKeyUp(const osgGA::GUIEventAdapter& ea,
 	}
 	case osgGA::GUIEventAdapter::KEY_Up:
 	case osgGA::GUIEventAdapter::KEY_Down:
-		decelerateForwardRate = true;
+		decelerateVerticalRate = true;
 		break;
 
 	case osgGA::GUIEventAdapter::KEY_Right:
@@ -509,7 +509,7 @@ bool Vwr::CameraManipulator::handleKeyUp(const osgGA::GUIEventAdapter& ea,
 
 	case osgGA::GUIEventAdapter::KEY_Page_Up:
 	case osgGA::GUIEventAdapter::KEY_Page_Down:
-		decelerateVerticalRate = true;
+		decelerateForwardRate= true;
 		break;
 	}
 
@@ -528,24 +528,22 @@ bool Vwr::CameraManipulator::handleKeyDown(const osgGA::GUIEventAdapter &ea,
 		osgGA::GUIActionAdapter &) {
 	int i = ea.getKey();
 	switch (ea.getKey()) {
+
 	case osgGA::GUIEventAdapter::KEY_Up: {
-		forwardSpeed = 2 * maxSpeed;
-		decelerateForwardRate = false;
+		verticalSpeed = 2 * maxSpeed;
+		decelerateVerticalRate = false;
 		break;
 	}
-
 	case osgGA::GUIEventAdapter::KEY_Down: {
-		forwardSpeed = -2 * maxSpeed;
-		decelerateForwardRate = false;
+		verticalSpeed = -2 * maxSpeed;
+		decelerateVerticalRate = false;
 		break;
 	}
-
 	case osgGA::GUIEventAdapter::KEY_Right: {
 		sideSpeed = 2 * maxSpeed;
 		decelerateSideRate = false;
 		break;
 	}
-
 	case osgGA::GUIEventAdapter::KEY_Left: {
 		sideSpeed = -2 * maxSpeed;
 		;
@@ -553,15 +551,16 @@ bool Vwr::CameraManipulator::handleKeyDown(const osgGA::GUIEventAdapter &ea,
 		break;
 	}
 	case osgGA::GUIEventAdapter::KEY_Page_Up: {
-		verticalSpeed = 2 * maxSpeed;
-		decelerateVerticalRate = false;
+		forwardSpeed = 2 * maxSpeed;
+		decelerateForwardRate = false;
 		break;
 	}
 	case osgGA::GUIEventAdapter::KEY_Page_Down: {
-		verticalSpeed = -2 * maxSpeed;
-		decelerateVerticalRate = false;
+		forwardSpeed = -2 * maxSpeed;
+		decelerateForwardRate = false;
 		break;
 	}
+
 	}
 
 	return true;

@@ -16,9 +16,10 @@ Graph::Graph(QString name, qlonglong ele_id_counter) {
 }
 
 Graph::~Graph() {
-//	qDebug() << "deleting nodes";
+	qDebug() << "deleting nodes";
+//	qDebug() << nodes.size();
 	qDeleteAll(nodes); // NOTE: deleting nodes will also delete edges
-//	qDebug() << "deleting types";
+	qDebug() << "deleting types";
 
 	qDeleteAll(types);
 

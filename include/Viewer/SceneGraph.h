@@ -31,7 +31,7 @@ class OsgEdge;
 
 class SceneGraph {
 public:
-	SceneGraph(Model::Graph* graph);
+	SceneGraph();
 	~SceneGraph();
 
 	/**
@@ -103,7 +103,7 @@ public:
 	 */
 	void setFrozen(bool val);
 
-	void setUpdating(bool val);
+	void setUpdatingNodes(bool val);
 
 	osg::Vec3f getEye() {
 		return getViewCoords()[0];
@@ -160,7 +160,7 @@ private:
 		return vects;
 	}
 
-	bool isUpdating;
+	bool updateNodes;
 
 	/**
 	 *  Vwr::NodeGroup * nodesGroup

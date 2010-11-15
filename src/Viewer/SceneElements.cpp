@@ -44,6 +44,7 @@ SceneElements::SceneElements(QMap<qlonglong, Node*> *nodes,
 
 	this->group = nodeGroup;
 	group->setName("scene_elements");
+	group->setStateSet(createStateSet());
 }
 
 SceneElements::~SceneElements(void) {
@@ -174,3 +175,20 @@ void SceneElements::updateEdgeCoords() {
 	}
 }
 
+osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {
+	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet();
+
+	edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	edgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	edgeStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
+	depth->setWriteMask(false);
+	edgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
+
+	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
+	cull->setMode(osg::CullFace::BACK);
+	edgeStateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
+
+	return edgeStateSet;
+}

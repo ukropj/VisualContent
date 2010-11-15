@@ -100,7 +100,7 @@ private:
 	static osg::ref_ptr<osg::StateSet> stateSet;
 	static osg::ref_ptr<osg::StateSet> stateSetOriented;
 	static osg::ref_ptr<osg::StateSet> stateSetEndpoint;
-	osg::ref_ptr<osg::StateSet> createStateSet(StateSetType type) const;
+	osg::ref_ptr<osg::StateSet> createStateSet() const;
 };
 }
 

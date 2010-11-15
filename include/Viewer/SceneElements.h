@@ -112,6 +112,8 @@ private:
 			Model::Edge* parentEdge);
 
 	osg::ref_ptr<osg::Group> getNodeGroup(Model::Node* node);
+
+	osg::ref_ptr<osg::StateSet> createStateSet() const;
 };
 }
 

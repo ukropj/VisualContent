@@ -82,17 +82,20 @@ osg::ref_ptr<osg::Node> experiments() {
 	////	at->addChild(geode);
 }
 
-SceneGraph::SceneGraph(Model::Graph* graph) {
-	// TODO cleanup class
-
+SceneGraph::SceneGraph() {
 	camera = NULL;
 
 	root = new osg::Group();
 	root->setName("root");
 	root->addChild(createSkyBox());
 	backgroundPosition = 0;
+	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (),
+			this);
 
-	reload(graph);
+	updateNodes = true;
+
+	graph == NULL;
+
 	//	customNodeList.append(experiments());
 
 	//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
@@ -100,13 +103,12 @@ SceneGraph::SceneGraph(Model::Graph* graph) {
 
 SceneGraph::~SceneGraph() {
 	cleanUp();
+	root->removeChild(0, 1);
 }
 
 void SceneGraph::reload(Model::Graph * newGraph) {
 	if (newGraph == NULL)
 		return;
-	isUpdating = false;
-
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
@@ -118,21 +120,21 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 
 	osgUtil::Optimizer opt;
 	opt.optimize(root, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
-
-	isUpdating = true;
+	updateNodes = true;
 
 	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
 }
 
 int SceneGraph::cleanUp() {
-//	for (int i = 0; i < root->getNumChildren(); i++) {
-//		qDebug() << QString::fromStdString(root->getChild(i)->getName());
-//	}
+	//	for (int i = 0; i < root->getNumChildren(); i++) {
+	//		qDebug() << QString::fromStdString(root->getChild(i)->getName());
+	//	}
 	root->removeChildren(1, root->getNumChildren() - 1);
 	// NOTE: first child is skybox
 
 	delete sceneElements;
-	graph = NULL;
+	qDebug() << "sceneGraph cleared";
+	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
 	return 1;
 }
 
@@ -196,9 +198,13 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 }
 
 void SceneGraph::update(bool forceIdeal) {
+	if (graph == NULL) {
+		qWarning("No graph set in SceneGraph");
+		return;
+	}
 	root->removeChildren(customNodesPosition, 1); // XXX why?
 
-	if (isUpdating || forceIdeal) {
+	if (updateNodes || forceIdeal) {
 		float interpolationSpeed = Util::Config::getValue(
 				"Viewer.Display.InterpolationSpeed").toFloat();
 		if (forceIdeal)
@@ -241,14 +247,14 @@ void SceneGraph::reloadConfig() {
 	}
 }
 
-void SceneGraph::setUpdating(bool val) {
-	isUpdating = val;
+void SceneGraph::setUpdatingNodes(bool val) {
+	updateNodes = val;
 }
 
 void SceneGraph::setFrozen(bool val) {
-	if (graph != NULL) {
-		graph->setFrozen(val);
-	} else {
+	if (graph == NULL) {
 		qWarning("No graph set in SceneGraph");
+		return;
 	}
+	graph->setFrozen(val);
 }

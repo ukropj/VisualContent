@@ -119,8 +119,6 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
-	osg::ref_ptr<osg::StateSet> bbState = createStateSet();
-
 	float width = 3.0f;
 	float height = 3.0f;
 
@@ -154,22 +152,18 @@ osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
 	nodeRect->setColorArray(colorArray);
 	nodeRect->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-	nodeRect->setStateSet(bbState);
-
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(nodeRect);
 	return geode;
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float scale) {
-	osg::ref_ptr<osg::StateSet> bbState = createStateSet();
-
 	float r = sqrt(2);
 	r *= scale;
 
 	int sides = 20;
 	osg::ref_ptr<osg::Geometry> nodeCircle = new osg::Geometry;
-	double alpha = 2 * M_PI / (float)sides;
+	double alpha = 2 * M_PI / (float) sides;
 
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
 	for (int i = 0; i <= sides; i++) {
@@ -185,8 +179,6 @@ osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float scale) {
 
 	nodeCircle->setColorArray(colorArray);
 	nodeCircle->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-	nodeCircle->setStateSet(bbState);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(nodeCircle);
@@ -224,21 +216,7 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
 
 	stateSet->setDataVariance(osg::Object::DYNAMIC);
-	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
-	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-
-	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-
-	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
-	depth->setWriteMask(false);
-	stateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
-
-	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
-	cull->setMode(osg::CullFace::BACK);
-	stateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
-
 	return stateSet;
 }
 
@@ -322,6 +300,11 @@ bool OsgNode::setFixed(bool flag) {
 	if (flag == isFixed())
 		return false;
 	node->setFixed(flag);
+	if (flag) {
+		float graphScale = Util::Config::getInstance()->getValue(
+				"Viewer.Display.NodeDistanceScale").toFloat();
+		node->setPosition(getPosition() / graphScale);
+	}
 	setChildValue(square, flag);
 }
 
@@ -329,7 +312,7 @@ float OsgNode::getRadius() const {
 	if (getChildValue(nodeLarge)) {
 		return nodeLarge->getBound().radius();
 	} else {
-		return 0;//nodeSmall->getBound().radius(); // XXX temp magic
+		return nodeSmall->getBound().radius(); // XXX temp magic
 	}
 }
 
@@ -352,9 +335,6 @@ osg::Vec3f OsgNode::getPosition() const {
 }
 
 void OsgNode::updatePosition(float interpolationSpeed) {
-	if (nodeTransform == NULL)
-		return;
-
 	float graphScale = Util::Config::getInstance()->getValue(
 			"Viewer.Display.NodeDistanceScale").toFloat();
 

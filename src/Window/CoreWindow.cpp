@@ -21,7 +21,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	layout = new Model::FRAlgorithm();
 	manager = new AppCore::IOManager();
 	messageWindows = new Window::MessageWindows();
-	sceneGraph = new Vwr::SceneGraph(new Model::Graph("empty", 0));
+	sceneGraph = new Vwr::SceneGraph();
 
 	//vytvorenie menu a toolbar-ov
 	createActions();
@@ -199,11 +199,11 @@ void CoreWindow::playPause() {
 	if (layout->isPlaying()) {
 		playAction->setIcon(QIcon("img/gui/play.png"));
 		layout->pause();
-		sceneGraph->setUpdating(false);
+		sceneGraph->setUpdatingNodes(false);
 		log(NORMAL, "Layout paused");
 	} else {
 		playAction->setIcon(QIcon("img/gui/pause.png"));
-		sceneGraph->setUpdating(true);
+		sceneGraph->setUpdatingNodes(true);
 		layout->play();
 		log(NORMAL, "Layout unpaused");
 	}
@@ -253,28 +253,35 @@ void CoreWindow::setSelectedFixed(bool fixed) {
 
 void CoreWindow::loadFile() {
 	layout->pause();
+	sceneGraph->setUpdatingNodes(false);
+	log(NORMAL, "Layout paused");
 
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Open GraphML"),
 			".", tr("GraphML Files (*.graphml)"));
 
 	if (fileName == NULL || fileName.isEmpty()) {
+		sceneGraph->setUpdatingNodes(true);
 		layout->play();
+		log(NORMAL, "Layout unpaused");
 		return;
 	}
 
 	Model::Graph* graph = manager->loadGraph(fileName, messageWindows);
 
 	if (graph == NULL) {
+		sceneGraph->setUpdatingNodes(true);
 		layout->play();
+		log(NORMAL, "Layout unpaused");
 		messageWindows->showMessageBox("Chyba",
 				"Zvoleny subor nie je validny GraphML subor.", true);
 		return;
 	}
 
-	sceneGraph->reload(graph); // deletes original scene graph;
-
+	sceneGraph->reload(graph); // deletes original scene graph
 	layout->setGraph(graph); // deletes original graph
 	layout->setParameters(10, 0.7, 1, true);
+
+	sceneGraph->setUpdatingNodes(true);
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
