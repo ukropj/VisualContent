@@ -98,23 +98,23 @@ SceneGraph::SceneGraph(Model::Graph* graph) {
 	//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
 }
 
-void SceneGraph::reload(Model::Graph * newGraph) {
-	isUpdating = false;
+SceneGraph::~SceneGraph() {
 	cleanUp();
-	int currentPos = 1;
+}
 
-	if (root->getNumChildren() > 1) {
-		for (int x = 6; x > 0; x--) // XXX preco 6 ??
-			root->removeChildren(x, 1);
-	}
+void SceneGraph::reload(Model::Graph * newGraph) {
+	if (newGraph == NULL)
+		return;
+	isUpdating = false;
+
+	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
-
 	sceneElements = new SceneElements(graph->getNodes(), this);
+
 	root->addChild(sceneElements->getElementsGroup());
 	elementsPosition = currentPos++;
-
-	customNodesPosition = currentPos;
+	customNodesPosition = currentPos++;
 
 	osgUtil::Optimizer opt;
 	opt.optimize(root, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
@@ -124,8 +124,16 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
 }
 
-void SceneGraph::cleanUp() {
-	// TODO
+int SceneGraph::cleanUp() {
+//	for (int i = 0; i < root->getNumChildren(); i++) {
+//		qDebug() << QString::fromStdString(root->getChild(i)->getName());
+//	}
+	root->removeChildren(1, root->getNumChildren() - 1);
+	// NOTE: first child is skybox
+
+	delete sceneElements;
+	graph = NULL;
+	return 1;
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
@@ -182,16 +190,19 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 		customNodes->addChild(*i);
 		++i;
 	}
+	customNodes->setName("custom_nodes");
 
 	return customNodes;
 }
 
-void SceneGraph::update() {
+void SceneGraph::update(bool forceIdeal) {
 	root->removeChildren(customNodesPosition, 1); // XXX why?
 
-	if (isUpdating) {
+	if (isUpdating || forceIdeal) {
 		float interpolationSpeed = Util::Config::getValue(
 				"Viewer.Display.InterpolationSpeed").toFloat();
+		if (forceIdeal)
+			interpolationSpeed = 1;
 		sceneElements->updateNodeCoords(interpolationSpeed);
 	}
 
@@ -230,14 +241,14 @@ void SceneGraph::reloadConfig() {
 	}
 }
 
-SceneGraph::~SceneGraph() {
-	cleanUp();
-}
-
 void SceneGraph::setUpdating(bool val) {
 	isUpdating = val;
 }
 
 void SceneGraph::setFrozen(bool val) {
-	graph->setFrozen(val);
+	if (graph != NULL) {
+		graph->setFrozen(val);
+	} else {
+		qWarning("No graph set in SceneGraph");
+	}
 }

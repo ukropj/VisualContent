@@ -37,7 +37,7 @@ class FRAlgorithm: public QThread {
 public:
 	FRAlgorithm();
 
-	void setGraph(Graph *graph);
+	void setGraph(Graph *newGraph);
 
 	/**
 	 *  \fn public  SetParameters(float sizeFactor,float flexibility,int animationSpeed,bool useMaxDistance)
@@ -115,12 +115,6 @@ private:
 	 *  \brief data structure containing nodes, edges and types
 	 */
 	Graph *graph;
-
-	/**
-	 *  double PI
-	 *  \brief circular constant
-	 */
-	double PI;
 
 	/**
 	 *  float ALPHA
@@ -232,12 +226,6 @@ private:
 	 *  \brief origin position of node
 	 */
 	osg::Vec3f last;
-
-	/**
-	 *  osg::Vec3f newLoc
-	 *  \brief new position of node
-	 */
-	osg::Vec3f newLoc;
 
 	/**
 	 *  osg::Vec3f up

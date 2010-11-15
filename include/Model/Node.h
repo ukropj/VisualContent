@@ -104,20 +104,12 @@ public:
 	}
 
 	/**
-	 *	\fn public removeAllEdges
-	 *	\brief Removes all Edges which connect to the Node
-	 *
-	 *	It unlinks all edges connected to the Node and removes them from the Graph (an Edge can't exist without both it's Nodes)
-	 */
-	void removeAllEdges();
-
-	/**
 	 *  \fn inline public constant  getEdges
 	 *  \brief Returns all Edges connected to the Node
 	 *  \return QMap<qlonglong,Edge* > * Edges connected to the Node
 	 */
-	QMap<qlonglong, Edge* > * getEdges() const {
-		return edges;
+	QMap<qlonglong, Edge*>* getEdges() {
+		return &edges;
 	}
 
 	/**
@@ -312,7 +304,7 @@ private:
 	 *  QMap<qlonglong, Edge* > * edges
 	 *  \brief Edges connected to the Node
 	 */
-	QMap<qlonglong, Edge* > * edges;
+	QMap<qlonglong, Edge*> edges;
 
 	/**
 	 *  osg::Vec3f force

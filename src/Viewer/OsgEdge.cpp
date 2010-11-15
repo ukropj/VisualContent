@@ -40,6 +40,8 @@ OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
 }
 
 OsgEdge::~OsgEdge() {
+//	edge->setOsgEdge(NULL);
+	sceneGraph = NULL;
 }
 
 void OsgEdge::updateGeometry() {

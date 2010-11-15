@@ -22,7 +22,7 @@
 		<desc>Distance</desc>
 		<default>1</default>
 	</key>
-	<graph edgedefault="directed">
+	<graph edgedefault="undirected">
 		<node id="n0">
 			<data key="k2">1</data>
 		</node>

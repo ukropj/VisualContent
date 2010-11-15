@@ -211,6 +211,7 @@ void CoreWindow::playPause() {
 
 void CoreWindow::randomize() {
 	layout->randomize();
+	sceneGraph->update(true);
 	log(NORMAL, "Layout randomized");
 }
 
@@ -270,11 +271,10 @@ void CoreWindow::loadFile() {
 		return;
 	}
 
-	layout->setGraph(graph);
+	sceneGraph->reload(graph); // deletes original scene graph;
+
+	layout->setGraph(graph); // deletes original graph
 	layout->setParameters(10, 0.7, 1, true);
-
-	sceneGraph->reload(graph);
-
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);

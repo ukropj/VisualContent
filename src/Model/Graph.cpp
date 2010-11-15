@@ -7,103 +7,67 @@
 #include "Model/Edge.h"
 #include "Model/Node.h"
 
-
 using namespace Model;
 
 Graph::Graph(QString name, qlonglong ele_id_counter) {
 	this->name = name;
 	this->ele_id_counter = ele_id_counter;
-
-	//pre Misa
-	this->nodes = new QMap<qlonglong, Node* > ();
-	this->edges = new QMap<qlonglong, Edge* > ();
-	this->types = new QMap<qlonglong, Type*> ();
 	this->frozen = false;
-	this->typesByName = new QMultiMap<QString, Type*> ();
 }
 
-Graph::~Graph(void) {
-//	qDeleteAll(nodes);
-//	qDeleteAll(edges); // TODO
-//	qDeleteAll(types);
-//	return;
-//
-	//uvolnime vsetky Nodes, Edges... su cez osg::ref_ptr takze staci clearnut
-	// FIXME uz nie su :D
-	this->nodes->clear();
-	delete this->nodes;
-	this->nodes = NULL;
+Graph::~Graph() {
+//	qDebug() << "deleting nodes";
+	qDeleteAll(nodes); // NOTE: deleting nodes will also delete edges
+//	qDebug() << "deleting types";
 
-	this->edges->clear();
-	delete this->edges;
-	this->edges = NULL;
+	qDeleteAll(types);
 
-	this->newTypes.clear();
-	this->newNodes.clear();
-	this->newEdges.clear();
-	this->nodesByType.clear();
-	this->edgesByType.clear();
+	newTypes.clear();
+	newNodes.clear();
+	newEdges.clear();
 
-	this->typesByName->clear();
-	delete this->typesByName;
-	this->typesByName = NULL;
-
-	//uvolnime types - treba iterovat a kazde jedno deletnut samostatne
-	QMap<qlonglong, Type*>::iterator it = this->types->begin();
-
-	Type* type;
-	while (it != this->types->end()) {
-		type = it.value();
-		it = this->types->erase(it);
-		delete type;
-		type = NULL;
-	}
-
-	this->types->clear();
-	delete this->types;
-	this->types = NULL;
+	nodesByType.clear();
+	edgesByType.clear();
+	typesByName.clear();
 }
 
-QString Graph::setName(QString name) {
-	QString newName = name;
-
+QString Graph::setName(QString newName) {
 	if (newName != NULL) {
 		this->name = newName;
 	}
-
-	return this->name;
+	return name;
 }
 
 Node* Graph::addNode(QString name, Type* type) {
-	Node* node = new Node(this->incEleIdCounter(), name, type, this);
+	Node* node = new Node(incEleIdCounter(), name, type, this);
 
 	newNodes.insert(node->getId(), node);
-	nodes->insert(node->getId(), node);
+	nodes.insert(node->getId(), node);
 	nodesByType.insert(type->getId(), node);
 
 	return node;
 }
 
-Edge* Graph::addEdge(QString name,
-		Node* srcNode, Node* dstNode,
-		Type* type, bool isOriented) {
-	Edge* edge = new Edge(this->incEleIdCounter(),
-			name, this, srcNode, dstNode, type, isOriented);
+Edge* Graph::addEdge(QString name, Node* srcNode, Node* dstNode, Type* type,
+		bool isOriented) {
+	Edge* edge = new Edge(incEleIdCounter(), name, this, srcNode,
+			dstNode, type, isOriented);
 
-	edge->linkNodes(&newEdges);
-	edge->linkNodes(edges);
+	//	edge->linkNodes(&newEdges);
+	//	edge->linkNodes(edges);
+	newEdges.insert(edge->getId(), edge);
+	edges.insert(edge->getId(), edge);
 	edgesByType.insert(type->getId(), edge);
 
 	return edge;
 }
 
 Type* Graph::addType(QString name, QMap<QString, QString> *settings) {
-	Type* type = new Type(this->incEleIdCounter(), name, this,
-			settings);
+	Type* type = new Type(incEleIdCounter(), name, this, settings);
 
-	this->newTypes.insert(type->getId(), type);
-	this->types->insert(type->getId(), type);
-	this->typesByName->insert(type->getName(), type);
+	newTypes.insert(type->getId(), type);
+	types.insert(type->getId(), type);
+	typesByName.insert(type->getName(), type);
 
 	return type;
 }
@@ -111,26 +75,24 @@ Type* Graph::addType(QString name, QMap<QString, QString> *settings) {
 qlonglong Graph::getMaxEleIdFromElements() {
 	qlonglong max = 0;
 
-	if (this->nodes != NULL && !this->nodes->isEmpty()) {
-		QMap<qlonglong, Node* >::iterator iNodes =
-				this->nodes->end();
+	if (!nodes.isEmpty()) {
+		QMap<qlonglong, Node*>::iterator iNodes = nodes.end();
 		iNodes--;
 
 		if (iNodes.key() > max)
 			max = iNodes.key();
 	}
 
-	if (this->nodes != NULL && !this->types->isEmpty()) {
-		QMap<qlonglong, Type*>::iterator iTypes = this->types->end();
+	if (!types.isEmpty()) {
+		QMap<qlonglong, Type*>::iterator iTypes = types.end();
 		iTypes--;
 
 		if (iTypes.key() > max)
 			max = iTypes.key();
 	}
 
-	if (this->nodes != NULL && !this->edges->isEmpty()) {
-		QMap<qlonglong, Edge* >::iterator iEdges =
-				this->edges->end();
+	if (!edges.isEmpty()) {
+		QMap<qlonglong, Edge*>::iterator iEdges = edges.end();
 		iEdges--;
 
 		if (iEdges.key() > max)
@@ -142,28 +104,12 @@ qlonglong Graph::getMaxEleIdFromElements() {
 
 QString Graph::toString() const {
 	QString str;
-	QTextStream(&str) << name << " ("
-			<< ele_id_counter << " elements)";
+	QTextStream(&str) << name << " (" << ele_id_counter << " elements)";
 	return str;
 }
 
 QList<Type*> Graph::getTypesByName(QString name) {
-	return this->typesByName->values(name);
-}
-
-void Graph::removeType(Type* type) {
-	if (type != NULL && type->getGraph() == this) {
-		this->types->remove(type->getId());
-		this->newTypes.remove(type->getId());
-		this->typesByName->remove(type->getName());
-
-		//vymazeme vsetky hrany resp. metahrany daneho typu
-		this->removeAllEdgesOfType(type);
-
-		//vymazeme vsetky uzly daneho typu
-		this->removeAllNodesOfType(type);
-
-	}
+	return typesByName.values(name);
 }
 
 void Graph::removeAllEdgesOfType(Type* type) {
@@ -179,7 +125,7 @@ void Graph::removeAllEdgesOfType(Type* type) {
 }
 
 void Graph::removeAllNodesOfType(Type* type) {
-	QList<Node* > nodesToKill;
+	QList<Node*> nodesToKill;
 	nodesToKill = nodesByType.values(type->getId());
 
 	if (!nodesToKill.isEmpty()) {
@@ -190,28 +136,37 @@ void Graph::removeAllNodesOfType(Type* type) {
 	}
 }
 
-void Graph::removeEdge(Edge* edge) {
-	if (edge != NULL && edge->getGraph() == this) {
-		this->edges->remove(edge->getId());
-		this->newEdges.remove(edge->getId());
-		this->edgesByType.remove(edge->getType()->getId(), edge);
-		edge->unlinkNodes();
-	}
-
-}
-
 void Graph::removeNode(Node* node) {
 	if (node != NULL && node->getGraph() == this) {
+		nodes.remove(node->getId());
+		newNodes.remove(node->getId());
+		nodesByType.remove(node->getType()->getId(), node);
+		//		if (this->types->contains(node->getId())) {
+		//			this->removeType(this->types->value(node->getId()));
+		//		}
+		delete node;
+	}
+}
 
-		this->nodes->remove(node->getId());
-		this->newNodes.remove(node->getId());
-		this->nodesByType.remove(node->getType()->getId(), node);
-		node->removeAllEdges();
+void Graph::removeEdge(Edge* edge) {
+	if (edge != NULL && edge->getGraph() == this) {
+		edges.remove(edge->getId());
+		newEdges.remove(edge->getId());
+		edgesByType.remove(edge->getType()->getId(), edge);
+		//		edge->unlinkNodes();
+		delete edge;
+	}
+}
 
-		//zistime ci nahodou dany uzol nie je aj typom a osetrime specialny pripad ked uzol je sam sebe typom (v DB to znamena, ze uzol je ROOT uzlom/typom, teda uz nemoze mat ziaden iny typ)
-		if (this->types->contains(node->getId())) {
-			this->removeType(this->types->value(node->getId()));
-		}
+void Graph::removeType(Type* type) {
+	if (type != NULL && type->getGraph() == this) {
+		types.remove(type->getId());
+		newTypes.remove(type->getId());
+		typesByName.remove(type->getName());
 
+		//vymazeme vsetky hrany resp. metahrany daneho typu
+		removeAllEdgesOfType(type);
+		//vymazeme vsetky uzly daneho typu
+		removeAllNodesOfType(type);
 	}
 }

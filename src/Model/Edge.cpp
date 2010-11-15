@@ -19,6 +19,8 @@ Edge::Edge(qlonglong id, QString name, Graph* graph, Node* srcNode,
 	this->graph = graph;
 	this->srcNode = srcNode;
 	this->dstNode = dstNode;
+	dstNode->addEdge(this);
+	srcNode->addEdge(this);
 	this->type = type;
 	this->oriented = isOriented;
 }
@@ -34,24 +36,7 @@ Edge::~Edge(void) {
 		dstNode = NULL;
 	}
 	type = NULL;
-}
-
-void Edge::linkNodes(QMap<qlonglong, Edge*> *edges) {
-	edges->insert(this->id, this);
-	dstNode->addEdge(this);
-	srcNode->addEdge(this);
-}
-
-void Edge::unlinkNodes() {
-	dstNode->removeEdge(this);
-	srcNode->removeEdge(this);
-	srcNode = NULL;
-	dstNode = NULL;
-}
-
-void Edge::unlinkNodesAndRemoveFromGraph() {
-	//unlinkNodes will be called from graph->removeEdge !!
-	graph->removeEdge(this);
+//	osgEdge = NULL;
 }
 
 Node* Edge::getOtherNode(Model::Node* node) const {

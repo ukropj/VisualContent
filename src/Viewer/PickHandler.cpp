@@ -19,7 +19,7 @@
 using namespace Vwr;
 
 PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
-		Vwr::SceneGraph * coreGraph) {
+		Vwr::SceneGraph * sceneGraph) {
 	//vytvorenie timera a vynulovanie premennych
 	//	timer = new QTimer();
 	//	connect(timer, SIGNAL(timeout()), this, SLOT(mouseTimerTimeout()));
@@ -29,7 +29,7 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 	//	releaseAction = NULL;
 
 	this->cameraManipulator = cameraManipulator; // XXX why do we need this?
-	this->coreGraph = coreGraph;
+	this->sceneGraph = sceneGraph;
 
 	originPos = osg::Vec2f(0.0, 0.0);
 	lastPos = osg::Vec2f(0.0, 0.0);
@@ -191,7 +191,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 		(*i)->setFrozen(false);
 		++i;
 	}
-	coreGraph->setFrozen(false);
+	sceneGraph->setFrozen(false);
 
 	return true;
 }
@@ -238,7 +238,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 				++i;
 			}
 			originPos.set(lastPos.x(), lastPos.y());
-			coreGraph->setFrozen(false);
+			sceneGraph->setFrozen(false);
 			return true;
 		} else { // draw selecting rectangle
 			if (!isDrawingSelectionQuad) { // init quad
@@ -416,7 +416,7 @@ QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 bool PickHandler::select(OsgNode* node) {
 	if (node == NULL) {
 		if (!selectedNodes.isEmpty() && !multiPickEnabled) {
-			coreGraph->setFrozen(false);
+			sceneGraph->setFrozen(false);
 			deselectAll();
 			return true;
 		}
@@ -548,7 +548,7 @@ void PickHandler::createSelectionQuad() {
 	projection->addChild(modelViewMatrix);
 	modelViewMatrix->addChild(selectionQuad);
 
-	coreGraph->getCustomNodeList()->push_back(group);
+	sceneGraph->getCustomNodeList()->push_back(group);
 	projection->setNodeMask(0);
 }
 

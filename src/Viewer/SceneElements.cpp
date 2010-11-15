@@ -41,11 +41,14 @@ SceneElements::SceneElements(QMap<qlonglong, Node*> *nodes,
 		}
 	}
 
-	nodeGroup->setName("nodes_group");
+
 	this->group = nodeGroup;
+	group->setName("scene_elements");
 }
 
 SceneElements::~SceneElements(void) {
+	nodes.clear();
+	edges.clear();
 }
 
 osg::ref_ptr<osg::Group> SceneElements::getNodeGroup(Node* node,

@@ -61,7 +61,8 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 }
 
 OsgNode::~OsgNode(void) {
-	// TODO
+	node->setOsgNode(NULL);
+	sceneGraph = NULL;
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(

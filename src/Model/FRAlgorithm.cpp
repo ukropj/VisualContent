@@ -5,7 +5,6 @@
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
 #include "Viewer/OsgNode.h"
-#include <iostream>
 
 using namespace Model;
 
@@ -14,7 +13,6 @@ typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
 
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
-	PI = acos((double) -1);
 	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
 	MIN_MOVEMENT
 			= Util::Config::getValue("Layout.Algorithm.MinMovement").toFloat();
@@ -24,27 +22,37 @@ FRAlgorithm::FRAlgorithm() {
 			= Util::Config::getValue("Layout.Algorithm.MaxDistance").toFloat();
 
 	state = NO_GRAPH;
-	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 	notEnd = true;
 	osg::Vec3f p(0, 0, 0);
 	center = p;
 	fv = osg::Vec3f();
 	last = osg::Vec3f();
-	newLoc = osg::Vec3f();
 	up = osg::Vec3f();
 	vp = osg::Vec3f();
 	useMaxDistance = false;
 	camera == NULL;
+
+	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }
 
-void FRAlgorithm::setGraph(Graph *graph) {
-	state = PAUSED;
-	while (isIterating)
+void FRAlgorithm::setGraph(Graph *newGraph) {
+	do {
+		state = PAUSED;
 		qDebug() << "s";
-		//XXX
+		QThread::msleep(100);
+	} while (isIterating);
+
 	notEnd = true;
-	this->graph = graph;
-	this->randomize();
+
+	qDebug() << "deleting graph:";
+	if (newGraph != NULL) {
+		if (graph != NULL)
+			delete graph;
+		graph = newGraph;
+	}
+	qDebug() << "graph deleted";
+
+	randomize();
 }
 
 void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
@@ -70,11 +78,12 @@ double FRAlgorithm::computeCalm() {
 }
 /* Rozmiestni uzly na nahodne pozicie */
 void FRAlgorithm::randomize() {
-	State orig = state;
-	state = PAUSED;
-	while (isIterating)
-		qDebug() << "r";
-	;//XXX
+	State origState = state;
+	do {
+		state = PAUSED;
+		qDebug() << "s";
+		QThread::msleep(100);
+	} while (isIterating);
 
 	for (NodeIt i = graph->getNodes()->constBegin(); i
 			!= graph->getNodes()->constEnd(); i++) {
@@ -84,14 +93,14 @@ void FRAlgorithm::randomize() {
 			node->setPosition(randPos);
 		}
 	}
-	state = orig;
+	state = origState;
 	graph->setFrozen(false);
 }
 
 osg::Vec3f FRAlgorithm::getRandomLocation() {
 	double l = getRandomDouble() * 300;
-	double alpha = getRandomDouble() * 2 * PI;
-	double beta = getRandomDouble() * 2 * PI;
+	double alpha = getRandomDouble() * 2 * M_PI;
+	double beta = getRandomDouble() * 2 * M_PI;
 	osg::Vec3f newPos = osg::Vec3f((float) (l * sin(alpha)), (float) (l * cos(
 			alpha) * cos(beta)), (float) (l * cos(alpha) * sin(beta)));
 	return newPos;
@@ -145,16 +154,19 @@ void FRAlgorithm::run() {
 			while (state != RUNNING || graph->isFrozen()) {
 				if (isIterating && graph->isFrozen()) {
 					Window::CoreWindow::log(Window::CoreWindow::ALG, "FROZEN");
+					qDebug() << "Frozen";
 				}
 				isIterating = false;
 				QThread::msleep(100);
 				if (!notEnd) {
 					Window::CoreWindow::log(Window::CoreWindow::ALG, "STOPPED");
+					qDebug() << "Stopped";
 					return;
 				}
 			}
 			if (!isIterating) {
 				Window::CoreWindow::log(Window::CoreWindow::ALG, "RUNNING");
+				qDebug() << "Running";
 			}
 			isIterating = true;
 			if (!iterate()) {

@@ -53,7 +53,7 @@ public:
 	 *  \fn public destructor  ~Graph
 	 *  \brief Destroys the Graph object and performs delete on Type objects
 	 */
-	~Graph(void);
+	~Graph();
 
 	/**
 	 *  \fn inline public static  getMetaStrength
@@ -70,14 +70,14 @@ public:
 	 *  \param   name     new Name for the Graph
 	 *  \return QString resultant name of the Graph
 	 */
-	QString setName(QString name);
+	QString setName(QString newName);
 
 	/**
 	 *  \fn inline public  getName
 	 *  \brief Returns the name of the Graph
 	 *  \return QString name of the Graph
 	 */
-	QString getName() {
+	QString getName() const {
 		return name;
 	}
 
@@ -86,7 +86,7 @@ public:
 	 *  \brief Returns current value of element ID counter
 	 *  \return qlonglong current value of element ID counter
 	 */
-	qlonglong getEleIdCounter() {
+	qlonglong getEleIdCounter() const {
 		return ele_id_counter;
 	}
 
@@ -148,8 +148,8 @@ public:
 	 *  \brief Returns QMap of the Nodes assigned to the Graph
 	 *  \return QMap<qlonglong,Node* > * Nodes assigned to the Graph
 	 */
-	QMap<qlonglong, Node* >* getNodes() const {
-		return nodes;
+	QMap<qlonglong, Node*>* getNodes() {
+		return &nodes;
 	}
 
 	/**
@@ -157,8 +157,8 @@ public:
 	 *  \brief Returns QMap of the Edges assigned to the Graph
 	 *  \return QMap<qlonglong,Edge* > * Edges assigned to the Graph
 	 */
-	QMap<qlonglong, Edge* >* getEdges() const {
-		return edges;
+	QMap<qlonglong, Edge*>* getEdges() {
+		return &edges;
 	}
 
 	/**
@@ -166,8 +166,8 @@ public:
 	 *  \brief Returns QMap of the Types assigned to the Graph
 	 *  \return QMap<qlonglong,Type*> * Tyeps assigned to the Graph
 	 */
-	QMap<qlonglong, Type*>* getTypes() const {
-		return types;
+	QMap<qlonglong, Type*>* getTypes() {
+		return &types;
 	}
 
 	/**
@@ -251,13 +251,13 @@ private:
 	 *  QMultiMap<QString,Type*> * typesByName
 	 *  \brief Types sorted by their name attribute
 	 */
-	QMultiMap<QString, Type*>* typesByName;
+	QMultiMap<QString, Type*> typesByName;
 
 	/**
 	 *  QMap<qlonglong,Node* > newNodes
 	 *  \brief New Nodes that have been added to the Graph but are not yet in database
 	 */
-	QMap<qlonglong, Node* > newNodes;
+	QMap<qlonglong, Node*> newNodes;
 
 	/**
 	 *  QMap<qlonglong,Type*> newTypes
@@ -269,25 +269,25 @@ private:
 	 *  QMap<qlonglong,Edge* > newEdges
 	 *  \brief New Edges that have been added to the Graph but are not yet in database
 	 */
-	QMap<qlonglong, Edge* > newEdges;
+	QMap<qlonglong, Edge*> newEdges;
 
 	/**
 	 *  QMap<qlonglong,Node* > * nodes
 	 *  \brief Nodes in the Graph
 	 */
-	QMap<qlonglong, Node* >* nodes;
+	QMap<qlonglong, Node* > nodes;
 
 	/**
 	 *  QMap<qlonglong,Edge* > * edges
 	 *  \brief Edges in the Graph
 	 */
-	QMap<qlonglong, Edge* >* edges;
+	QMap<qlonglong, Edge* > edges;
 
 	/**
 	 *  QMap<qlonglong,Type*> * types
 	 *  \brief Types in the Graph
 	 */
-	QMap<qlonglong, Type*>* types;
+	QMap<qlonglong, Type*> types;
 
 	/**
 	 *  bool frozen

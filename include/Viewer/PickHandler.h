@@ -55,7 +55,7 @@ public:
 	 *  \param  coreGraph     core graph
 	 */
 	PickHandler(Vwr::CameraManipulator * cameraManipulator,
-			Vwr::SceneGraph * coreGraph);
+			Vwr::SceneGraph * sceneGraph);
 
 	/**
 	 *  \fn public virtual  handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -156,7 +156,7 @@ private:
 	 *  Vwr::CoreGraph * coreGraph
 	 *  \brief core graph
 	 */
-	Vwr::SceneGraph * coreGraph;
+	Vwr::SceneGraph * sceneGraph;
 
 	/**
 	 *  NodeList selectedNodes

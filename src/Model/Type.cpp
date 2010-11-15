@@ -38,13 +38,9 @@ Type::Type(qlonglong id, QString name, Graph* graph,
 	scale = settings->value("scale").toFloat();
 }
 
-Type::~Type(void) {
-	if (settings != NULL) {
-		settings->clear();
-	}
-
-	delete settings;
-	settings = NULL;
+Type::~Type() {
+	graph = NULL;
+//	qDeleteAll(*settings);
 }
 
 osg::Vec4f Type::getColor() const {

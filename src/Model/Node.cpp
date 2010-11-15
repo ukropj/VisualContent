@@ -22,7 +22,6 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 	this->name = name;
 	this->type = nodeType;
 	this->graph = graph;
-	this->edges = new QMap<qlonglong, Edge*> ;
 
 	int pos = 0;
 	int cnt = 0;
@@ -44,29 +43,17 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 }
 
 Node::~Node(void) {
-	foreach(qlonglong i, edges->keys())
-		{
-			edges->value(i)->unlinkNodes();
-		}
-	edges->clear();
-
-	delete edges;
+	graph = NULL;
+	qDeleteAll(edges); // NOTE: node deletes edges not vice versa
+	osgNode = NULL;
 }
 
 void Node::addEdge(Edge* edge) {
-	edges->insert(edge->getId(), edge);
+	edges.insert(edge->getId(), edge);
 }
 
 void Node::removeEdge(Edge* edge) {
-	edges->remove(edge->getId());
-}
-
-void Node::removeAllEdges() {
-	foreach(qlonglong i, edges->keys())
-		{
-			edges->value(i)->unlinkNodesAndRemoveFromGraph();
-		}
-	edges->clear();
+	edges.remove(edge->getId());
 }
 
 bool Node::equals(Node* node) {

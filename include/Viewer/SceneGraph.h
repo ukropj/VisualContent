@@ -51,7 +51,7 @@ public:
 	 * Zaktualizuje pozicie uzlov a hran na obrazovke.
 	 * Vola sa strale do okola
 	 */
-	void update();
+	void update(bool forceIdeal = false);
 
 	/**
 	 *  \fn inline public  getCustomNodeList
@@ -210,7 +210,7 @@ private:
 	 *  \fn private  cleanUp
 	 *  \brief Cleans up memory
 	 */
-	void cleanUp();
+	int cleanUp();
 
 	/**
 	 *  int backgroundPosition

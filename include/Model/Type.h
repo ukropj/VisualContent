@@ -39,7 +39,7 @@ public:
 	 *  \fn public destructor  ~MetaType
 	 *  \brief Destroys Type object
 	 */
-	~Type(void);
+	~Type();
 
 	/**
 	 *  \fn inline public  getName

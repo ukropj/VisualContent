@@ -102,25 +102,6 @@ public:
 	}
 
 	/**
-	 * \fn public linkModel::Nodes(QMap<qlonglong, osg::ref_ptr<Edge> > *edges)
-	 * \brief  Links the Edge to it's Model::Nodes and adds itself to the edges
-	 * \param  edges
-	 */
-	void linkNodes(QMap<qlonglong, Edge* > *edges);
-
-	/**
-	 * \fn public unlinkModel::Nodes
-	 * \brief Unlinks the Edge from the Model::Nodes
-	 */
-	void unlinkNodes();
-
-	/**
-	 * \fn public unlinkModel::NodesAndRemoveFromGraph
-	 * \brief Unlinks the Edge from the Model::Nodes and removes the Edge from it's Graph
-	 */
-	void unlinkNodesAndRemoveFromGraph();
-
-	/**
 	 * \fn inline public constant toString
 	 * \brief  Returns human-readable string representation of the Edge
 	 * \return QString
@@ -130,15 +111,6 @@ public:
 		QTextStream(&str) << "edge id:" << id << " name:" << name;
 		return str;
 	}
-
-	/**
-	 *  \fn inline public constant  getLength
-	 *  \brief Returns length of the Edge
-	 *  \return float length of the Edge
-	 */
-//	float getLength() const {
-//		return (srcModel::Node->getCurrentPosition() - dstModel::Node->getCurrentPosition()).length();
-//	}
 
 	/**
 	 *  \fn inline public  getGraph
