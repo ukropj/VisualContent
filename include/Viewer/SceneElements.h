@@ -12,6 +12,7 @@
 #include <osg/ref_ptr>
 #include <osg/AutoTransform>
 #include <osg/Group>
+#include <osg/Geometry>
 
 namespace Model {
 class Node;
@@ -37,7 +38,7 @@ public:
 	 *  \brief Creates node group
 	 *  \param  nodes    nodes to wrap
 	 */
-	SceneElements(QMap<qlonglong, Model::Node* > *nodes,
+	SceneElements(QMap<qlonglong, Model::Node* > *nodes, QMap<qlonglong, Model::Edge* > *edges,
 			SceneGraph* sceneGraph);
 
 	/**
@@ -63,9 +64,9 @@ public:
 		return &nodes;
 	}
 
-	QMap<qlonglong, osg::ref_ptr<OsgEdge> >* getEdges() {
-		return &edges;
-	}
+//	QMap<qlonglong, osg::ref_ptr<OsgEdge> >* getEdges() {
+//		return &edges;
+//	}
 
 private:
 	SceneGraph* sceneGraph;
@@ -75,7 +76,7 @@ private:
 	 *  \brief wrapped nodes
 	 */
 	QMap<qlonglong, osg::ref_ptr<OsgNode> > nodes;
-	QMap<qlonglong, osg::ref_ptr<OsgEdge> > edges;
+	QMap<qlonglong, OsgEdge*> edges;
 
 	/**
 	 *  osg::ref_ptr group
@@ -87,33 +88,23 @@ private:
 	 *  \fn private  initNodes
 	 *  \brief inits nodes
 	 */
-	void initNodes();
+	osg::ref_ptr<osg::Group> initNodes(QMap<qlonglong, Model::Node* > *nodes);
+	osg::ref_ptr<osg::Group> initEdges(QMap<qlonglong, Model::Edge* > *edges);
 
-	/**
-	 *  \fn private  wrapChild(Model::Node* node, float graphScale)
-	 *  \brief Wraps node as a transform
-	 *  \param      node    node to wrap
-	 *  \param      graphScale     graph scale
-	 *  \return osg::ref_ptr node transform
-	 */
+
 	osg::ref_ptr<osg::AutoTransform> wrapNode(Model::Node* node);
 
 	osg::ref_ptr<osg::Group> wrapEdge(Model::Edge* edge);
 
-	/**
-	 *  \fn private  getNodeGroup(Model::Node* node, osg::ref_ptr<Model::Edge> parentEdge, float graphScale)
-	 *  \brief Recursively traverses all node and its children and creates a group from them
-	 *  \param       node    node to group
-	 *  \param       parentEdge    Edge with which was this node connected to its parent
-	 *  \param       graphScale     graph scale
-	 *  \return osg::ref_ptr nodes group
-	 */
-	osg::ref_ptr<osg::Group> getNodeGroup(Model::Node* node,
+	osg::ref_ptr<osg::Group> getNodeGroup1(Model::Node* node,
 			Model::Edge* parentEdge);
 
-	osg::ref_ptr<osg::Group> getNodeGroup(Model::Node* node);
+	osg::ref_ptr<osg::Group> getNodeGroup2(Model::Node* node);
 
 	osg::ref_ptr<osg::StateSet> createStateSet() const;
+
+	osg::ref_ptr<osg::Geometry> edgesGeometry;
+	osg::ref_ptr<osg::Geometry> edgesOGeometry;
 };
 }
 

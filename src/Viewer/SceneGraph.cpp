@@ -89,7 +89,7 @@ SceneGraph::SceneGraph() {
 	root->setName("root");
 	root->addChild(createSkyBox());
 	backgroundPosition = 0;
-	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (),
+	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (), new QMap<qlonglong, Model::Edge*> (),
 			this);
 
 	updateNodes = true;
@@ -112,7 +112,7 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
-	sceneElements = new SceneElements(graph->getNodes(), this);
+	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this);
 
 	root->addChild(sceneElements->getElementsGroup());
 	elementsPosition = currentPos++;
@@ -217,12 +217,12 @@ void SceneGraph::update(bool forceIdeal) {
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
-	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(
-			*sceneElements->getEdges());
-	while (i.hasNext()) {
-		i.next();
-		i.value()->showLabel(visible);
-	}
+//	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(
+//			*sceneElements->getEdges());
+//	while (i.hasNext()) {
+//		i.next();
+//		i.value()->showLabel(visible);
+//	}
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {

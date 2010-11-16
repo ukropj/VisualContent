@@ -26,7 +26,9 @@ class Edge;
 namespace Vwr {
 class SceneGraph;
 
-class OsgEdge: public osg::Geode {
+class OsgEdge {//: public osg::Geode {
+	// OsgEdge is not Geode any more (for performance reasons),
+	// just an empty shell that provides all data by getEdgeData and renders nothing
 public:
 
 	enum StateSetType {
@@ -37,7 +39,11 @@ public:
 	~OsgEdge();
 
 	void updateGeometry();
+	void getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
+			osg::Vec2Array> textureCoords, osg::ref_ptr<
+					osg::Vec4Array> colors);
 
+	bool isOriented();
 	QString toString() const;
 
 	osg::Vec4 getEdgeColor() const {
@@ -49,15 +55,14 @@ public:
 
 	void setColor(osg::Vec4 color) {
 		edgeColor = color;
-//		qDebug() << color.x() << ", " << color.y() << ", "<< color.z()<< ", " << color.w();
-		if (geometry != NULL) {
-			osg::Vec4Array * colorArray =
-					dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
-			colorArray->pop_back();
-			colorArray->push_back(color);
-		} else {
-			qDebug() << "edge geometry was null";
-		}
+		//		if (geometry != NULL) {
+		//			osg::Vec4Array * colorArray =
+		//					dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
+		//			colorArray->pop_back();
+		//			colorArray->push_back(color);
+		//		} else {
+		//			qDebug() << "edge geometry was null";
+		//		}
 	}
 
 	bool isSelected() const {
@@ -68,14 +73,9 @@ public:
 		selected = val;
 	}
 
-	void showLabel(bool visible) {
-		if (this->containsDrawable(label) && !visible)
-			removeDrawable(label);
-		if (!this->containsDrawable(label) && visible)
-			addDrawable(label);
-	}
+	void showLabel(bool visible);
 
-	osg::ref_ptr<osg::StateSet> getStateSetInstance(StateSetType type);
+	static osg::ref_ptr<osg::StateSet> getStateSetInstance(StateSetType type);
 
 private:
 
@@ -84,8 +84,8 @@ private:
 
 	bool selected;
 
-	osg::ref_ptr<osg::Geometry> geometry;
-	osg::ref_ptr<osg::Geometry> endPoints;
+	//	osg::ref_ptr<osg::Geometry> geometry;
+	//	osg::ref_ptr<osg::Geometry> endPoints;
 	osg::ref_ptr<osgText::FadeText> label;
 	osg::Vec4 edgeColor;
 
@@ -100,7 +100,7 @@ private:
 	static osg::ref_ptr<osg::StateSet> stateSet;
 	static osg::ref_ptr<osg::StateSet> stateSetOriented;
 	static osg::ref_ptr<osg::StateSet> stateSetEndpoint;
-	osg::ref_ptr<osg::StateSet> createStateSet() const;
+	static osg::ref_ptr<osg::StateSet> createStateSet();
 };
 }
 

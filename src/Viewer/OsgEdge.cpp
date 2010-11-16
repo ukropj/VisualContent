@@ -28,19 +28,21 @@ OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
 	edgeCoords = new osg::Vec3Array(4);
 	edgeTexCoords = new osg::Vec2Array(4);
 	endPointCoords = new osg::Vec3Array(8);
+	selected = false;
 
-	geometry = createGeometry();
-	endPoints = createEndpointGeometry();
+	//	geometry = createGeometry();
+	//	endPoints = createEndpointGeometry();
 	label = createLabel(edge->getName());
 
-	addDrawable(geometry);
-	addDrawable(endPoints);
+	//	addDrawable(geometry);
+	//	addDrawable(endPoints);
 
 	setColor(edge->getType()->getColor());
 }
 
 OsgEdge::~OsgEdge() {
 	//	edge->setOsgEdge(NULL);
+	edge = NULL;
 	sceneGraph = NULL;
 }
 
@@ -67,7 +69,7 @@ void OsgEdge::updateGeometry() {
 	(*edgeCoords)[1].set(x - up);
 	(*edgeCoords)[2].set(y - up);
 	(*edgeCoords)[3].set(y + up);
-	geometry->setVertexArray(edgeCoords);
+	//	geometry->setVertexArray(edgeCoords);
 
 	int repeatCnt = edgeDir.length() / (2 * scale);
 	//	if (!edge->isOriented())
@@ -77,9 +79,11 @@ void OsgEdge::updateGeometry() {
 	(*edgeTexCoords)[1].set(0.0f, 0.0f);
 	(*edgeTexCoords)[2].set(repeatCnt, 0.0f);
 	(*edgeTexCoords)[3].set(repeatCnt, 1.0f);
-	geometry->setTexCoordArray(0, edgeTexCoords);
+	//	geometry->setTexCoordArray(0, edgeTexCoords);
 
 	label->setPosition((x + y) / 2);
+
+	return;
 
 	osg::Vec3f a, b;
 	a.set(up);
@@ -90,9 +94,6 @@ void OsgEdge::updateGeometry() {
 	b *= 2;
 
 	osg::Vec3f offset = x - y;
-	//	offset = sceneGraph->byView(offset, true);
-	//	offset.z() = 0;
-	//	offset = sceneGraph->byViewInv(offset, true);
 
 	float origLength = offset.normalize();
 
@@ -103,20 +104,10 @@ void OsgEdge::updateGeometry() {
 	//		x += -offset * rx;
 	//		y += offset * ry;
 	//	} else {
-	//		y = x; // TODO something usefull
+	//		y = x;
 	//	}
 
-//	osg::Vec3f r;
-//	r = x + osg::Vec3f(srcNode->getRadius(), 0, 0);
-//	float radU = (sceneGraph->byFull(x) - sceneGraph->byFull(r)).length();
-//	r = y + osg::Vec3f(dstNode->getRadius(), 0, 0);
-//	float radV = (sceneGraph->byFull(y) - sceneGraph->byFull(r)).length();
-//
-//	osg::Vec3f fv = sceneGraph->byFull(y) - sceneGraph->byFull(x);
-//	float projLength = fv.length();
-
 	if (srcNode->isExpanded()) {
-//		x += -offset * (origLength * (radU / projLength));
 		x += -offset * srcNode->getRadius();
 		(*endPointCoords)[0].set(x - a);
 		(*endPointCoords)[1].set(x + b / 2.0);
@@ -127,7 +118,7 @@ void OsgEdge::updateGeometry() {
 			(*endPointCoords)[i].set(0, 0, 0);
 	}
 	if (dstNode->isExpanded()) {
-//		y += offset * (origLength * (radV / projLength));
+		//		y += offset * (origLength * (radV / projLength));
 		y += offset * dstNode->getRadius();
 		(*endPointCoords)[4].set(y + a);
 		(*endPointCoords)[5].set(y - b / 2.0);
@@ -137,39 +128,52 @@ void OsgEdge::updateGeometry() {
 		for (int i = 4; i < 8; i++)
 			(*endPointCoords)[i].set(0, 0, 0);
 	}
-	endPoints->setVertexArray(endPointCoords);
+	//	endPoints->setVertexArray(endPointCoords);
 }
 
-osg::ref_ptr<osg::Geometry> OsgEdge::createGeometry() {
-	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
-	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
-			4));
+void OsgEdge::getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
+		osg::Vec2Array> texCoords, osg::ref_ptr<osg::Vec4Array> colors) {
+	updateGeometry();
+	osg::Vec2f zero(0, 0);
+	bool oriented = edge->isOriented();
 
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	geometry->setColorArray(colorArray);
-	geometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-
-	if (!edge->isOriented())
-		geometry->setStateSet(getStateSetInstance(NONORIENTED));
-	else
-		geometry->setStateSet(getStateSetInstance(ORIENTED));
-	return geometry;
+	for (int i = 0; i < 4; i++) {
+		coords->push_back((*edgeCoords)[i]);
+			texCoords->push_back((*edgeTexCoords)[i]);
+	}
+	colors->push_back(getEdgeColor());
 }
 
-osg::ref_ptr<osg::Geometry> OsgEdge::createEndpointGeometry() {
-	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
-	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
-			2 * 4));
+//osg::ref_ptr<osg::Geometry> OsgEdge::createGeometry() {
+//	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
+//	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
+//			4));
+//
+//	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+//	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+//	geometry->setColorArray(colorArray);
+//	geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+//
+//	if (!edge->isOriented())
+//		geometry->setStateSet(getStateSetInstance(NONORIENTED));
+//	else
+//		geometry->setStateSet(getStateSetInstance(ORIENTED));
+//	return geometry;
+//}
 
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(0.0f, 0.5f, 0.3f, 1.0f));
-	geometry->setColorArray(colorArray);
-	geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-	geometry->setStateSet(getStateSetInstance(ENDPOINT));
-	return geometry;
-}
+//osg::ref_ptr<osg::Geometry> OsgEdge::createEndpointGeometry() {
+//	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
+//	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
+//			2 * 4));
+//
+//	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+//	colorArray->push_back(osg::Vec4(0.0f, 0.5f, 0.3f, 1.0f));
+//	geometry->setColorArray(colorArray);
+//	geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+//
+//	geometry->setStateSet(getStateSetInstance(ENDPOINT));
+//	return geometry;
+//}
 
 osg::ref_ptr<osgText::FadeText> OsgEdge::createLabel(QString text) {
 	osg::ref_ptr<osgText::FadeText> label = new osgText::FadeText;
@@ -203,8 +207,6 @@ osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
 			stateSet->setTextureAttributeAndModes(0,
 					Util::TextureWrapper::getEdgeTexture(),
 					osg::StateAttribute::ON);
-			stateSet->setAttributeAndModes(new osg::BlendFunc,
-					osg::StateAttribute::ON);
 		}
 		return stateSet;
 	case ORIENTED:
@@ -213,22 +215,32 @@ osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
 			stateSetOriented->setTextureAttributeAndModes(0,
 					Util::TextureWrapper::getOrientedEdgeTexture(),
 					osg::StateAttribute::ON);
-			stateSetOriented->setMode(GL_BLEND, osg::StateAttribute::ON);
 		}
 		return stateSetOriented;
 	case ENDPOINT:
 		if (stateSetEndpoint == NULL) {
 			stateSetEndpoint = createStateSet();
-			//	edgeStateSet->setTextureAttributeAndModes(0, edge->getType()->getTexture(),
-			//			osg::StateAttribute::ON);
 		}
 		return stateSetEndpoint;
 	}
 }
 
-osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet() const {
+osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet() {
 	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet();
+	edgeStateSet->setAttributeAndModes(new osg::BlendFunc,
+			osg::StateAttribute::ON);
 	return edgeStateSet;
+}
+
+void OsgEdge::showLabel(bool visible) { // FIXME not working
+//	if (this->containsDrawable(label) && !visible)
+//		removeDrawable(label);
+//	if (!this->containsDrawable(label) && visible)
+//		addDrawable(label);
+}
+
+bool OsgEdge::isOriented() {
+	return edge->isOriented();
 }
 
 QString OsgEdge::toString() const {
