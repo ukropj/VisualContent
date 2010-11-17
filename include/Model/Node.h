@@ -265,7 +265,6 @@ public:
 		return osgNode;
 	}
 
-
 private:
 
 	osg::ref_ptr<Vwr::OsgNode> osgNode;

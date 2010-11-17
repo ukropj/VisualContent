@@ -11,7 +11,6 @@
 #include <string.h>
 #include <osg/Vec3f>
 #include <osg/Matrixd>
-#include <osg/Camera>
 #include <QMap>
 #include <math.h>
 #include <ctime>
@@ -65,10 +64,6 @@ public:
 		ALPHA = val;
 	}
 
-	void setCamera(osg::Camera* camera) {
-		this->camera = camera;
-	}
-
 	/**
 	 *  \fn public  IsRunning
 	 *  \brief Returns if layout algorithm is running or not
@@ -108,8 +103,6 @@ protected:
 	void run();
 
 private:
-	osg::Camera* camera;
-
 	/**
 	 *  Graph * graph
 	 *  \brief data structure containing nodes, edges and types
@@ -256,12 +249,6 @@ private:
 	 *  \brief distance between two positions
 	 */
 	double dist;
-
-	osg::Matrixd viewM;
-	osg::Matrixd projM;
-	osg::Matrixd windM;
-	osg::Matrixd fullM; // complete transformation matrix from world so screen coordinates
-
 
 	/**
 	 *  \fn private  iterate

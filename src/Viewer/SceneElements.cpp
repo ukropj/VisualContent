@@ -168,7 +168,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* node) { // alternati
 
 osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
-	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
+	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_CAMERA);
 
 	osg::ref_ptr<OsgNode> osgNode = new OsgNode(node, sceneGraph, at);
 	nodes.insert(node->getId(), osgNode);

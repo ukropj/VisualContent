@@ -168,7 +168,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float radius) {
 
 	int sides = 20;
 	osg::ref_ptr<osg::Geometry> nodeCircle = new osg::Geometry;
-	double alpha = 2 * M_PI / (float) sides;
+	double alpha = 2 * osg::PI / (float) sides;
 
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
 	for (int i = 0; i <= sides; i++) {
@@ -415,40 +415,18 @@ void OsgNode::setPosition(osg::Vec3f pos) {
 	updatePosition();
 }
 
-bool OsgNode::isObscuredBy(OsgNode* other) {
-	bool uExp = this->isExpanded();
-	bool vExp = other->isExpanded();
-	// return false if no node is expanded
-	if (!uExp && !vExp)
-		return false;
+bool OsgNode::isOnScreen() const {
+	osg::Vec3f pos = node->getPosition();
+	pos = sceneGraph->byProjectionInv(sceneGraph->byView(pos));
 
-	osg::Camera* camera = sceneGraph->getCamera();
-
-	osg::Matrixd viewM = camera->getViewMatrix();
-	osg::Matrixd projM = camera->getProjectionMatrix();
-	osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
-
-	osg::Vec3f up = this->getPosition();
-	osg::Vec3f vp = other->getPosition();
-
-	// test if the expanded node is befind the other node
-	osg::Vec3f upRot = viewM.getRotate() * up;
-	osg::Vec3f vpRot = viewM.getRotate() * vp;
-	if (!(uExp && upRot.z() <= vpRot.z()) && !(vExp && vpRot.z() <= upRot.z()))
-		return false;
-	// NOTE: z decreases when going away from camera
-
-	// return false if no expanded node is on screen
-	upRot = up * (viewM * projM);
-	vpRot = vp * (viewM * projM);
-	if (!uExp && (qAbs(vpRot.x()) > 1 || qAbs(vpRot.y()) > 1))
+	if (qAbs(pos.x()) > 1 || qAbs(pos.y()) > 1) {
+//		qDebug() << "not on screen";
 			return false;
-	if (!vExp && (qAbs(upRot.x()) > 1 || qAbs(upRot.y()) > 1))
-			return false;
-//	if (qAbs(upRot.x()) > 1 || qAbs(upRot.y()) > 1 || qAbs(vpRot.x()) > 1
-//			|| qAbs(vpRot.y()) > 1)
-//		return false;
-
+	}
 	return true;
+}
+
+osg::Vec3f OsgNode::getEye() const {
+	return sceneGraph->getEye();
 }
 

@@ -105,54 +105,54 @@ public:
 
 	void setUpdatingNodes(bool val);
 
-	osg::Vec3f getEye() {
+	osg::Vec3f getEye() const {
 		return getViewCoords()[0];
 	}
 
-	osg::Vec3f getCenter() {
+	osg::Vec3f getCenter() const {
 		return getViewCoords()[1];
 	}
 
-	osg::Vec3f getUpVector() {
+	osg::Vec3f getUpVector() const {
 		return getViewCoords()[2];
 	}
 
-	osg::Vec3f byView(osg::Vec3f v, bool rotOnly = false) {
+	osg::Vec3f byView(osg::Vec3f v, bool rotOnly = false) const {
 		if (!rotOnly)
 			return v * camera->getViewMatrix();
 		else
 			return camera->getViewMatrix().getRotate() * v;
 	}
-	osg::Vec3f byProjection(osg::Vec3f v) {
+	osg::Vec3f byProjection(osg::Vec3f v) const {
 		return v * camera->getProjectionMatrix();
 	}
-	osg::Vec3f byWindow(osg::Vec3f v) {
+	osg::Vec3f byWindow(osg::Vec3f v) const {
 		return v * camera->getViewport()->computeWindowMatrix();
 	}
-	osg::Vec3f byFull(osg::Vec3f v) {
+	osg::Vec3f byFull(osg::Vec3f v) const {
 		return byWindow(byProjection(byView(v)));
 	}
 
-	osg::Vec3f byViewInv(osg::Vec3f v, bool rotOnly = false) {
+	osg::Vec3f byViewInv(osg::Vec3f v, bool rotOnly = false) const {
 		if (!rotOnly)
 			return v * osg::Matrixd::inverse(camera->getViewMatrix());
 		else
 			return camera->getViewMatrix().getRotate().inverse() * v;
 	}
-	osg::Vec3f byProjectionInv(osg::Vec3f v) {
+	osg::Vec3f byProjectionInv(osg::Vec3f v) const {
 		return v * osg::Matrixd::inverse(camera->getProjectionMatrix());
 	}
-	osg::Vec3f byWindowInv(osg::Vec3f v) {
+	osg::Vec3f byWindowInv(osg::Vec3f v) const {
 		return v * osg::Matrixd::inverse(
 				camera->getViewport()->computeWindowMatrix());
 	}
-	osg::Vec3f byFullInv(osg::Vec3f v) {
+	osg::Vec3f byFullInv(osg::Vec3f v) const {
 		return byViewInv(byProjectionInv(byWindowInv(v)));
 	}
 
 private:
 
-	QList<osg::Vec3f> getViewCoords() {
+	QList<osg::Vec3f> getViewCoords() const {
 		osg::Vec3f eye, center, up;
 		camera->getViewMatrixAsLookAt(eye, center, up);
 		QList<osg::Vec3f> vects;

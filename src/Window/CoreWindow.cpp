@@ -30,7 +30,6 @@ CoreWindow::CoreWindow(QWidget *parent) :
 
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
-	layout->setCamera(viewerWidget->getCamera());
 
 	nodeLabelsVisible = edgeLabelsVisible = false;
 	noSelectB->click();

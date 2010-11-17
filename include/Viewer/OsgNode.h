@@ -89,7 +89,9 @@ public:
 
 	void reloadConfig();
 
-	bool isObscuredBy(OsgNode* other);
+	bool isOnScreen() const;
+
+	osg::Vec3f getEye() const;
 
 private:
 	Model::Node* node;

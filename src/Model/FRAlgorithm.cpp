@@ -1,6 +1,7 @@
 #include "Model/FRAlgorithm.h"
 #include "Model/Edge.h"
 #include "Model/Node.h"
+#include "Model/Type.h"
 #include "Model/Graph.h"
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
@@ -24,9 +25,7 @@ FRAlgorithm::FRAlgorithm() {
 	state = NO_GRAPH;
 	isIterating = false;
 	graph = NULL;
-	camera == NULL;
-	osg::Vec3f p(0, 0, 0);
-	center = p;
+	center = osg::Vec3f(0, 0, 0);
 	fv = osg::Vec3f();
 	last = osg::Vec3f();
 	up = osg::Vec3f();
@@ -73,7 +72,7 @@ void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
 }
 
 /* Urci pokojovu dlzku strun */
-double FRAlgorithm::computeCalm() {
+double FRAlgorithm::computeCalm() {// todo delete
 	//	double R = 300;
 	//	float n = graph->getNodes()->count();
 	//	return sizeFactor * pow((4 * R * R * R * PI) / (n * 3), 1 / 3);
@@ -103,8 +102,8 @@ void FRAlgorithm::randomize() {
 
 osg::Vec3f FRAlgorithm::getRandomLocation() {
 	double l = getRandomDouble() * 300;
-	double alpha = getRandomDouble() * 2 * M_PI;
-	double beta = getRandomDouble() * 2 * M_PI;
+	double alpha = getRandomDouble() * 2 * osg::PI;
+	double beta = getRandomDouble() * 2 * osg::PI;
 	osg::Vec3f newPos = osg::Vec3f((float) (l * sin(alpha)), (float) (l * cos(
 			alpha) * cos(beta)), (float) (l * cos(alpha) * sin(beta)));
 	return newPos;
@@ -192,14 +191,6 @@ bool FRAlgorithm::iterate() {
 		i.value()->resetForce();
 	}
 
-	// prepare matrices
-	if (camera != NULL) {
-		viewM = camera->getViewMatrix();
-		projM = camera->getProjectionMatrix();
-		windM = camera->getViewport()->computeWindowMatrix();
-		fullM = viewM * projM * windM;
-	}
-
 	//uzly
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		// pre vsetky uzly..
@@ -209,8 +200,7 @@ bool FRAlgorithm::iterate() {
 			Node* v = j.value();
 			if (!u->equals(v)) {
 				addRepulsive(u, v, 1); // odpudiva sila beznej velkosti
-				if (camera != NULL)
-					addRepulsiveProj(u, v, 1);
+				addRepulsiveProj(u, v, 1);
 			}
 		}
 	}
@@ -311,60 +301,68 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 
 /* Pricitanie projektvnych odpudivych sil */
 void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
-//	return; /// XXX
 	Vwr::OsgNode* ou = u->getOsgNode();
 	Vwr::OsgNode* ov = v->getOsgNode();
+	// are both nodes rendering?
 	if (ou == NULL || ov == NULL)
 		return;
 
-	if (!ou->isObscuredBy(ov) && !ov->isObscuredBy(ou))
+	bool uExp = ou->isExpanded();
+	bool vExp = ov->isExpanded();
+	// is any node expanded?
+	if (!uExp && !vExp)
 		return;
-	up = ou->getPosition();
-	vp = ov->getPosition();
-	// NOTE: Problem is that (real) positions are changing during computations.
-	// Normally, node positions are updated all at once in applyForces() but these are
-	// OsgNode positions (constatnly interpolating).
-	// Therefore calling this method for (u,v) and (v,u) yielded different results,
-	// i.e. different forces were added to u and v.
-	// Because of this asymetry the whole graph was moving.
-	// For now solution, is in 3 last lines - force is halved and added to both nodes at once.
 
-	// determine (projected) radius of each node
-	osg::Vec3f r;
-	r = up + osg::Vec3f(ou->getRadius(), 0, 0);
-	float radU = ((up * fullM) - (r * fullM)).length();
-	r = vp + osg::Vec3f(ov->getRadius(), 0, 0);
-	float radV = ((vp * fullM) - (r * fullM)).length();
-
-	// determine distance between projected nodes
-	fv = (vp * fullM) - (up * fullM);
-	dist = fv.length();
-
-	if (dist >= radU + radV) { // are projections overlapping?
+	osg::Vec3f eye = ou->getEye();
+	// is any expanded node behind the other one?
+	float udist = (up-eye).length();
+	float vdist = (vp-eye).length();
+	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist)) {
+//		if (uExp)
+//			qDebug() << "not behind ";
 		return;
 	}
 
-	// dist is negative overlapping distance
-	dist -= (radU + radV);
-	// transform dist back to world coordinates
-	dist = (-dist) * (ou->getRadius() / radU);
+	// is any node on screen?
+	if ((!vExp && !ou->isOnScreen()) || (!uExp && !ov->isOnScreen()))
+		return;
 
-	if (dist != dist) {
-		dist = 0;
+//	if (uExp)
+//		qDebug() << "obscured";
+
+	up = u->getPosition();
+	vp = v->getPosition();
+
+	osg::Vec3f edgeDir = up - vp;
+	osg::Vec3f viewVec = eye - (up + vp) / 2.0f;
+	fv = viewVec ^ (edgeDir ^ viewVec);
+
+	float length = edgeDir.normalize();
+	fv.normalize();
+
+//	qDebug() << "len: " << length;
+//	if (uExp)
+//		qDebug() << "deg: " << acos(edgeDir * ref) * 360 / (2 * osg::PI);
+//	qDebug() << "cos: " << edgeDir * ref;
+
+	dist = length * (edgeDir * fv);
+
+//	if (uExp)
+//			qDebug() << dist;
+
+	// dist = overlapping distance
+	dist = (ou->getRadius() + ov->getRadius()) - dist;
+
+//	if (uExp)
+//		qDebug() << dist;
+
+	if (dist <= 0) { // are projections overlapping?
+		return;
 	}
 
-	// use only view rotation to find force direction
-	fv = viewM.getRotate() * (vp - up);// smer sily
-	fv.z() = 0;
-	fv.normalize(); // force direction
+	fv *= (dist * dist / (2*K) ) * factor; // force size
 
-	fv *= -(dist * K) * factor; // force size
-
-	fv = viewM.getRotate().inverse() * fv; // transform fv back
-
-	fv /= 2.0f;// XXX workaround
 	u->addForce(fv);
-	v->addForce(-fv);
 }
 
 /* Vzorec na vypocet odpudivej sily */

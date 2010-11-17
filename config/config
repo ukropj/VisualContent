@@ -1,6 +1,6 @@
 GraphMLParser.edgeTypeAttribute=relation
 GraphMLParser.nodeTypeAttribute=type
-Layout.Algorithm.Alpha=0.05
+Layout.Algorithm.Alpha=0.01
 Layout.Algorithm.MaxDistance=100.0
 Layout.Algorithm.MaxMovement=90.0
 Layout.Algorithm.MinMovement=0.05

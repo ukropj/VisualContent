@@ -199,7 +199,6 @@ osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
 
 void SceneGraph::update(bool forceIdeal) {
 	if (graph == NULL) {
-		qWarning("No graph set in SceneGraph");
 		return;
 	}
 	root->removeChildren(customNodesPosition, 1); // XXX why?
