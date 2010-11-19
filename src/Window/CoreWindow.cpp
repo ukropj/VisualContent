@@ -38,7 +38,7 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",
 			messageWindows);
 	layout->setGraph(graph);
-	layout->setParameters(10, 0.7, 1, true);
+	layout->setParameters(20, 0.7, 1, true);
 	sceneGraph->reload(graph);
 	layout->play();
 
@@ -278,7 +278,7 @@ void CoreWindow::loadFile() {
 
 	sceneGraph->reload(graph); // deletes original scene graph
 	layout->setGraph(graph); // deletes original graph
-	layout->setParameters(10, 0.7, 1, true);
+	layout->setParameters(20, 0.7, 1, true);
 
 	sceneGraph->setUpdatingNodes(true);
 	layout->play();

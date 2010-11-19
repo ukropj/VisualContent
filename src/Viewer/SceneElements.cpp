@@ -168,7 +168,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* node) { // alternati
 
 osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
-	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_CAMERA);
+	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 
 	osg::ref_ptr<OsgNode> osgNode = new OsgNode(node, sceneGraph, at);
 	nodes.insert(node->getId(), osgNode);
@@ -227,19 +227,20 @@ void SceneElements::updateEdgeCoords() {
 }
 
 osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {
-	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet();
+	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
 
-	edgeStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	edgeStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-	edgeStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 
 	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
 	depth->setWriteMask(false);
-	edgeStateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
+	stateSet->setAttributeAndModes(depth, osg::StateAttribute::ON);
 
 	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
 	cull->setMode(osg::CullFace::BACK);
-	edgeStateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
+	stateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
-	return edgeStateSet;
+	return stateSet;
 }

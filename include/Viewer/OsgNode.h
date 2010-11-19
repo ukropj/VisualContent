@@ -92,6 +92,9 @@ public:
 	bool isOnScreen() const;
 
 	osg::Vec3f getEye() const;
+	osg::Vec3f getUpVector() const;
+
+	float getDistanceToEdge(double angle);
 
 private:
 	Model::Node* node;

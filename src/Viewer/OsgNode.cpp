@@ -35,8 +35,8 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	selected = false;
 	expanded = false;
 	usingInterpolation = true;
-
 	float scale = node->getType()->getScale();
+
 	nodeSmall = createTextureNode(node->getType()->getTexture(), scale);
 	if (node->getId() % 2)
 		nodeLarge = createTextureNode(node->getType()->getDevil(), scale * 2);
@@ -162,17 +162,16 @@ osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float radius) {
-	//	float r = sqrt(2);
 	float r = radius;
-	//	r *= scale;
 
-	int sides = 20;
+	int sides = 12;
 	osg::ref_ptr<osg::Geometry> nodeCircle = new osg::Geometry;
 	double alpha = 2 * osg::PI / (float) sides;
 
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
 	for (int i = 0; i <= sides; i++) {
-		coords->push_back(osg::Vec3f(r * sin(i * alpha), r * cos(i * alpha), 0));
+		float angle = i * alpha;
+		coords->push_back(osg::Vec3f(r * sin(angle), r * cos(angle), 1.0f));
 	}
 
 	nodeCircle->setVertexArray(coords);
@@ -219,8 +218,8 @@ osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
 	textD->setPosition(osg::Vec3(-width / 2.0f, 0, 0));
 	textD->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	width += margin *2;
-	height += margin *2;
+	width += margin * 2;
+	height += margin * 2;
 
 	osg::ref_ptr<osg::Geometry> nodeRect = new osg::Geometry;
 	osg::ref_ptr<osg::Vec3Array> nodeVerts = new osg::Vec3Array(4);
@@ -275,7 +274,7 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
 
 	stateSet->setDataVariance(osg::Object::DYNAMIC);
-	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+	//	stateSet->setMode(GL_DEPTH_TEST,osg::StateAttribute::OFF);
 	return stateSet;
 }
 
@@ -314,7 +313,7 @@ bool OsgNode::setExpanded(bool flag) {
 		return false;
 
 	expanded = flag;
-	setChildValue(circle, expanded);
+//	setChildValue(circle, expanded);
 	setChildValue(nodeLarge, expanded);
 	setChildValue(nodeSmall, !expanded);
 	return true;
@@ -360,9 +359,7 @@ bool OsgNode::setFixed(bool flag) {
 		return false;
 	node->setFixed(flag);
 	if (flag) {
-		float graphScale = Util::Config::getInstance()->getValue(
-				"Viewer.Display.NodeDistanceScale").toFloat();
-		node->setPosition(getPosition() / graphScale);
+		node->setPosition(getPosition());
 	}
 	setChildValue(square, flag);
 }
@@ -394,13 +391,9 @@ osg::Vec3f OsgNode::getPosition() const {
 }
 
 void OsgNode::updatePosition(float interpolationSpeed) {
-	float graphScale = Util::Config::getInstance()->getValue(
-			"Viewer.Display.NodeDistanceScale").toFloat();
-
 	osg::Vec3f targetPos = node->getPosition();
 	osg::Vec3f currentPos = getPosition();
-	osg::Vec3 directionVector = osg::Vec3(targetPos.x(), targetPos.y(),
-			targetPos.z()) * graphScale - currentPos;
+	osg::Vec3 directionVector = osg::Vec3(targetPos - currentPos);
 
 	if (usingInterpolation)
 		directionVector *= interpolationSpeed;
@@ -409,9 +402,7 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 }
 
 void OsgNode::setPosition(osg::Vec3f pos) {
-	float graphScale = Util::Config::getInstance()->getValue(
-			"Viewer.Display.NodeDistanceScale").toFloat();
-	node->setPosition(pos / graphScale);
+	node->setPosition(pos);
 	updatePosition();
 }
 
@@ -420,13 +411,38 @@ bool OsgNode::isOnScreen() const {
 	pos = sceneGraph->byProjectionInv(sceneGraph->byView(pos));
 
 	if (qAbs(pos.x()) > 1 || qAbs(pos.y()) > 1) {
-//		qDebug() << "not on screen";
-			return false;
+		//		qDebug() << "not on screen";
+		return false;
 	}
 	return true;
 }
 
 osg::Vec3f OsgNode::getEye() const {
 	return sceneGraph->getEye();
+}
+
+osg::Vec3f OsgNode::getUpVector() const {
+	return sceneGraph->getUpVector();
+}
+
+float OsgNode::getDistanceToEdge(double angle) {
+	float w, h, d;
+
+	if (isExpanded()) {
+	if (node->getId() % 2) // todo size !!
+		w = h = 2 * node->getType()->getScale() * 2;
+	else
+		w = h = 5 * node->getType()->getScale() * 2;
+	} else {
+		w = h = 2 * node->getType()->getScale();
+	}
+
+	if (tan(angle) < -w / h || tan(angle) > w / h) {
+		d = qAbs(w / (2 * sin(angle)));
+	} else {
+		d = qAbs(h / (2 * cos(angle)));
+	}
+//	qDebug() << angle * 360 / (osg::PI * 2.0f) << "\t-> " << d;
+	return d;
 }
 

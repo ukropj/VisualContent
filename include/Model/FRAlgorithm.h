@@ -281,7 +281,9 @@ private:
 	 *  \param  factor  multiplicer of repulsive force
 	 */
 	void addRepulsive(Node* u, Node* v, float factor);
+
 	void addRepulsiveProj(Node* u, Node* v, float factor);
+	bool moveApart(Node* u, Node* v);
 
 	/**
 	 *  \fn private  rep(double distance)
