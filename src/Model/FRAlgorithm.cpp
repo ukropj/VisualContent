@@ -208,10 +208,14 @@ bool FRAlgorithm::iterate() {
 	//hrany
 	for (EdgeIt i = edges->constBegin(); i != edges->constEnd(); i++) {
 		Edge* e = i.value();
-		float factor = 1;
-				if (e->getSrcNode()->getOsgNode()->isExpanded()) factor /= 1.5;
-				if (e->getDstNode()->getOsgNode()->isExpanded()) factor /= 1.5;
+		float factor = 1;// XXX test null!!
+		if (e->getSrcNode()->getOsgNode()->isExpanded())
+			factor /= 2;
+		if (e->getDstNode()->getOsgNode()->isExpanded())
+			factor /= 2;
 		addAttractive(e, factor); // pritazliva sila beznej velkosti
+		//		addRepulsiveProj(e->getSrcNode(), e->getDstNode(), 1);
+		//		addRepulsiveProj(e->getDstNode(), e->getSrcNode(), 1); // XXX
 	}
 
 	if (state == PAUSED)
@@ -223,16 +227,7 @@ bool FRAlgorithm::iterate() {
 		if (!u->isFrozen() && !u->isFixed()) {
 			last = u->getPosition();
 			bool fo = applyForces(u);
-			bool co = true;
-//			if (u->getOsgNode() != NULL && u->getOsgNode()->isExpanded()) {
-//				for (NodeIt j = nodes->constBegin(); j != nodes->constEnd(); j++) {
-//					Node* v = j.value();
-//					if (!u->equals(v)) {
-//						co = moveApart(u, v) || co;
-//					}
-//				}
-//			}
-			changed = changed || (co && fo);
+			changed = changed || fo;
 		} else {
 			changed = false;
 		}
@@ -280,6 +275,7 @@ void FRAlgorithm::addAttractive(Edge* edge, float factor) {
 		return;
 	fv = vp - up; // smer sily
 	fv.normalize();
+
 	fv *= attr(dist) * factor;// velkost sily
 	edge->getSrcNode()->addForce(fv);
 	fv = center - fv;
@@ -324,25 +320,19 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 
 	osg::Vec3f eye = ou->getEye();
 	// is any expanded node behind the other one?
-	float udist = (up - eye).length();
-	float vdist = (vp - eye).length();
+	float udist = distance(up, eye);
+	float vdist = distance(vp, eye);
 	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist)) {
-		//		if (uExp)
-		//			qDebug() << "not behind ";
 		return;
 	}
-
 	// is any node on screen?
 	if ((!vExp && !ou->isOnScreen()) || (!uExp && !ov->isOnScreen()))
 		return;
 
-	//	if (uExp)
-	//		qDebug() << "obscured";
-
 	up = u->getPosition();
 	vp = v->getPosition();
 
-	osg::Vec3f edgeDir = up - vp;
+	osg::Vec3f edgeDir = vp - up;
 	osg::Vec3f viewVec = eye - (up + vp) / 2.0f;
 	fv = viewVec ^ (edgeDir ^ viewVec);
 
@@ -354,97 +344,30 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	//		qDebug() << "deg: " << acos(edgeDir * ref) * 360 / (2 * osg::PI);
 	//	qDebug() << "cos: " << edgeDir * ref;
 
-	dist = length * qAbs(edgeDir * fv);
+	dist = length * qAbs(fv * edgeDir);
 
 	//	if (uExp)
 	//			qDebug() << dist;
 
-	// dist = overlapping distance
-	double angle = acos(ou->getUpVector()*fv);
+	float M = K / 5.0f; // desired margin
+	double angle = acos(ou->getUpVector() * fv);
 	// XXX 1.5 design better function
-	dist = (ou->getDistanceToEdge(osg::PI/2.0f - angle) + ov->getDistanceToEdge(-osg::PI/2.0f - angle))*1.5f - dist;
-//	dist = (ou->getRadius() + ov->getRadius()) - dist;
+	float minDist = ou->getDistanceToEdge(osg::PI / 2.0f - angle)
+			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle);
+	// dist = overlapping distance
+	dist = minDist + M - dist;
 
-	//	if (uExp)
-	//		qDebug() << dist;
-
-	if (dist <= 0) { // are projections overlapping?
+	if (dist < 0) { // are projections overlapping?
 		return;
 	}
 
-	fv *= (dist * dist / K) * factor; // force size
+	//	minDist += M;
+	//	fv *= -(dist * dist / K) * factor;
+	//	fv *= -((K * minDist) / dist) * factor;
+	fv *= -(5 * dist / minDist * minDist) * factor;
 
 	u->addForce(fv);
 }
-
-//bool FRAlgorithm::moveApart(Node* u, Node* v) {
-//	Vwr::OsgNode* ou = u->getOsgNode();
-//	Vwr::OsgNode* ov = v->getOsgNode();
-//	// are both nodes rendering?
-//	if (ou == NULL || ov == NULL)
-//		return false;
-//
-//	bool uExp = ou->isExpanded();
-//	bool vExp = ov->isExpanded();
-//	// is any node expanded?
-//	if (!uExp && !vExp)
-//		return false;
-//
-//	osg::Vec3f eye = ou->getEye();
-//	// is any expanded node behind the other one?
-//	float udist = distance(up, eye);
-//	float vdist = distance(vp, eye);
-//	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist)) {
-//		//		if (uExp)
-//		//			qDebug() << "not behind ";
-//		return false;
-//	}
-//
-//	// is any node on screen?
-//	if ((!vExp && !ou->isOnScreen()) || (!uExp && !ov->isOnScreen()))
-//		return false;
-//
-//	//	if (uExp)
-//	//		qDebug() << "obscured";
-//
-//	up = u->getPosition();
-//	vp = v->getPosition();
-//
-//	osg::Vec3f edgeDir = up - vp;
-//	osg::Vec3f viewVec = eye - (up + vp) / 2.0f;
-//	fv = viewVec ^ (edgeDir ^ viewVec);
-//
-//	float length = edgeDir.normalize();
-//	fv.normalize();
-//
-//	//	qDebug() << "len: " << length;
-//	//	if (uExp)
-//	//		qDebug() << "deg: " << acos(edgeDir * ref) * 360 / (2 * osg::PI);
-//	//	qDebug() << "cos: " << edgeDir * ref;
-//
-//	dist = length * qAbs(edgeDir * fv);
-//
-//	if (uExp)
-//		qDebug() << dist << " " << ou->getRadius() << " " << ov->getRadius();
-//
-//	// dist = overlapping distance
-//	//	dist = (ou->getDistanceToEdge(fv) + ov->getDistanceToEdge(-fv)) - dist;
-//	dist = (ou->getRadius() + ov->getRadius()) - dist;
-//
-//	if (dist <= 0) { // are projections overlapping?
-//		return false;
-//	}
-//
-//	if (uExp)
-//		qDebug() << dist;
-//
-//	dist /= 2.0f;
-//	//	fv *= (dist * dist / (2 * K)) * factor; // force size
-//	u->setPosition(up + (fv * dist));
-//	v->setPosition(vp - (fv * dist));
-//	//	u->addForce(fv);
-//	return true;
-//}
 
 /* Vzorec na vypocet odpudivej sily */
 float FRAlgorithm::rep(double distance) {

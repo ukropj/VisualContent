@@ -9,12 +9,9 @@
 #define OSGEDGE_H_
 
 #include <QString>
-#include <QTextStream>
 #include <QtCore/QMap>
 #include <QDebug>
 
-#include <osg/PrimitiveSet>
-#include <osg/Geode>
 #include <osg/Stateset>
 #include <osgText/Text>
 #include <osgText/FadeText>
@@ -26,13 +23,13 @@ class Edge;
 namespace Vwr {
 class SceneGraph;
 
-class OsgEdge {//: public osg::Geode {
+class OsgEdge {
 	// OsgEdge is not Geode any more (for performance reasons),
 	// just an empty shell that provides all data by getEdgeData and renders nothing
 public:
 
 	enum StateSetType {
-		ORIENTED, NONORIENTED, ENDPOINT
+		ORIENTED, UNORIENTED, ENDPOINT
 	};
 
 	OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph);
@@ -55,14 +52,6 @@ public:
 
 	void setColor(osg::Vec4 color) {
 		edgeColor = color;
-		//		if (geometry != NULL) {
-		//			osg::Vec4Array * colorArray =
-		//					dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
-		//			colorArray->pop_back();
-		//			colorArray->push_back(color);
-		//		} else {
-		//			qDebug() << "edge geometry was null";
-		//		}
 	}
 
 	bool isSelected() const {
@@ -75,7 +64,7 @@ public:
 
 	void showLabel(bool visible);
 
-	static osg::ref_ptr<osg::StateSet> getStateSetInstance(StateSetType type);
+	static osg::ref_ptr<osg::StateSet> createStateSet(StateSetType type);
 
 private:
 
@@ -84,8 +73,6 @@ private:
 
 	bool selected;
 
-	//	osg::ref_ptr<osg::Geometry> geometry;
-	//	osg::ref_ptr<osg::Geometry> endPoints;
 	osg::ref_ptr<osgText::FadeText> label;
 	osg::Vec4 edgeColor;
 
@@ -96,11 +83,6 @@ private:
 	osg::ref_ptr<osg::Geometry> createGeometry();
 	osg::ref_ptr<osg::Geometry> createEndpointGeometry();
 	osg::ref_ptr<osgText::FadeText> createLabel(QString text);
-
-	static osg::ref_ptr<osg::StateSet> stateSet;
-	static osg::ref_ptr<osg::StateSet> stateSetOriented;
-	static osg::ref_ptr<osg::StateSet> stateSetEndpoint;
-	static osg::ref_ptr<osg::StateSet> createStateSet();
 };
 }
 

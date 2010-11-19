@@ -16,10 +16,6 @@
 
 using namespace Vwr;
 
-osg::ref_ptr<osg::StateSet> OsgEdge::stateSet = NULL;
-osg::ref_ptr<osg::StateSet> OsgEdge::stateSetOriented = NULL;
-osg::ref_ptr<osg::StateSet> OsgEdge::stateSetEndpoint = NULL;
-
 OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
 
 	this->edge = edge;
@@ -30,12 +26,7 @@ OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
 	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
 
-	//	geometry = createGeometry();
-	//	endPoints = createEndpointGeometry();
 	label = createLabel(edge->getName());
-
-	//	addDrawable(geometry);
-	//	addDrawable(endPoints);
 
 	setColor(edge->getType()->getColor());
 }
@@ -69,7 +60,6 @@ void OsgEdge::updateGeometry() {
 	(*edgeCoords)[1].set(x - up);
 	(*edgeCoords)[2].set(y - up);
 	(*edgeCoords)[3].set(y + up);
-	//	geometry->setVertexArray(edgeCoords);
 
 	int repeatCnt = edgeDir.length() / (2 * scale);
 	//	if (!edge->isOriented())
@@ -79,7 +69,6 @@ void OsgEdge::updateGeometry() {
 	(*edgeTexCoords)[1].set(0.0f, 0.0f);
 	(*edgeTexCoords)[2].set(repeatCnt, 0.0f);
 	(*edgeTexCoords)[3].set(repeatCnt, 1.0f);
-	//	geometry->setTexCoordArray(0, edgeTexCoords);
 
 	label->setPosition((x + y) / 2);
 
@@ -144,23 +133,6 @@ void OsgEdge::getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
 	colors->push_back(getEdgeColor());
 }
 
-//osg::ref_ptr<osg::Geometry> OsgEdge::createGeometry() {
-//	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
-//	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
-//			4));
-//
-//	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-//	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-//	geometry->setColorArray(colorArray);
-//	geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
-//
-//	if (!edge->isOriented())
-//		geometry->setStateSet(getStateSetInstance(NONORIENTED));
-//	else
-//		geometry->setStateSet(getStateSetInstance(ORIENTED));
-//	return geometry;
-//}
-
 //osg::ref_ptr<osg::Geometry> OsgEdge::createEndpointGeometry() {
 //	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry();
 //	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
@@ -199,37 +171,26 @@ osg::ref_ptr<osgText::FadeText> OsgEdge::createLabel(QString text) {
 	return label;
 }
 
-osg::ref_ptr<osg::StateSet> OsgEdge::getStateSetInstance(StateSetType type) {
-	switch (type) {
-	case NONORIENTED:
-		if (stateSet == NULL) {
-			stateSet = createStateSet();
-			stateSet->setTextureAttributeAndModes(0,
-					Util::TextureWrapper::getEdgeTexture(),
-					osg::StateAttribute::ON);
-		}
-		return stateSet;
-	case ORIENTED:
-		if (stateSetOriented == NULL) {
-			stateSetOriented = createStateSet();
-			stateSetOriented->setTextureAttributeAndModes(0,
-					Util::TextureWrapper::getOrientedEdgeTexture(),
-					osg::StateAttribute::ON);
-		}
-		return stateSetOriented;
-	case ENDPOINT:
-		if (stateSetEndpoint == NULL) {
-			stateSetEndpoint = createStateSet();
-		}
-		return stateSetEndpoint;
-	}
-}
-
-osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet() {
-	osg::ref_ptr<osg::StateSet> edgeStateSet = new osg::StateSet();
-	edgeStateSet->setAttributeAndModes(new osg::BlendFunc,
+osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet(StateSetType type) {
+	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
+	stateSet->setAttributeAndModes(new osg::BlendFunc,
 			osg::StateAttribute::ON);
-	return edgeStateSet;
+	switch (type) {
+		case UNORIENTED:
+				stateSet->setTextureAttributeAndModes(0,
+						Util::TextureWrapper::getEdgeTexture(),
+						osg::StateAttribute::ON);
+				break;
+		case ORIENTED:
+				stateSet->setTextureAttributeAndModes(0,
+						Util::TextureWrapper::getOrientedEdgeTexture(),
+						osg::StateAttribute::ON);
+				break;
+		case ENDPOINT:
+		default:
+			break;
+	}
+	return stateSet;
 }
 
 void OsgEdge::showLabel(bool visible) { // FIXME not working

@@ -19,6 +19,7 @@
 #include <osgWidget/Browser>
 #include <osgViewer/ViewerEventHandlers>
 #include <osg/Texture2D>
+#include <osgDB/WriteFile>
 
 #include <qdebug.h>
 #include <QtGui>
@@ -119,10 +120,12 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 	customNodesPosition = currentPos++;
 
 	osgUtil::Optimizer opt;
-	opt.optimize(root, osgUtil::Optimizer::ALL_OPTIMIZATIONS);
+	opt.optimize(root, osgUtil::Optimizer::CHECK_GEOMETRY);
 	updateNodes = true;
 
 	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
+
+	osgDB::writeNodeFile(*root, "graph.osg");
 }
 
 int SceneGraph::cleanUp() {
@@ -133,7 +136,7 @@ int SceneGraph::cleanUp() {
 	// NOTE: first child is skybox
 
 	delete sceneElements;
-	qDebug() << "sceneGraph cleared";
+//	qDebug() << "sceneGraph cleared";
 	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
 	return 1;
 }

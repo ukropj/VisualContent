@@ -34,9 +34,10 @@ SceneElements::~SceneElements(void) {
 osg::ref_ptr<osg::Group> SceneElements::initNodes(
 		QMap<qlonglong, Node*>* inNodes) {
 	osg::ref_ptr<osg::Group> nodeGroup = new osg::Group();
+	nodeGroup->setName("all_nodes");
 
-	if (Util::Config::getValue("Viewer.Display.NodesAlwaysOnTop").toInt())
-		nodeGroup->getOrCreateStateSet()->setRenderBinDetails(100, "RenderBin");
+	//	if (Util::Config::getValue("Viewer.Display.NodesAlwaysOnTop").toInt())
+	//		nodeGroup->getOrCreateStateSet()->setRenderBinDetails(100, "RenderBin");
 
 	QMapIterator<qlonglong, Node*> i(*inNodes);
 
@@ -46,19 +47,24 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 
 		//		if (!nodes.contains(i.value()->getId())) {
 		//			nodeGroup->addChild(wrapNode(i.value()));
-		//			g = getNodeGroup2(i.value()));
+		//			g = getNodeGroup2(i.value());
 		//		}
 		g = getNodeGroup1(i.value(), NULL);
 		if (g != NULL) {
 			nodeGroup->addChild(g);
 		}
 	}
+	//	nodeGroup->getOrCreateStateSet()->setRenderBinDetails(2, "DepthSortedBin");
 	return nodeGroup;
 }
 
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
 	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
+	allEdges->setName("all_nodes");
+	osg::ref_ptr<osg::Geode> edgeGeode = new osg::Geode();
+	allEdges->addChild(edgeGeode);
+	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
 
 	edgesGeometry = new osg::Geometry();
 	edgesOGeometry = new osg::Geometry();
@@ -80,21 +86,10 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		j += 4;
 	}
 
-	updateEdgeCoords(); // updates edgeGeometry
-
-	osg::ref_ptr<osg::Geode> edgeGeode = new osg::Geode();
-	edgesGeometry->setStateSet(OsgEdge::getStateSetInstance(
-			OsgEdge::NONORIENTED));
+	edgesGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::UNORIENTED));
+	edgesOGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::ORIENTED));
 	edgeGeode->addDrawable(edgesGeometry);
-	edgesOGeometry->setStateSet(OsgEdge::getStateSetInstance(OsgEdge::ORIENTED));
 	edgeGeode->addDrawable(edgesOGeometry);
-
-	//	osg::ref_ptr<osg::Geode> g2 = new osg::Geode;
-	//	g2->addDrawable(orientedGeometry);
-	//	g2->setStateSet(OsgEdge::getStatesetInstance(OsgEdge::ORIENTED));
-
-	allEdges->addChild(edgeGeode);
-
 	return allEdges;
 }
 
@@ -110,18 +105,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 
 		while (edgeI != node->getEdges()->end()) {
 			if (*edgeI != parentEdge) {
-				//				if (!edges.contains((*edgeI)->getId())) {
-				//					group->addChild(wrapEdge(*edgeI));
-				//				} else {
-				//					//	qDebug() << "edge already in";
-				//				}
-
-				Node* otherNode = NULL;
-				if (node->getId() == (*edgeI)->getSrcNode()->getId())
-					otherNode = (*edgeI)->getDstNode();
-				else
-					otherNode = (*edgeI)->getSrcNode();
-
+				Node* otherNode = (*edgeI)->getOtherNode(node);
 				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup1(otherNode,
 						*edgeI);
 
@@ -137,6 +121,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 
 osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* node) { // alternative SG construction
 	osg::ref_ptr<osg::Group> group = NULL;
+	qDebug() << "start with " << node->getName();
 
 	QLinkedList<Node*> nodesAdded;
 
@@ -144,13 +129,13 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* node) { // alternati
 
 	while (edgeI != node->getEdges()->end()) {
 		Node* otherNode = (*edgeI)->getOtherNode(node);
-		if (nodes.contains(otherNode->getId()))
-			continue;
-		if (group == NULL)
-			group = new osg::Group;
-		//		group->addChild(wrapEdge(*edgeI));
-		group->addChild(wrapNode(otherNode));
-		nodesAdded.append(otherNode);
+		qDebug() << "other is " << node->getName();
+		if (!nodes.contains(otherNode->getId())) {
+			if (group == NULL)
+				group = new osg::Group;
+			group->addChild(wrapNode(otherNode));
+			nodesAdded.append(otherNode);
+		}
 		edgeI++;
 	}
 
@@ -158,11 +143,12 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* node) { // alternati
 
 	while (nodeI != nodesAdded.end()) {
 		osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup2(*nodeI);
-		if (nodeGroup != NULL)
+		if (nodeGroup != NULL) {
 			group->addChild(nodeGroup);
+		}
 		nodeI++;
 	}
-
+	qDebug() << "end with " << node->getName();
 	return group;
 }
 
@@ -178,17 +164,6 @@ osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 
 	return at;
 }
-
-//osg::ref_ptr<osg::Group> SceneElements::wrapEdge(Edge* edge) {
-//	osg::ref_ptr<OsgEdge> osgEdge = new OsgEdge(edge, sceneGraph);
-//	edges.insert(edge->getId(), osgEdge);
-//	osg::ref_ptr<osg::Group> edgeGroup = new osg::Group;
-//
-//	edgeGroup->setName("edge_group");
-//	edgeGroup->addChild(osgEdge);
-//
-//	return edgeGroup;
-//}
 
 void SceneElements::updateNodeCoords(float interpolationSpeed) {
 	QMap<qlonglong, osg::ref_ptr<OsgNode> >::const_iterator i =
@@ -209,11 +184,11 @@ void SceneElements::updateEdgeCoords() {
 	QMap<qlonglong, OsgEdge*>::const_iterator i = edges.constBegin();
 
 	while (i != edges.constEnd()) {
-		if (i.value()->isOriented())
-			i.value()->getEdgeData(coords, texCoords, orientedColors);
-		else
+		if (!i.value()->isOriented())
 			i.value()->getEdgeData(coords, texCoords, colors);
-		//		i.value()->updateGeometry();
+		else
+			i.value()->getEdgeData(coords, texCoords, orientedColors);
+		//				i.value()->updateGeometry();
 		i++;
 	}
 

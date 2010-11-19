@@ -85,26 +85,24 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 	height *= scale;
 
 	osg::ref_ptr<osg::Geometry> nodeQuad = new osg::Geometry;
-	osg::ref_ptr<osg::Vec3Array> nodeVerts = new osg::Vec3Array(4);
-
-	(*nodeVerts)[0] = osg::Vec3(-width / 2.0f, -height / 2.0f, 0);
-	(*nodeVerts)[1] = osg::Vec3(width / 2.0f, -height / 2.0f, 0);
-	(*nodeVerts)[2] = osg::Vec3(width / 2.0f, height / 2.0f, 0);
-	(*nodeVerts)[3] = osg::Vec3(-width / 2.0f, height / 2.0f, 0);
+	osg::Vec3 coords[] = { osg::Vec3(-width / 2.0f, -height / 2.0f, 0),
+			osg::Vec3(width / 2.0f, -height / 2.0f, 0),
+			osg::Vec3(width / 2.0f,	height / 2.0f, 0),
+			osg::Vec3(-width / 2.0f, height / 2.0f, 0) };
 
 	nodeQuad->setUseDisplayList(false);
 
-	nodeQuad->setVertexArray(nodeVerts);
+	nodeQuad->setVertexArray(new osg::Vec3Array(4, coords));
 	nodeQuad->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
 			4));
 
-	osg::ref_ptr<osg::Vec2Array> nodeTexCoords = new osg::Vec2Array(4);
-	(*nodeTexCoords)[0].set(0.0f, 0.0f);
-	(*nodeTexCoords)[1].set(1.0f, 0.0f);
-	(*nodeTexCoords)[2].set(1.0f, 1.0f);
-	(*nodeTexCoords)[3].set(0.0f, 1.0f);
-
-	nodeQuad->setTexCoordArray(0, nodeTexCoords);
+	osg::Vec2 texCoords[] = {
+	        osg::Vec2(0,0),
+	        osg::Vec2(1,0),
+	        osg::Vec2(1,1),
+	        osg::Vec2(0,1)
+	    };
+	nodeQuad->setTexCoordArray(0,new osg::Vec2Array(4, texCoords));
 
 	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
 	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -313,7 +311,7 @@ bool OsgNode::setExpanded(bool flag) {
 		return false;
 
 	expanded = flag;
-//	setChildValue(circle, expanded);
+	//	setChildValue(circle, expanded);
 	setChildValue(nodeLarge, expanded);
 	setChildValue(nodeSmall, !expanded);
 	return true;
@@ -429,10 +427,10 @@ float OsgNode::getDistanceToEdge(double angle) {
 	float w, h, d;
 
 	if (isExpanded()) {
-	if (node->getId() % 2) // todo size !!
-		w = h = 2 * node->getType()->getScale() * 2;
-	else
-		w = h = 5 * node->getType()->getScale() * 2;
+		if (node->getId() % 2) // todo size !!
+			w = h = 2 * node->getType()->getScale() * 2;
+		else
+			w = h = 5 * node->getType()->getScale() * 2;
 	} else {
 		w = h = 2 * node->getType()->getScale();
 	}
@@ -442,7 +440,7 @@ float OsgNode::getDistanceToEdge(double angle) {
 	} else {
 		d = qAbs(h / (2 * cos(angle)));
 	}
-//	qDebug() << angle * 360 / (osg::PI * 2.0f) << "\t-> " << d;
+	//	qDebug() << angle * 360 / (osg::PI * 2.0f) << "\t-> " << d;
 	return d;
 }
 
