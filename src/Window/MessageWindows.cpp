@@ -22,13 +22,13 @@ void MessageWindows::showProgressBar() {
 }
 
 void MessageWindows::closeProgressBar() {
-	if ((progressBar != NULL) && (progressBar->isVisible())) {
+	if ((progressBar != NULL && progressBar->isVisible())) {
 		progressBar->hide();
 	}
 }
 
 void MessageWindows::setProgressBarValue(int value) {
-	if (progressBar->isVisible()) {
+	if (progressBar != NULL && progressBar->isVisible()) {
 		progressBar->setValue(value);
 	}
 }
@@ -46,18 +46,18 @@ void MessageWindows::showMessageBox(QString title, QString message,
 	msgBox.exec();
 }
 
-void MessageWindows::showLoadingDialog(QString message) {
-	if (loadingDialog == NULL) {
-		loadingDialog = new QMessageBox();
-	}
-	loadingDialog->setText(message);
-	loadingDialog->setStandardButtons(QMessageBox::NoButton);
-
-	loadingDialog->show();
-}
-
-void MessageWindows::closeLoadingDialog() {
-	if ((loadingDialog != NULL) && (loadingDialog->isVisible())) {
-		loadingDialog->hide();
-	}
-}
+//void MessageWindows::showLoadingDialog(QString message) {
+//	if (loadingDialog == NULL) {
+//		loadingDialog = new QMessageBox();
+//	}
+//	loadingDialog->setText(message);
+//	loadingDialog->setStandardButtons(QMessageBox::NoButton);
+//
+//	loadingDialog->show();
+//}
+//
+//void MessageWindows::closeLoadingDialog() {
+//	if ((loadingDialog != NULL) && (loadingDialog->isVisible())) {
+//		loadingDialog->hide();
+//	}
+//}

@@ -121,6 +121,8 @@ public:
 		return graph;
 	}
 
+	float getMinNodeDistance();
+
 private:
 	/**
 	 *  Graph * graph

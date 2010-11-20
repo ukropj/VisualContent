@@ -45,3 +45,7 @@ Node* Edge::getOtherNode(Model::Node* node) const {
 	else
 		return srcNode; // returns source node even if node is not a node of this edge
 }
+
+float Edge::getMinNodeDistance() {
+	return srcNode->getRadius() + dstNode->getRadius();
+}

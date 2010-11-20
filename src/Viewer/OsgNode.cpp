@@ -231,7 +231,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
 	nodeRect->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
 			4));
 	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(0.9f, 0.9f, 0.9f, 1.0f));
+	colorArray->push_back(osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f));
 	nodeRect->setColorArray(colorArray);
 	nodeRect->setColorBinding(osg::Geometry::BIND_OVERALL);
 

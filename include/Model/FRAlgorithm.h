@@ -46,7 +46,7 @@ public:
 	 *  \param       animationSpeed
 	 *  \param       useMaxDistance
 	 */
-	void setParameters(float sizeFactor, float flexibility, int animationSpeed,
+	void setParameters(float sizeFactor, float flexibility,
 			bool useMaxDistance);
 
 	/**
@@ -157,7 +157,10 @@ private:
 	 *  double K
 	 *  \brief normal length of edge, rest mass of chord
 	 */
-	double K;
+	float K;
+
+	// margin
+	float M;
 
 	/**
 	 *  osg::Vec3f center
@@ -271,7 +274,7 @@ private:
 	 *  \param  edge  which associate two nodes on which effect attractive force
 	 *  \param  factor  multiplicer of attaractive force
 	 */
-	void addAttractive(Edge* edge, float factor);
+	void addAttractive(Edge* edge, float factor = 1);
 
 	/**
 	 *  \fn private  addRepulsive(Node* u, Node* v, float factor)
@@ -280,9 +283,9 @@ private:
 	 *  \param  v  node V
 	 *  \param  factor  multiplicer of repulsive force
 	 */
-	void addRepulsive(Node* u, Node* v, float factor);
+	void addRepulsive(Node* u, Node* v, float factor = 1);
 
-	void addRepulsiveProj(Node* u, Node* v, float factor);
+	void addRepulsiveProj(Node* u, Node* v, float factor = 1);
 
 	/**
 	 *  \fn private  rep(double distance)
@@ -290,7 +293,7 @@ private:
 	 *  \param  distance  distance between two vectors
 	 *  \return float size of repulsive force
 	 */
-	float rep(double distance);
+	float rep(double distance, double ideal);
 
 	/**
 	 *  \fn private  attr(double distance)
@@ -298,7 +301,7 @@ private:
 	 *  \param     distance  distance between two vectors
 	 *  \return float size of attractive force
 	 */
-	float attr(double distance);
+	float attr(double distance, double ideal);
 
 	/**
 	 *  \fn private  centr(double distance)

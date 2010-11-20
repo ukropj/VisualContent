@@ -76,3 +76,9 @@ bool Node::equals(Node* node) {
 	}
 	return true;
 }
+
+float Node::getRadius() const {
+	if (osgNode == NULL)
+		return 0;
+	return osgNode->getRadius();
+}

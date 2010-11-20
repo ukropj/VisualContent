@@ -265,6 +265,8 @@ public:
 		return osgNode;
 	}
 
+	float getRadius() const;
+
 private:
 
 	osg::ref_ptr<Vwr::OsgNode> osgNode;

@@ -33,51 +33,50 @@ FRAlgorithm::FRAlgorithm() {
 	useMaxDistance = false;
 	notEnd = true;
 
+	sizeFactor = 10;
+	flexibility = 0.7f;
+	useMaxDistance = false;
+	K = sizeFactor;
+	M = K / 5.0f;
+
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }
 
 void FRAlgorithm::setGraph(Graph *newGraph) {
+	if (newGraph == NULL)
+		return;
+
 	state = PAUSED;
 	while (isIterating) {
 		qDebug() << "s";
-		QThread::msleep(100);
+		QThread::msleep(10);
 		state = PAUSED;
 	}
 
 	notEnd = true;
 
-	qDebug() << "deleting graph:";
-	if (newGraph != NULL) {
-		if (graph != NULL)
-			delete graph; // old graph deleted
-		graph = newGraph;
-	}
-	qDebug() << "graph deleted";
+	if (graph != NULL)
+		delete graph; // old graph deleted
+	graph = newGraph;
 
 	randomize();
 }
 
 void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
-		int animationSpeed, bool useMaxDistance) {
+		bool useMaxDistance) {
 	this->sizeFactor = sizeFactor;
 	this->flexibility = flexibility;
 	this->useMaxDistance = useMaxDistance;
 
 	if (this->graph != NULL) {
-		K = computeCalm();
+		K = sizeFactor;
+		M = K / 5.0f;
 		graph->setFrozen(false);
 	} else {
 		qWarning("No graph");
 	}
 }
 
-/* Urci pokojovu dlzku strun */
-double FRAlgorithm::computeCalm() {// todo delete
-	//	double R = 300;
-	//	float n = graph->getNodes()->count();
-	//	return sizeFactor * pow((4 * R * R * R * PI) / (n * 3), 1 / 3);
-	return sizeFactor * 1;
-}
 /* Rozmiestni uzly na nahodne pozicie */
 void FRAlgorithm::randomize() {
 	State origState = state;
@@ -115,7 +114,6 @@ double FRAlgorithm::getRandomDouble() {
 
 void FRAlgorithm::play() {
 	if (graph != NULL) {
-		K = computeCalm();
 		graph->setFrozen(false);
 		state = RUNNING;
 		notEnd = true;
@@ -199,26 +197,22 @@ bool FRAlgorithm::iterate() {
 			// pre vsetky uzly..
 			Node* v = j.value();
 			if (!u->equals(v)) {
-				addRepulsive(u, v, 1); // odpudiva sila beznej velkosti
-				addRepulsiveProj(u, v, 1);
+				addRepulsive(u, v); // odpudiva sila beznej velkosti
+				addRepulsiveProj(u, v);
 			}
 		}
 	}
 
+	if (state != RUNNING)
+		return true;
+
 	//hrany
 	for (EdgeIt i = edges->constBegin(); i != edges->constEnd(); i++) {
 		Edge* e = i.value();
-		float factor = 1;// XXX test null!!
-		if (e->getSrcNode()->getOsgNode()->isExpanded())
-			factor /= 2;
-		if (e->getDstNode()->getOsgNode()->isExpanded())
-			factor /= 2;
-		addAttractive(e, factor); // pritazliva sila beznej velkosti
-		//		addRepulsiveProj(e->getSrcNode(), e->getDstNode(), 1);
-		//		addRepulsiveProj(e->getDstNode(), e->getSrcNode(), 1); // XXX
+		addAttractive(e); // pritazliva sila beznej velkosti
 	}
 
-	if (state == PAUSED)
+	if (state != RUNNING)
 		return true;
 
 	// aplikuj sily na uzly
@@ -276,7 +270,7 @@ void FRAlgorithm::addAttractive(Edge* edge, float factor) {
 	fv = vp - up; // smer sily
 	fv.normalize();
 
-	fv *= attr(dist) * factor;// velkost sily
+	fv *= attr(dist, qMax(K, edge->getMinNodeDistance() + M)) * factor;// velkost sily
 	edge->getSrcNode()->addForce(fv);
 	fv = center - fv;
 	edge->getDstNode()->addForce(fv);
@@ -300,7 +294,7 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 	fv = (vp - up);// smer sily
 
 	fv.normalize();
-	fv *= rep(dist) * factor;// velkost sily
+	fv *= rep(dist, qMax(K, u->getRadius() + v->getRadius() + M)) * factor;// velkost sily
 	u->addForce(fv); // iba k jednemu uzlu!
 }
 
@@ -325,7 +319,7 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist)) {
 		return;
 	}
-	// is any node on screen?
+	// is any expanded node on screen?
 	if ((!vExp && !ou->isOnScreen()) || (!uExp && !ov->isOnScreen()))
 		return;
 
@@ -333,50 +327,34 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	vp = v->getPosition();
 
 	osg::Vec3f edgeDir = vp - up;
-	osg::Vec3f viewVec = eye - (up + vp) / 2.0f;
+	osg::Vec3f viewVec = eye - (up + vp) / 2.0f; // from eye to middle of u,v
 	fv = viewVec ^ (edgeDir ^ viewVec);
 
 	float length = edgeDir.normalize();
 	fv.normalize();
 
-	//	qDebug() << "len: " << length;
-	//	if (uExp)
-	//		qDebug() << "deg: " << acos(edgeDir * ref) * 360 / (2 * osg::PI);
-	//	qDebug() << "cos: " << edgeDir * ref;
-
 	dist = length * qAbs(fv * edgeDir);
 
-	//	if (uExp)
-	//			qDebug() << dist;
-
-	float M = K / 5.0f; // desired margin
 	double angle = acos(ou->getUpVector() * fv);
-	// XXX 1.5 design better function
 	float minDist = ou->getDistanceToEdge(osg::PI / 2.0f - angle)
-			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle);
-	// dist = overlapping distance
-	dist = minDist + M - dist;
+			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
 
-	if (dist < 0) { // are projections overlapping?
+	if (minDist  < dist) { // are projections overlapping?
 		return;
 	}
 
-	//	minDist += M;
-	//	fv *= -(dist * dist / K) * factor;
-	//	fv *= -((K * minDist) / dist) * factor;
-	fv *= -(5 * dist / minDist * minDist) * factor;
-
+	fv *= rep(dist, minDist) * factor;
 	u->addForce(fv);
 }
 
 /* Vzorec na vypocet odpudivej sily */
-float FRAlgorithm::rep(double distance) {
-	return (float) (-(K * K) / distance);
+float FRAlgorithm::rep(double distance, double ideal) {
+	return (float) (-(ideal * ideal) / distance);
 }
 
 /* Vzorec na vypocet pritazlivej sily */
-float FRAlgorithm::attr(double distance) {
-	return (float) ((distance * distance) / K);
+float FRAlgorithm::attr(double distance, double ideal) {
+	return (float) ((distance * distance) / ideal);
 }
 
 /* Vzorec na vypocet dostredivej sily */

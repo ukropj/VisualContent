@@ -125,18 +125,14 @@ void SceneGraph::reload(Model::Graph * newGraph) {
 
 	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
 
-	osgDB::writeNodeFile(*root, "graph.osg");
+//	osgDB::writeNodeFile(*root, "graph.osg");
 }
 
 int SceneGraph::cleanUp() {
-	//	for (int i = 0; i < root->getNumChildren(); i++) {
-	//		qDebug() << QString::fromStdString(root->getChild(i)->getName());
-	//	}
 	root->removeChildren(1, root->getNumChildren() - 1);
 	// NOTE: first child is skybox
 
 	delete sceneElements;
-//	qDebug() << "sceneGraph cleared";
 	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
 	return 1;
 }
