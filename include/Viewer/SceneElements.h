@@ -57,7 +57,7 @@ public:
 	 *  \return osg::ref_ptr nodes group
 	 */
 	osg::ref_ptr<osg::Group> getElementsGroup() {
-		return group;
+		return elementsGroup;
 	}
 
 	QMap<qlonglong, osg::ref_ptr<OsgNode> >* getNodes() {
@@ -82,7 +82,7 @@ private:
 	 *  osg::ref_ptr group
 	 *  \brief nodes group
 	 */
-	osg::ref_ptr<osg::Group> group;
+	osg::ref_ptr<osg::Group> elementsGroup;
 
 	/**
 	 *  \fn private  initNodes
@@ -99,7 +99,7 @@ private:
 	osg::ref_ptr<osg::Group> getNodeGroup1(Model::Node* node,
 			Model::Edge* parentEdge);
 
-	osg::ref_ptr<osg::Group> getNodeGroup2(Model::Node* node);
+	osg::ref_ptr<osg::Group> getNodeGroup2(Model::Node* firstNode);
 
 	osg::ref_ptr<osg::StateSet> createStateSet() const;
 

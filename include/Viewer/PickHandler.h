@@ -274,6 +274,10 @@ private:
 	 */
 	bool handleRelease(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
+	bool handleKeyDown(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
+	bool handleKeyUp(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 
 	bool isShift(const osgGA::GUIEventAdapter& event);
 	bool isCtrl(const osgGA::GUIEventAdapter& event);

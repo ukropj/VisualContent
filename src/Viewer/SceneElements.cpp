@@ -15,15 +15,15 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 		Edge*>* edges, SceneGraph* sceneGraph) {
 	this->sceneGraph = sceneGraph;
 
-	group = new osg::Group();
-	group->setName("scene_elements");
+	elementsGroup = new osg::Group();
+	elementsGroup->setName("scene_elements");
 
 	if (!nodes->isEmpty())
-		group->addChild(initNodes(nodes));
+		elementsGroup->addChild(initNodes(nodes));
 	if (!edges->isEmpty())
-		group->addChild(initEdges(edges));
+		elementsGroup->addChild(initEdges(edges));
 
-	group->setStateSet(createStateSet());
+	elementsGroup->setStateSet(createStateSet());
 }
 
 SceneElements::~SceneElements(void) {
@@ -35,6 +35,7 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 		QMap<qlonglong, Node*>* inNodes) {
 	osg::ref_ptr<osg::Group> nodeGroup = new osg::Group();
 	nodeGroup->setName("all_nodes");
+	nodeGroup->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
 
 	//	if (Util::Config::getValue("Viewer.Display.NodesAlwaysOnTop").toInt())
 	//		nodeGroup->getOrCreateStateSet()->setRenderBinDetails(100, "RenderBin");
@@ -45,23 +46,19 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 		i.next();
 		osg::ref_ptr<osg::Group> g;
 
-		//		if (!nodes.contains(i.value()->getId())) {
-		//			nodeGroup->addChild(wrapNode(i.value()));
-		//			g = getNodeGroup2(i.value());
-		//		}
-		g = getNodeGroup1(i.value(), NULL);
+		g = getNodeGroup2(i.value());
+//		g = getNodeGroup1(i.value(), NULL);
 		if (g != NULL) {
 			nodeGroup->addChild(g);
 		}
 	}
-	//	nodeGroup->getOrCreateStateSet()->setRenderBinDetails(2, "DepthSortedBin");
 	return nodeGroup;
 }
 
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
 	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
-	allEdges->setName("all_nodes");
+	allEdges->setName("all_edges");
 	osg::ref_ptr<osg::Geode> edgeGeode = new osg::Geode();
 	allEdges->addChild(edgeGeode);
 	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
@@ -102,7 +99,6 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 		group->addChild(wrapNode(node));
 
 		QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
-
 		while (edgeI != node->getEdges()->end()) {
 			if (*edgeI != parentEdge) {
 				Node* otherNode = (*edgeI)->getOtherNode(node);
@@ -119,37 +115,46 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 	return group;
 }
 
-osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* node) { // alternative SG construction
-	osg::ref_ptr<osg::Group> group = NULL;
-	qDebug() << "start with " << node->getName();
+osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alternative SG construction
+	QList<Node*> nodeList;
+	osg::ref_ptr<osg::Group> nodeGroup = new osg::Group;
+	int index = 0;
 
-	QLinkedList<Node*> nodesAdded;
+	if (nodes.contains(firstNode->getId()))
+		return NULL;
 
-	QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
+	nodeGroup->addChild(wrapNode(firstNode));
+	nodeList << firstNode;
 
-	while (edgeI != node->getEdges()->end()) {
-		Node* otherNode = (*edgeI)->getOtherNode(node);
-		qDebug() << "other is " << node->getName();
-		if (!nodes.contains(otherNode->getId())) {
-			if (group == NULL)
-				group = new osg::Group;
-			group->addChild(wrapNode(otherNode));
-			nodesAdded.append(otherNode);
+	while (nodeList.size() > index) {
+		int size = nodeList.size();
+		osg::ref_ptr<osg::Group> uberGroup = NULL;
+
+		for (int i = index; i < size; i++) {
+			osg::ref_ptr<osg::Group> group = NULL;
+			Node* node = nodeList[i];
+
+			QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
+			while (edgeI != node->getEdges()->end()) {
+				Node* otherNode = (*edgeI)->getOtherNode(node);
+				if (!nodes.contains(otherNode->getId())) {
+					if (group == NULL)
+						group = new osg::Group;
+					group->addChild(wrapNode(otherNode));
+					nodeList << otherNode;
+				}
+				edgeI++;
+			}
+			if (group != NULL) {
+				if (uberGroup == NULL)
+					uberGroup = new osg::Group;
+				uberGroup->addChild(group);
+			}
 		}
-		edgeI++;
+		nodeGroup->addChild(uberGroup);
+		index++;
 	}
-
-	QLinkedList<Node*>::iterator nodeI = nodesAdded.begin();
-
-	while (nodeI != nodesAdded.end()) {
-		osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup2(*nodeI);
-		if (nodeGroup != NULL) {
-			group->addChild(nodeGroup);
-		}
-		nodeI++;
-	}
-	qDebug() << "end with " << node->getName();
-	return group;
+	return nodeGroup;
 }
 
 osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
