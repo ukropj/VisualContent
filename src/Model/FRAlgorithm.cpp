@@ -6,6 +6,7 @@
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
 #include "Viewer/OsgNode.h"
+#include <qdebug.h>
 
 using namespace Model;
 
@@ -33,11 +34,12 @@ FRAlgorithm::FRAlgorithm() {
 	useMaxDistance = false;
 	notEnd = true;
 
-	sizeFactor = 10;
-	flexibility = 0.7f;
-	useMaxDistance = false;
+	sizeFactor = 30;
+	flexibility = 0.2f;
+	useMaxDistance = true;
 	K = sizeFactor;
-	M = K / 5.0f;
+	M = K / 6.0f;
+	coolingSteps = 3;
 
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }
@@ -70,7 +72,7 @@ void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
 
 	if (this->graph != NULL) {
 		K = sizeFactor;
-		M = K / 5.0f;
+		M = K / 6.0f;
 		graph->setFrozen(false);
 	} else {
 		qWarning("No graph");
@@ -114,6 +116,7 @@ double FRAlgorithm::getRandomDouble() {
 
 void FRAlgorithm::play() {
 	if (graph != NULL) {
+		qDebug() << ALPHA;
 		graph->setFrozen(false);
 		state = RUNNING;
 		notEnd = true;
@@ -155,23 +158,25 @@ void FRAlgorithm::run() {
 			while (state != RUNNING || graph->isFrozen()) {
 				if (isIterating && graph->isFrozen()) {
 					Window::CoreWindow::log(Window::CoreWindow::ALG, "FROZEN");
-					qDebug() << "Frozen";
+//					qDebug() << "Frozen";
 				}
 				isIterating = false;
 				QThread::msleep(100);
 				if (!notEnd) {
 					Window::CoreWindow::log(Window::CoreWindow::ALG, "STOPPED");
-					qDebug() << "Stopped";
+//					qDebug() << "Stopped";
 					return;
 				}
 			}
 			if (!isIterating) {
 				Window::CoreWindow::log(Window::CoreWindow::ALG, "RUNNING");
-				qDebug() << "Running";
+//				qDebug() << "Running";
 			}
 			isIterating = true;
 			if (!iterate()) {
-				graph->setFrozen(true);
+				cool();
+//				graph->setFrozen(true);
+				qDebug() << "should freeze";
 			}
 		}
 	} else {
@@ -180,13 +185,20 @@ void FRAlgorithm::run() {
 	isIterating = false;
 }
 
+void FRAlgorithm::cool() { // todo ??
+//	if (coolingSteps-- >= 0) {
+//		ALPHA /= 2;
+//		qDebug() << "cooled, A=" << ALPHA;
+//	}
+}
+
 bool FRAlgorithm::iterate() {
 	bool changed = false;
 	QMap<qlonglong, Node*>* nodes = graph->getNodes();
 	QMap<qlonglong, Edge*>* edges = graph->getEdges();
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
-		i.value()->resetForce();
+		i.value()->resetForces();
 	}
 
 	//uzly
@@ -219,33 +231,33 @@ bool FRAlgorithm::iterate() {
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		Node* u = i.value();
 		if (!u->isFrozen() && !u->isFixed()) {
-			last = u->getPosition();
+//			last = u->getPosition();
 			bool fo = applyForces(u);
 			changed = changed || fo;
-		} else {
-			changed = false;
+//			if (fo)
+//				qDebug() << "delta: " << ((last - u->getPosition()).length());
 		}
 	}
 
 	// vracia true ak sa ma pokracovat dalsou iteraciou
-	return true; // XXX algoritm will never freeze!
 	return changed;
 }
 
 bool FRAlgorithm::applyForces(Node* node) {
 	// nakumulovana sila
-	osg::Vec3f fv = node->getForce();
+	fv = node->getForce();
 	// zmensenie
 	fv *= ALPHA;
+	fv += node->getVelocity();
+
 	float l = fv.length();
 	if (l > MIN_MOVEMENT) { // nie je sila primala?
+//		qDebug() << "l: " << l;
 		if (l > MAX_MOVEMENT) { // je sila privelka?
 			fv.normalize();
 			fv *= MAX_MOVEMENT;
-			//			std::cout << "max movement (5 used)" << std::endl;
 		}
 		// pricitame aktualnu rychlost
-		fv += node->getVelocity();
 
 		// ulozime novu polohu
 		node->setPosition(node->getPosition() + fv);
@@ -253,6 +265,11 @@ bool FRAlgorithm::applyForces(Node* node) {
 		// energeticka strata = 1-flexibilita
 		fv *= flexibility;
 		node->setVelocity(fv); // ulozime novu rychlost
+
+//		fv = node->getProjForce() * ALPHA;
+//		node->setPosition(node->getPosition() + fv);
+//		fv *= flexibility;
+//		node->setProjVelocity(fv); // ulozime novu rychlost
 		return true;
 	} else {
 		node->resetVelocity(); // vynulovanie rychlosti
@@ -270,7 +287,9 @@ void FRAlgorithm::addAttractive(Edge* edge, float factor) {
 	fv = vp - up; // smer sily
 	fv.normalize();
 
-	fv *= attr(dist, qMax(K, edge->getMinNodeDistance() + M)) * factor;// velkost sily
+	fv *= attr(dist, qMax(K, edge->getSrcNode()->getRadius() +
+			edge->getDstNode()->getRadius())) * factor;// velkost sily
+
 	edge->getSrcNode()->addForce(fv);
 	fv = center - fv;
 	edge->getDstNode()->addForce(fv);
@@ -294,7 +313,7 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 	fv = (vp - up);// smer sily
 
 	fv.normalize();
-	fv *= rep(dist, qMax(K, u->getRadius() + v->getRadius() + M)) * factor;// velkost sily
+	fv *= rep(dist, qMax(K, u->getRadius() + v->getRadius())) * factor;
 	u->addForce(fv); // iba k jednemu uzlu!
 }
 
@@ -311,15 +330,18 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	// is any node expanded?
 	if (!uExp && !vExp)
 		return;
+//		factor /= 2.0f;
 
 	osg::Vec3f eye = ou->getEye();
 	// is any expanded node behind the other one?
 	float udist = distance(up, eye);
 	float vdist = distance(vp, eye);
-	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist)) {
-		return;
-	}
+	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist))
+//		return;
+		factor /= 4.0f;
+
 	// is any expanded node on screen?
+	// XXX is this check improving or lowering performance?
 	if ((!vExp && !ou->isOnScreen()) || (!uExp && !ov->isOnScreen()))
 		return;
 
@@ -327,24 +349,52 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	vp = v->getPosition();
 
 	osg::Vec3f edgeDir = vp - up;
-	osg::Vec3f viewVec = eye - (up + vp) / 2.0f; // from eye to middle of u,v
+	osg::Vec3f viewVec = eye - ((up + vp) / 2.0f); // from eye to middle of u,v
 	fv = viewVec ^ (edgeDir ^ viewVec);
 
 	float length = edgeDir.normalize();
 	fv.normalize();
-
 	dist = length * qAbs(fv * edgeDir);
+	if (dist == 0)
+		return; // standard repulsive force will handle this special case
 
 	double angle = acos(ou->getUpVector() * fv);
-	float minDist = ou->getDistanceToEdge(osg::PI / 2.0f - angle)
+	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
 			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
 
-	if (minDist  < dist) { // are projections overlapping?
-		return;
-	}
+	fv *= proj(dist, ideal) * factor;
 
-	fv *= rep(dist, minDist) * factor;
 	u->addForce(fv);
+}
+
+float FRAlgorithm::proj(double distance, double ideal) {
+	/* Projective repulsive function behaviour
+	 * for dist in ranges:
+	 * <q * ideal, Inf)			-> no repulsion
+	 * <ideal, q * ideal)		-> (weak) linear repulsion, nodes are not overlapping
+	 * 								<-p * ideal, 0)
+	 * (0, ideal)				-> (strong) hyperbolic repulsion, nodes are overlapping
+	 * 								(-Inf, -p * ideal)
+	 *
+	 * meaning of parameters p and q (both arre relative to ideal):
+	 * q is point where repulsion stops, must be more than 1!
+	 * 		f(q * ideal) == 0
+	 * p is multiplier of strong repulsion, must be at least 1!
+	 * 		f(ideal) = -p * ideal;
+	 */
+
+	float q = 1.5f;	// repulsion will stop soon after overlap is removed
+	float p = 4.0f;	// 5 times stronger than usual repulsion
+
+	if (dist >= q * ideal) {
+		return 0;
+	} else if (dist >= ideal) {
+		return (p/(q-1) * (dist - q * ideal));
+	} else if (dist > 0) {
+		return -(p * (ideal * ideal) / dist);
+	} else {
+		return 0;
+	}
 }
 
 /* Vzorec na vypocet odpudivej sily */
@@ -362,7 +412,7 @@ float FRAlgorithm::centr(double distance) {
 	return (float) distance;
 }
 
-double FRAlgorithm::distance(osg::Vec3f u, osg::Vec3f v) {
+float FRAlgorithm::distance(osg::Vec3f u, osg::Vec3f v) {
 	osg::Vec3f x = u - v;
-	return (double) x.length();
+	return x.length();
 }

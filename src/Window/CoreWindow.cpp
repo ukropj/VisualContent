@@ -38,13 +38,11 @@ CoreWindow::CoreWindow(QWidget *parent) :
 	Model::Graph* graph = manager->loadGraph("input/data/grid7.graphml",
 			messageWindows);
 	layout->setGraph(graph);
-	layout->setParameters(20, 0.7, true);
 	sceneGraph->reload(graph);
 	layout->play();
 
 	viewerWidget->getCameraManipulator()->home(0);
 	viewerWidget->getCameraManipulator()->setDistance(500);
-	setWindowFilePath("input/data/grid7.graphml");
 
 	log(NORMAL, "Graph loaded: " + graph->toString());
 }
@@ -280,7 +278,6 @@ void CoreWindow::loadFile() {
 
 	sceneGraph->reload(graph); // deletes original scene graph
 	layout->setGraph(graph); // deletes original graph
-	layout->setParameters(20, 0.7, true);
 
 	sceneGraph->setUpdatingNodes(true);
 	layout->play();

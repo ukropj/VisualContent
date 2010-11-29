@@ -95,14 +95,15 @@ public:
 	 */
 	void stop();
 
-protected:
+private:
 	/**
 	 *  \fn public  Run
 	 *  \brief Starts layout algorithm process
 	 */
 	void run();
 
-private:
+	void cool();
+
 	/**
 	 *  Graph * graph
 	 *  \brief data structure containing nodes, edges and types
@@ -152,6 +153,8 @@ private:
 	 *  \brief size of graph layout
 	 */
 	float sizeFactor;
+
+	int coolingSteps;
 
 	/**
 	 *  double K
@@ -287,6 +290,8 @@ private:
 
 	void addRepulsiveProj(Node* u, Node* v, float factor = 1);
 
+	float proj(double distance, double ideal);
+
 	/**
 	 *  \fn private  rep(double distance)
 	 *  \brief Computes repulsive force
@@ -318,7 +323,7 @@ private:
 	 *  \param       v  vector V
 	 *  \return double distance between two vectors
 	 */
-	double distance(osg::Vec3f u, osg::Vec3f v);
+	float distance(osg::Vec3f u, osg::Vec3f v);
 };
 }
 
