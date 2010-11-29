@@ -37,8 +37,6 @@ public:
 
 	~OsgNode();
 
-	qlonglong getId() const;
-	QString getName() const;
 	osg::Vec3f getPosition() const;
 	void updatePosition(float interpolationSpeed = 1);
 	void setPosition(osg::Vec3f pos);
@@ -62,14 +60,7 @@ public:
 
 	bool isPickable(osg::Geode* geode) const;
 
-	QString toString() const {
-		QString str;
-		osg::Vec3f pos = getPosition();
-		QTextStream(&str) << "N" << getId() << " " << getName() << "["
-				<< pos.x() << "," << pos.y() << "," << pos.z() << "]"
-				<< (isFixed() ? "fixed" : "");
-		return str;
-	}
+	QString toString() const;
 
 	void setColor(osg::Vec4 color);
 	osg::Vec4 getColor() const {
@@ -77,6 +68,11 @@ public:
 	}
 
 	float getRadius() const;
+
+	osg::Vec2f getSize() const {
+		return size;
+	}
+
 	void showLabel(bool visible);
 
 	bool isUsingInterpolation() const {
@@ -97,6 +93,11 @@ public:
 	float getDistanceToEdge(double angle);
 
 private:
+
+	void setSize(osg::BoundingBox box);
+
+	osg::Vec2f size;
+
 	Model::Node* node;
 
 	SceneGraph* sceneGraph;
@@ -107,14 +108,18 @@ private:
 
 	bool expanded;
 
-	void setDrawableColor(osg::Vec4 color);
+	void setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
+			osg::Vec4 color);
 
 	osg::ref_ptr<osg::StateSet> createStateSet();
 
+	osg::ref_ptr<osg::Geode> createFrame(osg::BoundingBox box, float margin);
+	osg::ref_ptr<osg::Geode> createContent();
+
 	osg::ref_ptr<osg::Geode> createTextureNode(
 			osg::ref_ptr<osg::Texture2D> texture, const float scale = 1);
-	osg::ref_ptr<osg::Geode> createSquare(const float scale = 1);
-	osg::ref_ptr<osg::Geode> createCircle(const float scale = 1);
+	osg::ref_ptr<osg::Drawable> createRect(float width, float height, osg::Vec4f color);
+	osg::ref_ptr<osg::Geode> createFixed();
 	osg::ref_ptr<osg::Geode> createText(const float scale = 1);
 	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
 
@@ -122,13 +127,20 @@ private:
 
 	osg::ref_ptr<osg::AutoTransform> nodeTransform;
 
-	osg::ref_ptr<osg::Geode> label;
-	osg::ref_ptr<osg::Geode> square;
-	osg::ref_ptr<osg::Geode> circle;
+	osg::ref_ptr<osg::Geode> frameG;
 
-	osg::ref_ptr<osg::Geode> nodeSmall;
-	osg::ref_ptr<osg::Geode> nodeLarge;
+	osg::ref_ptr<osg::Geode> label;
+	static osg::ref_ptr<osg::Geode> fixedG;
+
+	osg::ref_ptr<osg::Geode> closedG;
+	osg::ref_ptr<osg::Geode> contentG;
+
+	// constants
+	static osg::Vec4 selectedColor;
+//	static const osg::Vec4 fixedColor;
 };
 }
+
+//const osg::Vec4 OsgNode::fixedColor;
 
 #endif /* OSGNODE_H_ */

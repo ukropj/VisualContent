@@ -44,10 +44,7 @@ public:
 	QString toString() const;
 
 	osg::Vec4 getEdgeColor() const {
-		if (selected)
-			return osg::Vec4f(1.0f, 0.0f, 0.0f, 1.0f);
-		else
-			return edgeColor;
+		return edgeColor;
 	}
 
 	void setColor(osg::Vec4 color) {

@@ -15,13 +15,15 @@
 #include <math.h>
 #include <osgText/FadeText>
 #include <osgText/Font>
+#include <osg/LineWidth>
 #include <qDebug>
 
 using namespace Vwr;
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
-//osg::ref_ptr<osg::Geode> OsgNode::square = NULL;
-//osg::ref_ptr<osg::Geode> OsgNode::circle = NULL;
+
+osg::Vec4 OsgNode::selectedColor = osg::Vec4(1.0, 0.0, 0.0, 0.5);
+osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
 OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 		osg::AutoTransform> nodeTransform) {
@@ -37,38 +39,78 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	usingInterpolation = true;
 	float scale = node->getType()->getScale();
 
-	nodeSmall = createTextureNode(node->getType()->getTexture(), scale);
-	if (node->getId() % 2)
-		nodeLarge = createTextureNode(node->getType()->getDevil(), scale * 2);
-	else
-		nodeLarge = createText(scale * 2);
-	square = createSquare(scale);
-	circle = createCircle(nodeLarge->getBound().radius());
+	closedG = createTextureNode(node->getType()->getTexture(), scale);
+	contentG = createContent();
+
+	size = osg::Vec2f(0, 0);
+
+	frameG = createFrame(contentG->getBoundingBox(), 0.2);
 	label = createLabel(node->getLabel(), scale);
+	if (fixedG == NULL)
+		fixedG = createFixed();
 
-	nodeSmall->setName("node");
-	nodeLarge->setName("image");
-	//	textSample->setName("text_sample");
+	closedG->setName("node");
+	contentG->setName("content");
+	frameG->setName("frame");
 	label->setName("label");
-	square->setName("square");
-	circle->setName("circle");
 
-	addChild(nodeSmall);
-	addChild(nodeLarge);
-	//	addChild(textSample);
-	addChild(square);
-	addChild(circle);
+	addChild(closedG);
+	addChild(contentG);
 	addChild(label);
+	addChild(frameG);
+	addChild(fixedG);
 
 	setAllChildrenOff();
-	setChildValue(nodeSmall, true);
+	setChildValue(closedG, true);
 
+	setSize(closedG->getBoundingBox());
 	setColor(node->getType()->getColor());
 }
 
 OsgNode::~OsgNode(void) {
 	node->setOsgNode(NULL);
 	sceneGraph = NULL;
+}
+
+osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
+		float margin) {
+
+	float scale = node->getType()->getScale();
+
+	//	width *= scale / 2.0f;
+	//	height *= scale / 2.0f;
+	margin *= scale;
+	osg::Vec3f mx(margin, 0, 0);
+	osg::Vec3f my(0, margin, 0);
+
+	osg::ref_ptr<osg::Geometry> frameQuad = new osg::Geometry;
+	osg::Vec3 coords[] = { box.corner(0), box.corner(0) - mx - my,
+			box.corner(1), box.corner(1) + mx - my, box.corner(3),
+			box.corner(3) + mx + my, box.corner(2), box.corner(2) - mx + my,
+			box.corner(0), box.corner(0) - mx - my, };
+
+	frameQuad->setUseDisplayList(false);
+	frameQuad->setVertexArray(new osg::Vec3Array(10, coords));
+	frameQuad->addPrimitiveSet(new osg::DrawArrays(
+			osg::PrimitiveSet::QUAD_STRIP, 0, 10));
+
+	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+	frameQuad->setColorArray(colorArray);
+	frameQuad->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->addDrawable(frameQuad);
+	return geode;
+}
+
+osg::ref_ptr<osg::Geode> OsgNode::createContent() {
+	float scale = node->getType()->getScale();
+	if (node->getId() % 2)
+		return createTextureNode(node->getType()->getDevil(), scale * 2);
+	else
+		return createText(scale * 2);
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
@@ -86,9 +128,9 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 
 	osg::ref_ptr<osg::Geometry> nodeQuad = new osg::Geometry;
 	osg::Vec3 coords[] = { osg::Vec3(-width / 2.0f, -height / 2.0f, 0),
-			osg::Vec3(width / 2.0f, -height / 2.0f, 0),
-			osg::Vec3(width / 2.0f,	height / 2.0f, 0),
-			osg::Vec3(-width / 2.0f, height / 2.0f, 0) };
+			osg::Vec3(width / 2.0f, -height / 2.0f, 0), osg::Vec3(width / 2.0f,
+					height / 2.0f, 0), osg::Vec3(-width / 2.0f, height / 2.0f,
+					0) };
 
 	nodeQuad->setUseDisplayList(false);
 
@@ -96,13 +138,9 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 	nodeQuad->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
 			4));
 
-	osg::Vec2 texCoords[] = {
-	        osg::Vec2(0,0),
-	        osg::Vec2(1,0),
-	        osg::Vec2(1,1),
-	        osg::Vec2(0,1)
-	    };
-	nodeQuad->setTexCoordArray(0,new osg::Vec2Array(4, texCoords));
+	osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
+			osg::Vec2(1, 1), osg::Vec2(0, 1) };
+	nodeQuad->setTexCoordArray(0, new osg::Vec2Array(4, texCoords));
 
 	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
 	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -122,68 +160,60 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 	return geode;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createSquare(const float scale) {
-	float width = 3.0f;
-	float height = 3.0f;
+osg::ref_ptr<osg::Drawable> OsgNode::createRect(float width, float height,
+		osg::Vec4f color) {
 
-	width *= scale;
-	height *= scale;
+	width /= 2.0f;
+	height /= 2.0f;
 
-	osg::ref_ptr<osg::Geometry> nodeRect = new osg::Geometry;
-	osg::ref_ptr<osg::Vec3Array> nodeVerts = new osg::Vec3Array(5);
+	osg::ref_ptr<osg::Geometry> rectLine = new osg::Geometry;
 
-	(*nodeVerts)[0] = osg::Vec3(-width / 2.0f, -height / 2.0f, 0);
-	(*nodeVerts)[1] = osg::Vec3(width / 2.0f, -height / 2.0f, 0);
-	(*nodeVerts)[2] = osg::Vec3(width / 2.0f, height / 2.0f, 0);
-	(*nodeVerts)[3] = osg::Vec3(-width / 2.0f, height / 2.0f, 0);
-	(*nodeVerts)[4] = osg::Vec3(-width / 2.0f, -height / 2.0f, 0);
+	osg::Vec3 coords[] = { osg::Vec3(-width, -height, 0), osg::Vec3(width,
+			-height, 0), osg::Vec3(width, height, 0), osg::Vec3(-width, height,
+			0), osg::Vec3(-width, -height, 0) };
 
-	nodeRect->setVertexArray(nodeVerts);
-	nodeRect->addPrimitiveSet(new osg::DrawArrays(
+	rectLine->setVertexArray(new osg::Vec3Array(5, coords));
+	rectLine->addPrimitiveSet(new osg::DrawArrays(
 			osg::PrimitiveSet::LINE_STRIP, 0, 5));
 
-	osg::ref_ptr<ColorIndexArray> colorIndexArray =
-			new osg::TemplateIndexArray<unsigned int,
-					osg::Array::UIntArrayType, 4, 1>;
-	colorIndexArray->push_back(0);
-
 	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 0.5f));
+	colorArray->push_back(color);
 
-	nodeRect->setColorArray(colorArray);
-	nodeRect->setColorIndices(colorIndexArray);
-	nodeRect->setColorBinding(osg::Geometry::BIND_OVERALL);
+	rectLine->setColorArray(colorArray);
+	rectLine->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
-	geode->addDrawable(nodeRect);
-	return geode;
+	return rectLine;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createCircle(const float radius) {
-	float r = radius;
+osg::ref_ptr<osg::Geode> OsgNode::createFixed() {
 
-	int sides = 12;
-	osg::ref_ptr<osg::Geometry> nodeCircle = new osg::Geometry;
-	double alpha = 2 * osg::PI / (float) sides;
+	float size = 2 * node->getType()->getScale();
 
-	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
-	for (int i = 0; i <= sides; i++) {
-		float angle = i * alpha;
-		coords->push_back(osg::Vec3f(r * sin(angle), r * cos(angle), 1.0f));
-	}
+	osg::ref_ptr<osg::Geometry> crossLine = new osg::Geometry;
 
-	nodeCircle->setVertexArray(coords);
-	nodeCircle->addPrimitiveSet(new osg::DrawArrays(
-			osg::PrimitiveSet::LINE_STRIP, 0, sides + 1));
+	osg::Vec3 coords[] = { osg::Vec3(-size, -size, 0.1), osg::Vec3(size, size,
+			0.1), osg::Vec3(-size, size, 0.1), osg::Vec3(size, -size, 0.1), };
+
+	crossLine->setVertexArray(new osg::Vec3Array(4, coords));
+	crossLine->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0,
+			4));
 
 	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	colorArray->push_back(osg::Vec4f(0, 0, 0, 0.6));
 
-	nodeCircle->setColorArray(colorArray);
-	nodeCircle->setColorBinding(osg::Geometry::BIND_OVERALL);
+	crossLine->setColorArray(colorArray);
+	crossLine->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	osg::LineWidth* linewidth = new osg::LineWidth();
+	linewidth->setWidth(1.0f);
+
+	osg::StateSet* stateset = new osg::StateSet;
+	stateset->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
+	crossLine->setStateSet(stateset);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
-	geode->addDrawable(nodeCircle);
+	geode->addDrawable(crossLine);
+	geode->setName("fixed");
 	return geode;
 }
 
@@ -276,27 +306,26 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 	return stateSet;
 }
 
-void OsgNode::setColor(osg::Vec4 color) {
-	this->color = color;
-	if (!isSelected())
-		setDrawableColor(color);
+void OsgNode::setSize(osg::BoundingBox box) {
+	size = osg::Vec2f(box.xMax() - box.xMin(), box.yMax() - box.yMin());
 }
 
-void OsgNode::setDrawableColor(osg::Vec4 color) {
-	osg::Geometry * geometry1 =
-			dynamic_cast<osg::Geometry *> (nodeSmall->getDrawable(0));
-	osg::Geometry * geometry2 =
-			dynamic_cast<osg::Geometry *> (circle->getDrawable(0));
-
-	if (geometry1 != NULL) {
-		osg::Vec4Array * colorArray =
-				dynamic_cast<osg::Vec4Array *> (geometry1->getColorArray());
-		colorArray->pop_back();
-		colorArray->push_back(color);
+void OsgNode::setColor(osg::Vec4 color) {
+	this->color = color;
+	if (!isSelected()) {
+		setDrawableColor(closedG, 0, color);
+		setDrawableColor(frameG, 0, color);
 	}
-	if (geometry2 != NULL) {
-		osg::Vec4Array * colorArray =
-				dynamic_cast<osg::Vec4Array *> (geometry2->getColorArray());
+}
+
+void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
+		osg::Vec4 color) {
+	osg::Geometry * geometry =
+			dynamic_cast<osg::Geometry *> (geode->getDrawable(drawablePos));
+
+	if (geometry != NULL) {
+		osg::Vec4Array* colorArray =
+				dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
 		colorArray->pop_back();
 		colorArray->push_back(color);
 	}
@@ -311,9 +340,15 @@ bool OsgNode::setExpanded(bool flag) {
 		return false;
 
 	expanded = flag;
-	//	setChildValue(circle, expanded);
-	setChildValue(nodeLarge, expanded);
-	setChildValue(nodeSmall, !expanded);
+	if (expanded) {
+		setSize(frameG->getBoundingBox());
+	} else {
+		setSize(closedG->getBoundingBox());
+	}
+	setChildValue(frameG, expanded);
+	setChildValue(contentG, expanded);
+
+	setChildValue(closedG, !expanded);
 	return true;
 }
 
@@ -322,21 +357,15 @@ bool OsgNode::setSelected(bool flag) {
 		return false;
 
 	selected = flag;
-	if (selected)
-		setDrawableColor(osg::Vec4(1.0f, 0.0f, 0.0f, 0.5f)); // red
-	else {
-		setDrawableColor(color);
+	if (selected) {
+		setDrawableColor(frameG, 0, selectedColor);
+		setDrawableColor(closedG, 0, selectedColor);
+	} else {
+		setDrawableColor(frameG, 0, color);
+		setDrawableColor(closedG, 0, color);
 	}
 
-	//	graph->setFrozen(false);
-}
-
-qlonglong OsgNode::getId() const {
-	return node->getId();
-}
-
-QString OsgNode::getName() const {
-	return node->getName();
+	return true;
 }
 
 void OsgNode::setFrozen(bool flag) {
@@ -359,15 +388,11 @@ bool OsgNode::setFixed(bool flag) {
 	if (flag) {
 		node->setPosition(getPosition());
 	}
-	setChildValue(square, flag);
+	setChildValue(fixedG, flag);
 }
 
 float OsgNode::getRadius() const {
-	if (getChildValue(nodeLarge)) {
-		return nodeLarge->getBound().radius();
-	} else {
-		return nodeSmall->getBound().radius();
-	}
+	return size.length() / 2;
 }
 
 void OsgNode::reloadConfig() {
@@ -375,8 +400,8 @@ void OsgNode::reloadConfig() {
 }
 
 bool OsgNode::isPickable(osg::Geode* geode) const {
-	if (geode->getName() == nodeSmall->getName() || geode->getName()
-			== nodeLarge->getName())
+	if (geode->getName() == closedG->getName() || geode->getName()
+			== contentG->getName())
 		return true;
 	else
 		return false;
@@ -408,8 +433,8 @@ bool OsgNode::isOnScreen() const {
 	osg::Vec3f pos = node->getPosition();
 	pos = sceneGraph->byProjectionInv(sceneGraph->byView(pos));
 
+	// if top left and botom right points are out of screen, node is not visible at all
 	if (qAbs(pos.x()) > 1 || qAbs(pos.y()) > 1) {
-		//		qDebug() << "not on screen";
 		return false;
 	}
 	return true;
@@ -426,14 +451,8 @@ osg::Vec3f OsgNode::getUpVector() const {
 float OsgNode::getDistanceToEdge(double angle) {
 	float w, h, d;
 
-	if (isExpanded()) {
-		if (node->getId() % 2) // todo size !!
-			w = h = 2 * node->getType()->getScale() * 2;
-		else
-			w = h = 5 * node->getType()->getScale() * 2;
-	} else {
-		w = h = 2 * node->getType()->getScale();
-	}
+	w = size.x();
+	h = size.y();
 
 	if (tan(angle) < -w / h || tan(angle) > w / h) {
 		d = qAbs(w / (2 * sin(angle)));
@@ -442,5 +461,14 @@ float OsgNode::getDistanceToEdge(double angle) {
 	}
 	//	qDebug() << angle * 360 / (osg::PI * 2.0f) << "\t-> " << d;
 	return d;
+}
+
+QString OsgNode::toString() const {
+	QString str;
+	osg::Vec3f pos = getPosition();
+	QTextStream(&str) << "N" << node->getId() << " " << node->getName() << "["
+			<< pos.x() << "," << pos.y() << "," << pos.z() << "]"
+			<< (isFixed() ? "fixed" : "");
+	return str;
 }
 

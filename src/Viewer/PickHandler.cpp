@@ -130,13 +130,11 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 	originPos.set(event.getX(), event.getY());
 	originNormPos.set(event.getXnormalized(), event.getYnormalized());
-	OsgNode* node = NULL;
-	bool ret;
-	NodeList::const_iterator i;
 
-	if (isCtrl(event)) { // toggle expanded
-		node = pickOne(getViewer(action), event);
+	if (isAlt(event)) { // toggle expanded
+		OsgNode* node  = pickOne(getViewer(action), event);
 		if (selectedNodes.contains(node)) {
+	NodeList::const_iterator i;
 			i = selectedNodes.constBegin();
 			while (i != selectedNodes.constEnd()) {
 				(*i)->toggleExpanded();
@@ -153,8 +151,9 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 	} else { // normal selection
 		multiPickEnabled = isShift(event);
 
-		ret = select(pickOne(getViewer(action), event));
+		bool ret = select(pickOne(getViewer(action), event));
 
+	NodeList::const_iterator i;
 		i = selectedNodes.constBegin();
 		while (i != selectedNodes.constEnd()) {
 			(*i)->setFrozen(true);
@@ -259,7 +258,7 @@ bool PickHandler::handleKeyDown(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
 //	qDebug () << event.getKey();
 //	qDebug () << event.getModKeyMask();
-	if (isCtrl(event)) {
+	if (isAlt(event)) {
 		QApplication::setOverrideCursor(Qt::PointingHandCursor);
 		return true;
 	}

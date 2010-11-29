@@ -65,8 +65,10 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 
 	edgesGeometry = new osg::Geometry();
 	edgesOGeometry = new osg::Geometry();
-	edgesGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-	edgesOGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+	osg::ref_ptr<osg::Vec4Array> colorsO = new osg::Vec4Array;
 
 	QMapIterator<qlonglong, Edge*> i(*inEdges);
 	int j = 0;
@@ -74,17 +76,28 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		i.next();
 		OsgEdge* osgEdge = new OsgEdge(i.value(), sceneGraph);
 		edges.insert(i.value()->getId(), osgEdge);
-		if (!osgEdge->isOriented())
+		if (!osgEdge->isOriented()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
 					osg::PrimitiveSet::QUADS, j, 4));
-		else
+			colors->push_back(osg::Vec4f(0,0,0,1));
+		} else {
 			edgesOGeometry->addPrimitiveSet(new osg::DrawArrays(
 					osg::PrimitiveSet::QUADS, j, 4));
+			colorsO->push_back(osg::Vec4f(0,0,0,1));
+		}
 		j += 4;
 	}
 
 	edgesGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::UNORIENTED));
 	edgesOGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::ORIENTED));
+
+	edgesGeometry->setColorArray(colors);
+	edgesOGeometry->setColorArray(colorsO);
+
+	// important: set color binding only after setting color arrays!
+	edgesGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	edgesOGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
 	edgeGeode->addDrawable(edgesGeometry);
 	edgeGeode->addDrawable(edgesOGeometry);
 	return allEdges;
@@ -184,7 +197,7 @@ void SceneElements::updateEdgeCoords() {
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
 	osg::ref_ptr<osg::Vec2Array> texCoords = new osg::Vec2Array;
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	osg::ref_ptr<osg::Vec4Array> orientedColors = new osg::Vec4Array;
+	osg::ref_ptr<osg::Vec4Array> colorsO = new osg::Vec4Array;
 
 	QMap<qlonglong, OsgEdge*>::const_iterator i = edges.constBegin();
 
@@ -192,7 +205,7 @@ void SceneElements::updateEdgeCoords() {
 		if (!i.value()->isOriented())
 			i.value()->getEdgeData(coords, texCoords, colors);
 		else
-			i.value()->getEdgeData(coords, texCoords, orientedColors);
+			i.value()->getEdgeData(coords, texCoords, colorsO);
 		//				i.value()->updateGeometry();
 		i++;
 	}
@@ -203,7 +216,7 @@ void SceneElements::updateEdgeCoords() {
 
 	edgesOGeometry->setVertexArray(coords);
 	edgesOGeometry->setTexCoordArray(0, texCoords);
-	edgesOGeometry->setColorArray(orientedColors);
+	edgesOGeometry->setColorArray(colorsO);
 }
 
 osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {
