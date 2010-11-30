@@ -37,6 +37,7 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	selected = false;
 	expanded = false;
 	usingInterpolation = true;
+	pickable = true;
 	float scale = node->getType()->getScale();
 
 	closedG = createTextureNode(node->getType()->getTexture(), scale);
@@ -77,8 +78,6 @@ osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 
 	float scale = node->getType()->getScale();
 
-	//	width *= scale / 2.0f;
-	//	height *= scale / 2.0f;
 	margin *= scale;
 	osg::Vec3f mx(margin, 0, 0);
 	osg::Vec3f my(0, margin, 0);
@@ -101,6 +100,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 	frameQuad->setColorBinding(osg::Geometry::BIND_OVERALL);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+	geode->setStateSet(getOrCreateStateSet());
 	geode->addDrawable(frameQuad);
 	return geode;
 }
@@ -268,6 +268,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(textD);
 	geode->addDrawable(nodeRect);
+	geode->setStateSet(getOrCreateStateSet());
 	return geode;
 }
 
@@ -307,7 +308,12 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 }
 
 void OsgNode::setSize(osg::BoundingBox box) {
-	size = osg::Vec2f(box.xMax() - box.xMin(), box.yMax() - box.yMin());
+	setSize(box.xMax() - box.xMin(), box.yMax() - box.yMin());
+}
+
+void OsgNode::setSize(float width, float height) {
+	size = osg::Vec2f(width, height);// * nodeTransform->getScale().x();
+	node->setRadius(getRadius());
 }
 
 void OsgNode::setColor(osg::Vec4 color) {
@@ -400,8 +406,19 @@ void OsgNode::reloadConfig() {
 }
 
 bool OsgNode::isPickable(osg::Geode* geode) const {
+	if (!pickable)
+		return false;
 	if (geode->getName() == closedG->getName() || geode->getName()
 			== contentG->getName())
+		return true;
+	else
+		return false;
+}
+
+bool OsgNode::isResizable(osg::Geode* geode) const {
+	if (!pickable)
+		return false;
+	if (geode->getName() == frameG->getName())
 		return true;
 	else
 		return false;

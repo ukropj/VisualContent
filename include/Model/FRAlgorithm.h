@@ -102,7 +102,7 @@ private:
 	 */
 	void run();
 
-	void cool();
+	void resetNodes();
 
 	/**
 	 *  Graph * graph

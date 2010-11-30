@@ -194,7 +194,7 @@ private:
 	 *  bool isManipulatingNodes
 	 *  \brief true, if user is manipulating nodes
 	 */
-	bool isManipulatingNodes;
+	bool isResizingNode;
 
 	/**
 	 *  osg::ref_ptr<osg::Geode> selectionQuad

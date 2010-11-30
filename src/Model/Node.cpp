@@ -40,6 +40,7 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 	ignore = false;
 	frozen = false;
 	osgNode = NULL;
+	radius = 0;
 	edges.clear();
 }
 
@@ -75,10 +76,4 @@ bool Node::equals(Node* node) {
 		return true;
 	}
 	return true;
-}
-
-float Node::getRadius() const {
-	if (osgNode == NULL)
-		return 0;
-	return osgNode->getRadius();
 }

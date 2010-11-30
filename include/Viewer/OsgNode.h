@@ -59,6 +59,7 @@ public:
 	bool setExpanded(bool flag);
 
 	bool isPickable(osg::Geode* geode) const;
+	bool isResizable(osg::Geode* geode) const;
 
 	QString toString() const;
 
@@ -92,9 +93,16 @@ public:
 
 	float getDistanceToEdge(double angle);
 
+	void setPickable(bool flag) {
+		pickable = flag;
+	}
+
+	void resize(float radius);
+
 private:
 
 	void setSize(osg::BoundingBox box);
+	void setSize(float width, float height);
 
 	osg::Vec2f size;
 
@@ -105,6 +113,8 @@ private:
 	bool selected;
 
 	bool usingInterpolation;
+
+	bool pickable;
 
 	bool expanded;
 

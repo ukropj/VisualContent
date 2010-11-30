@@ -31,15 +31,14 @@ FRAlgorithm::FRAlgorithm() {
 	last = osg::Vec3f();
 	up = osg::Vec3f();
 	vp = osg::Vec3f();
-	useMaxDistance = false;
 	notEnd = true;
 
 	sizeFactor = 30;
-	flexibility = 0.2f;
+	flexibility = 0.5f;
 	useMaxDistance = true;
 	K = sizeFactor;
-	M = K / 6.0f;
-	coolingSteps = 3;
+	M = K / 8.0f;
+	coolingSteps = 1;
 
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }
@@ -72,7 +71,7 @@ void FRAlgorithm::setParameters(float sizeFactor, float flexibility,
 
 	if (this->graph != NULL) {
 		K = sizeFactor;
-		M = K / 6.0f;
+		M = K / 8.0f;
 		graph->setFrozen(false);
 	} else {
 		qWarning("No graph");
@@ -174,9 +173,9 @@ void FRAlgorithm::run() {
 			}
 			isIterating = true;
 			if (!iterate()) {
-				cool();
-//				graph->setFrozen(true);
-				qDebug() << "should freeze";
+				graph->setFrozen(true);
+				resetNodes();
+//				qDebug() << "should freeze";
 			}
 		}
 	} else {
@@ -185,11 +184,13 @@ void FRAlgorithm::run() {
 	isIterating = false;
 }
 
-void FRAlgorithm::cool() { // todo ??
-//	if (coolingSteps-- >= 0) {
-//		ALPHA /= 2;
-//		qDebug() << "cooled, A=" << ALPHA;
-//	}
+void FRAlgorithm::resetNodes() {
+	QMap<qlonglong, Node*>* nodes = graph->getNodes();
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+		i.value()->resetVelocity(); // reset velocity
+	}
+	// helps to reduce oscillations when this is NOT reseted
+	// for each individual node in applyForces as before
 }
 
 bool FRAlgorithm::iterate() {
@@ -198,7 +199,7 @@ bool FRAlgorithm::iterate() {
 	QMap<qlonglong, Edge*>* edges = graph->getEdges();
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
-		i.value()->resetForces();
+		i.value()->resetForce();
 	}
 
 	//uzly
@@ -248,6 +249,7 @@ bool FRAlgorithm::applyForces(Node* node) {
 	fv = node->getForce();
 	// zmensenie
 	fv *= ALPHA;
+	// pricitame aktualnu rychlost
 	fv += node->getVelocity();
 
 	float l = fv.length();
@@ -257,7 +259,6 @@ bool FRAlgorithm::applyForces(Node* node) {
 			fv.normalize();
 			fv *= MAX_MOVEMENT;
 		}
-		// pricitame aktualnu rychlost
 
 		// ulozime novu polohu
 		node->setPosition(node->getPosition() + fv);
@@ -266,13 +267,8 @@ bool FRAlgorithm::applyForces(Node* node) {
 		fv *= flexibility;
 		node->setVelocity(fv); // ulozime novu rychlost
 
-//		fv = node->getProjForce() * ALPHA;
-//		node->setPosition(node->getPosition() + fv);
-//		fv *= flexibility;
-//		node->setProjVelocity(fv); // ulozime novu rychlost
 		return true;
 	} else {
-		node->resetVelocity(); // vynulovanie rychlosti
 		return false;
 	}
 }
@@ -356,7 +352,7 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 	fv.normalize();
 	dist = length * qAbs(fv * edgeDir);
 	if (dist == 0)
-		return; // standard repulsive force will handle this special case
+		return; // let other forces handle this special case
 
 	double angle = acos(ou->getUpVector() * fv);
 	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
@@ -364,6 +360,7 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 
 	fv *= proj(dist, ideal) * factor;
 
+//	u->addProjForce(fv);
 	u->addForce(fv);
 }
 
@@ -383,18 +380,24 @@ float FRAlgorithm::proj(double distance, double ideal) {
 	 * 		f(ideal) = -p * ideal;
 	 */
 
-	float q = 1.5f;	// repulsion will stop soon after overlap is removed
-	float p = 4.0f;	// 5 times stronger than usual repulsion
+//	float q = 1.5f;	// repulsion will stop soon after overlap is removed
+//	float p = 4.0f;	// 5 times stronger than usual repulsion
+//
+//	if (dist >= q * ideal) {
+//		return 0;
+//	} else if (dist >= ideal) {
+//		return (p/(q-1) * (dist - q * ideal));
+//	} else if (dist > 0) {
+//		return -(p * (ideal * ideal) / dist);
+//	} else {
+//		return 0;
+//	}
 
-	if (dist >= q * ideal) {
+	// More elegant funtion proposed:
+	float f = -(4 * ideal * ideal / dist) + 2 * ideal;
+	if (f > 0)
 		return 0;
-	} else if (dist >= ideal) {
-		return (p/(q-1) * (dist - q * ideal));
-	} else if (dist > 0) {
-		return -(p * (ideal * ideal) / dist);
-	} else {
-		return 0;
-	}
+	return f;
 }
 
 /* Vzorec na vypocet odpudivej sily */

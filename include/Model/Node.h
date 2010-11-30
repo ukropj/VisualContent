@@ -206,28 +206,14 @@ public:
 		return ignore;
 	}
 
-	/**
-	 *  \fn inline public  setVelocity(osg::Vec3f v)
-	 *  \brief Sets node force for next iteration
-	 *  \param    v  Force in actual iteration
-	 */
 	void setVelocity(osg::Vec3f v) {
 		velocity = v;
 	}
 
-	/**
-	 *  \fn inline public  resetVelocity
-	 *  \brief Reset node force for next iteration
-	 */
 	void resetVelocity() {
 		velocity = osg::Vec3f(0, 0, 0);
 	}
 
-	/**
-	 *  \fn inline public constant  getVelocity
-	 *  \brief Sets node force for next iteration.
-	 *  \return osg::Vec3f Node force
-	 */
 	osg::Vec3f getVelocity() const {
 		return velocity;
 	}
@@ -247,9 +233,9 @@ public:
 	 */
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "N" << id << " " << name << "["
-				<< position.x() << "," << position.y() << ","
-				<< position.z() << "]" << (isFixed() ? "fixed" : "");
+		QTextStream(&str) << "N" << id << " " << name << "[" << position.x()
+				<< "," << position.y() << "," << position.z() << "]"
+				<< (isFixed() ? "fixed" : "");
 		return str;
 	}
 
@@ -265,7 +251,12 @@ public:
 		return osgNode;
 	}
 
-	float getRadius() const;
+	void setRadius(float r) {
+		radius = r;
+	}
+	float getRadius() const {
+		return radius;
+	}
 
 private:
 
@@ -311,6 +302,7 @@ private:
 	 *  osg::Vec3f force
 	 *  \brief Node force
 	 */
+
 	osg::Vec3f force;
 
 	/**
@@ -318,6 +310,8 @@ private:
 	 *  \brief Size of node force in previous iteration
 	 */
 	osg::Vec3f velocity;
+
+	float radius;
 
 	/**
 	 *  bool fixed

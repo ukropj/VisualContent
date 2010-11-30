@@ -35,7 +35,7 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 	lastPos = osg::Vec2f(0.0, 0.0);
 
 	isDrawingSelectionQuad = false;
-	isManipulatingNodes = false;
+	isResizingNode = false;
 	mode = NONE;
 	selectionType = ALL;
 	QApplication::setOverrideCursor(Qt::ArrowCursor);
@@ -125,8 +125,12 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
 	//	qDebug() << " push handled";
 
-	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
+		sceneGraph->setFrozen(true);
 		return false;
+	}
+
+
 
 	originPos.set(event.getX(), event.getY());
 	originNormPos.set(event.getXnormalized(), event.getYnormalized());
@@ -134,7 +138,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 	if (isAlt(event)) { // toggle expanded
 		OsgNode* node  = pickOne(getViewer(action), event);
 		if (selectedNodes.contains(node)) {
-	NodeList::const_iterator i;
+			NodeList::const_iterator i;
 			i = selectedNodes.constBegin();
 			while (i != selectedNodes.constEnd()) {
 				(*i)->toggleExpanded();
@@ -153,7 +157,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 		bool ret = select(pickOne(getViewer(action), event));
 
-	NodeList::const_iterator i;
+		NodeList::const_iterator i;
 		i = selectedNodes.constBegin();
 		while (i != selectedNodes.constEnd()) {
 			(*i)->setFrozen(true);
@@ -170,8 +174,10 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
 
-	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
+		sceneGraph->setFrozen(false);
 		return false;
+	}
 	//	qDebug() << " release handled\n";
 
 	originPos.set(event.getX(), event.getY());
@@ -239,6 +245,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 					getViewer(action)));
 			++i;
 		}
+
 		originPos.set(lastPos.x(), lastPos.y());
 		sceneGraph->setFrozen(false);
 		return true;
@@ -382,7 +389,7 @@ OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 			OsgNode* n =
 					dynamic_cast<OsgNode *> (nodePath[nodePath.size() - 2]);
 			// NOTE: 2 because structure is Node-Geode-(Drawable)
-			// Node is second to last
+			// OsgNode is second Node to last
 			if (n != NULL) {
 				osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
 				if (n->isPickable(g))

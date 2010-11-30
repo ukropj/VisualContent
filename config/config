@@ -1,9 +1,9 @@
 GraphMLParser.edgeTypeAttribute=relation
 GraphMLParser.nodeTypeAttribute=type
 Layout.Algorithm.Alpha=0.02
-Layout.Algorithm.MaxDistance=150.0
+Layout.Algorithm.MaxDistance=300.0
 Layout.Algorithm.MaxMovement=200.0
-Layout.Algorithm.MinMovement=0.1
+Layout.Algorithm.MinMovement=0.3
 Layout.Thread.ProcessSleepTime=0
 Layout.Thread.StartSleepTime=100
 Mouse.DoubleClickTime=250
