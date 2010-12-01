@@ -154,8 +154,6 @@ private:
 	 */
 	float sizeFactor;
 
-	int coolingSteps;
-
 	/**
 	 *  double K
 	 *  \brief normal length of edge, rest mass of chord

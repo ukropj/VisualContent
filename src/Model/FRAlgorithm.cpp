@@ -38,7 +38,6 @@ FRAlgorithm::FRAlgorithm() {
 	useMaxDistance = true;
 	K = sizeFactor;
 	M = K / 8.0f;
-	coolingSteps = 1;
 
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }

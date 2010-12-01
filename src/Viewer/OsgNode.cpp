@@ -22,7 +22,7 @@ using namespace Vwr;
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
 
-osg::Vec4 OsgNode::selectedColor = osg::Vec4(1.0, 0.0, 0.0, 0.5);
+osg::Vec4 OsgNode::selectedColor = osg::Vec4(0.0, 1.0, 0.0, 0.9);
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
 OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
@@ -142,10 +142,10 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 			osg::Vec2(1, 1), osg::Vec2(0, 1) };
 	nodeQuad->setTexCoordArray(0, new osg::Vec2Array(4, texCoords));
 
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+	osg::Vec4Array* colorArray = new osg::Vec4Array;
 	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
-	osg::ref_ptr<ColorIndexArray> colorIndexArray =
+	ColorIndexArray* colorIndexArray =
 			new osg::TemplateIndexArray<unsigned int,
 					osg::Array::UIntArrayType, 4, 1>;
 	colorIndexArray->push_back(0);

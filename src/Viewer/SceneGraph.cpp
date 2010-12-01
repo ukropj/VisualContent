@@ -207,10 +207,10 @@ void SceneGraph::update(bool forceIdeal) {
 				"Viewer.Display.InterpolationSpeed").toFloat();
 		if (forceIdeal)
 			interpolationSpeed = 1;
-		sceneElements->updateNodeCoords(interpolationSpeed);
+		sceneElements->updateNodes(interpolationSpeed);
 	}
 
-	sceneElements->updateEdgeCoords();
+	sceneElements->updateEdges();
 	root->addChild(initCustomNodes());
 }
 

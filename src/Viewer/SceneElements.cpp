@@ -7,6 +7,7 @@
 
 #include <QDebug>
 #include <iostream>
+#include <osgManipulator/TabBoxDragger>
 
 using namespace Vwr;
 using namespace Model;
@@ -66,26 +67,29 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	edgesGeometry = new osg::Geometry();
 	edgesOGeometry = new osg::Geometry();
 
-
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	osg::ref_ptr<osg::Vec4Array> colorsO = new osg::Vec4Array;
+	osg::Vec4Array* colors = new osg::Vec4Array;
+	osg::Vec4Array* colorsO = new osg::Vec4Array;
 
 	QMapIterator<qlonglong, Edge*> i(*inEdges);
-	int j = 0;
+	int index = 0;
+	int indexO = 0;
 	while (i.hasNext()) {
 		i.next();
 		OsgEdge* osgEdge = new OsgEdge(i.value(), sceneGraph);
 		edges.insert(i.value()->getId(), osgEdge);
 		if (!osgEdge->isOriented()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
-					osg::PrimitiveSet::QUADS, j, 4));
-			colors->push_back(osg::Vec4f(0,0,0,1));
+					osg::PrimitiveSet::QUADS, index, 4));
+			for (int i = 0; i < 4; i++)
+				colors->push_back(osg::Vec4f(0,0,0,1));
+			index += 4;
 		} else {
 			edgesOGeometry->addPrimitiveSet(new osg::DrawArrays(
-					osg::PrimitiveSet::QUADS, j, 4));
-			colorsO->push_back(osg::Vec4f(0,0,0,1));
+					osg::PrimitiveSet::QUADS, indexO, 4));
+			for (int i = 0; i < 4; i++)
+				colorsO->push_back(osg::Vec4f(0,0,0,1));
+			indexO += 4;
 		}
-		j += 4;
 	}
 
 	edgesGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::UNORIENTED));
@@ -183,7 +187,7 @@ osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	return at;
 }
 
-void SceneElements::updateNodeCoords(float interpolationSpeed) {
+void SceneElements::updateNodes(float interpolationSpeed) {
 	QMap<qlonglong, osg::ref_ptr<OsgNode> >::const_iterator i =
 			nodes.constBegin();
 
@@ -193,10 +197,13 @@ void SceneElements::updateNodeCoords(float interpolationSpeed) {
 	}
 }
 
-void SceneElements::updateEdgeCoords() {
+void SceneElements::updateEdges() {
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
 	osg::ref_ptr<osg::Vec2Array> texCoords = new osg::Vec2Array;
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+
+	osg::ref_ptr<osg::Vec3Array> coordsO = new osg::Vec3Array;
+	osg::ref_ptr<osg::Vec2Array> texCoordsO = new osg::Vec2Array;
 	osg::ref_ptr<osg::Vec4Array> colorsO = new osg::Vec4Array;
 
 	QMap<qlonglong, OsgEdge*>::const_iterator i = edges.constBegin();
@@ -205,8 +212,7 @@ void SceneElements::updateEdgeCoords() {
 		if (!i.value()->isOriented())
 			i.value()->getEdgeData(coords, texCoords, colors);
 		else
-			i.value()->getEdgeData(coords, texCoords, colorsO);
-		//				i.value()->updateGeometry();
+			i.value()->getEdgeData(coordsO, texCoordsO, colorsO);
 		i++;
 	}
 
@@ -214,8 +220,8 @@ void SceneElements::updateEdgeCoords() {
 	edgesGeometry->setTexCoordArray(0, texCoords);
 	edgesGeometry->setColorArray(colors);
 
-	edgesOGeometry->setVertexArray(coords);
-	edgesOGeometry->setTexCoordArray(0, texCoords);
+	edgesOGeometry->setVertexArray(coordsO);
+	edgesOGeometry->setTexCoordArray(0, texCoordsO);
 	edgesOGeometry->setColorArray(colorsO);
 }
 

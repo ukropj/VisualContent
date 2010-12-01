@@ -47,9 +47,9 @@ public:
 	 */
 	~SceneElements(void);
 
-	void updateNodeCoords(float interpolationSpeed);
+	void updateNodes(float interpolationSpeed);
 
-	void updateEdgeCoords();
+	void updateEdges();
 
 	/**
 	 *  \fn inline public  getGroup
