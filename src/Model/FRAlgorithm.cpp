@@ -393,7 +393,7 @@ float FRAlgorithm::proj(double distance, double ideal) {
 //	}
 
 	// More elegant funtion proposed:
-	float f = -(4 * ideal * ideal / dist) + 2 * ideal;
+	float f = -(4 * ideal * ideal / distance) + 2 * ideal;
 	if (f > 0)
 		return 0;
 	return f;
