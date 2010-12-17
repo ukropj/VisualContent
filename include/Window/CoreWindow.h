@@ -67,6 +67,7 @@ public slots:
 	void toggleLabels(bool checked);
 	void toggleLayouting(bool checked);
 	void toggleFixNodes();
+	void captureScreen();
 	void sliderValueChanged(int value);
 
 private:
@@ -88,6 +89,7 @@ private:
 	QAction* randomizeAction;
 	QAction* centerAction;
 	QAction* labelsAction;
+	QAction* captureAction;
 	QSlider* slider;
 
 	QMenu* fileMenu;

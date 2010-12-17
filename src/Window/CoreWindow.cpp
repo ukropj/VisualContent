@@ -8,6 +8,7 @@
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/OsgNode.h"
+#include "osgDB/WriteFile"
 
 using namespace Window;
 CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
@@ -62,12 +63,12 @@ void CoreWindow::createActions() {
 	QIcon fixIcon("img/icons/fix.png");
 	fixAction = new QAction(fixIcon, tr("&Fix/Unfix"), this);
 	fixAction->setShortcut(tr("CTRL+F"));
-	fixAction->setToolTip(tr("Fix/Unfix nodes"));
+	fixAction->setToolTip(tr("Fix or unfix selected nodes"));
 	connect(fixAction, SIGNAL(triggered()), this, SLOT(toggleFixNodes()));
 
 	QIcon labelsIcon("img/icons/labels.png");
 	labelsAction = new QAction(labelsIcon, tr("&Toggle labels"), this);
-	labelsAction->setToolTip(tr("&Turn on/off labels"));
+	labelsAction->setToolTip(tr("Toggle node labels"));
 	labelsAction->setShortcut(tr("CTRL+T"));
 	labelsAction->setCheckable(true);
 	labelsAction->setChecked(false);
@@ -78,6 +79,12 @@ void CoreWindow::createActions() {
 	randomizeAction->setShortcut(tr("CTRL+R"));
 	randomizeAction->setToolTip(tr("Randomize graph layout"));
 	connect(randomizeAction, SIGNAL(triggered()), this, SLOT(randomize()));
+
+	QIcon captureIcon("img/icons/screenshot.png");
+	captureAction = new QAction(captureIcon, tr("&Capture screen"), this);
+	captureAction->setShortcut(tr("CTRL+E"));
+	captureAction->setToolTip(tr("Create screenshot"));
+	connect(captureAction, SIGNAL(triggered()), this, SLOT(captureScreen()));
 
 	QIcon centerIcon("img/icons/center.png");
 	centerAction = new QAction(centerIcon, tr("&Center view"), this);
@@ -117,6 +124,8 @@ void CoreWindow::createToolBars() {
 	toolBar->addAction(labelsAction);
 	toolBar->addAction(centerAction);
 	toolBar->addSeparator();
+	toolBar->addAction(captureAction);
+	toolBar->addSeparator();
 
 //	QLabel* sliderLabel = new QLabel();
 //	sliderLabel->setText(QString("%1").arg(QChar(0x3b1)));
@@ -124,6 +133,7 @@ void CoreWindow::createToolBars() {
 	slider = new QSlider(Qt::Vertical, this);
 	slider->setTickPosition(QSlider::TicksLeft);
 	slider->setTickInterval(5);
+	slider->setToolTip("Layouting speed");
 	slider->setValue(Util::Config::getValue("Layout.Algorithm.Alpha").toFloat() * 1000);
 	connect(slider, SIGNAL(valueChanged(int)), this,
 			SLOT(sliderValueChanged(int)));
@@ -227,6 +237,27 @@ void CoreWindow::sliderValueChanged(int value) {
 	layouter->wakeUp();
 }
 
+void CoreWindow::captureScreen() {
+	 QString fileName = QFileDialog::getSaveFileName(this, "Save image", QString(), "*.png");
+	 if (fileName.isEmpty())
+	        return;
+	 if (!fileName.endsWith(".png", Qt::CaseInsensitive))
+		 fileName += ".png";
+
+	 // Qt API doesn't work here:
+	 //	 QPixmap snapshot = QPixmap::grabWindow(viewerWidget->winId());
+	 //	 snapshot.save(fileName, "PNG");
+
+	 int x = viewerWidget->getCamera()->getViewport()->x();
+	 int y = viewerWidget->getCamera()->getViewport()->y();
+	 int w = viewerWidget->getCamera()->getViewport()->width();
+	 int h = viewerWidget->getCamera()->getViewport()->height();
+
+	 osg::ref_ptr<osg::Image> image = new osg::Image;
+	 image->readPixels(x, y, w, h, GL_RGB, GL_UNSIGNED_BYTE);
+	 osgDB::writeImageFile(*image, fileName.toStdString());
+}
+
 void CoreWindow::closeEvent(QCloseEvent *event) {
 	qDebug("About to quit\n");
 	layouter->stop();
@@ -282,6 +313,7 @@ void CoreWindow::updateRecentFileActions(QString fileName) {
 	QStringList files = settings.value("recentFileList").toStringList();
 
 	if (fileName != NULL) {
+		fileName = QFileInfo(fileName).canonicalFilePath();
 		files.removeAll(fileName);
 		if (!fileName.isEmpty() && QFile::exists(fileName)) {
 			files.prepend(fileName);
