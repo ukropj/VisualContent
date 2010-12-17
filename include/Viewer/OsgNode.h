@@ -28,6 +28,7 @@ class Node;
 
 namespace Vwr {
 class SceneGraph;
+class OsgContent;
 
 class OsgNode: public osg::Switch {
 public:
@@ -99,6 +100,8 @@ public:
 
 	void resize(float radius);
 
+	static osg::Vec4 selectedColor;
+
 private:
 
 	void setSize(osg::BoundingBox box);
@@ -126,12 +129,15 @@ private:
 	osg::ref_ptr<osg::Geode> createFrame(osg::BoundingBox box, float margin);
 	osg::ref_ptr<osg::Geode> createContent();
 
-	osg::ref_ptr<osg::Geode> createTextureNode(
-			osg::ref_ptr<osg::Texture2D> texture, const float scale = 1);
+	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<osg::Texture2D> texture,
+			float width, float height);
 	osg::ref_ptr<osg::Drawable> createRect(float width, float height, osg::Vec4f color);
 	osg::ref_ptr<osg::Geode> createFixed();
 	osg::ref_ptr<osg::Geode> createText(const float scale = 1);
 	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
+
+	osg::ref_ptr<osg::Geometry> createCustomGeometry(osg::Vec3 coords[], const int vertNum,
+			GLenum mode, osg::Vec4 color = osg::Vec4(1.0, 1.0, 1.0, 1.0));
 
 	osg::Vec4 color;
 
@@ -143,10 +149,10 @@ private:
 	static osg::ref_ptr<osg::Geode> fixedG;
 
 	osg::ref_ptr<osg::Geode> closedG;
-	osg::ref_ptr<osg::Geode> contentG;
+	OsgContent* contentG;
 
 	// constants
-	static osg::Vec4 selectedColor;
+
 //	static const osg::Vec4 fixedColor;
 };
 }

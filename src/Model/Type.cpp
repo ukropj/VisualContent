@@ -34,7 +34,6 @@ Type::Type(qlonglong id, QString name, Graph* graph,
 
 	texture = Util::TextureWrapper::readTextureFromFile(settings->value(
 			"textureFile"));
-	devil = Util::TextureWrapper::readTextureFromFile("img/devil.jpg");
 	scale = settings->value("scale").toFloat();
 }
 

@@ -10,6 +10,7 @@
 #include <QString>
 
 #include <osg/ImageSequence>
+#include <osg/Image>
 #include <osg/Texture2D>
 #include <osg/ref_ptr>
 #include <osgDB/ReadFile>
@@ -35,8 +36,7 @@ public:
 	 *  \param      image    texture image
 	 *  \return osg::ref_ptr texture
 	 */
-	static osg::ref_ptr<osg::Texture2D> createTexture(
-			osg::ref_ptr<osg::Image> image);
+	static osg::ref_ptr<osg::Texture2D> createTexture(osg::Image* image);
 
 	/**
 	 *  \fn public static  getNodeTexture

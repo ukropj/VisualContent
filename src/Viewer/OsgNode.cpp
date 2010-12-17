@@ -6,6 +6,7 @@
  */
 
 #include "Viewer/OsgNode.h"
+#include "Viewer/OsgContent.h"
 #include "Viewer/SceneGraph.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
@@ -40,8 +41,8 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	pickable = true;
 	float scale = node->getType()->getScale();
 
-	closedG = createTextureNode(node->getType()->getTexture(), scale);
-	contentG = createContent();
+	closedG = createTextureNode(node->getType()->getTexture(), 2*scale, 2*scale);
+	contentG = new OsgContent("img/devil.jpg");
 
 	size = osg::Vec2f(0, 0);
 
@@ -71,33 +72,21 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 OsgNode::~OsgNode(void) {
 	node->setOsgNode(NULL);
 	sceneGraph = NULL;
+	delete contentG;
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 		float margin) {
-
-	float scale = node->getType()->getScale();
-
-	margin *= scale;
+	margin *= node->getType()->getScale();
 	osg::Vec3f mx(margin, 0, 0);
 	osg::Vec3f my(0, margin, 0);
-
-	osg::ref_ptr<osg::Geometry> frameQuad = new osg::Geometry;
 	osg::Vec3 coords[] = { box.corner(0), box.corner(0) - mx - my,
 			box.corner(1), box.corner(1) + mx - my, box.corner(3),
 			box.corner(3) + mx + my, box.corner(2), box.corner(2) - mx + my,
 			box.corner(0), box.corner(0) - mx - my, };
 
-	frameQuad->setUseDisplayList(false);
-	frameQuad->setVertexArray(new osg::Vec3Array(10, coords));
-	frameQuad->addPrimitiveSet(new osg::DrawArrays(
-			osg::PrimitiveSet::QUAD_STRIP, 0, 10));
-
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-	frameQuad->setColorArray(colorArray);
-	frameQuad->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osg::ref_ptr<osg::Geometry> frameQuad =
+				createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(1, 1, 1, 1));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->setStateSet(getOrCreateStateSet());
@@ -106,54 +95,39 @@ osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createContent() {
-	float scale = node->getType()->getScale();
-	if (node->getId() % 2)
-		return createTextureNode(node->getType()->getDevil(), scale * 2);
-	else
-		return createText(scale * 2);
+//	float scale = node->getType()->getScale();
+//
+//	int i = node->getId() % 10;
+//	if (i == 9)
+//		return createText(scale * 2);
+//	if (i == 3) scale *= 1.5f;
+//	if (i == 5) scale *= 1.8f;
+//	return createTextureNode(node->getType()->getPiano(i),
+//			2.0f*scale*2, 2.0f*scale*2);
+	return NULL;
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
-		osg::ref_ptr<osg::Texture2D> texture, const float scale) {
-	osg::ref_ptr<osg::StateSet> bbState = createStateSet();
-	if (texture != NULL)
-		bbState->setTextureAttributeAndModes(0, texture,
-				osg::StateAttribute::ON);
+		osg::ref_ptr<osg::Texture2D> texture, float width, float height) {
+	width /= 2.0f;
+	height /= 2.0f;
+	osg::Vec3 coords[] = { osg::Vec3(-width, -height, 0),
+			osg::Vec3(width, -height, 0),
+			osg::Vec3(width, height, 0),
+			osg::Vec3(-width, height, 0) };
 
-	float width = 2.0f;
-	float height = 2.0f;
-
-	width *= scale;
-	height *= scale;
-
-	osg::ref_ptr<osg::Geometry> nodeQuad = new osg::Geometry;
-	osg::Vec3 coords[] = { osg::Vec3(-width / 2.0f, -height / 2.0f, 0),
-			osg::Vec3(width / 2.0f, -height / 2.0f, 0), osg::Vec3(width / 2.0f,
-					height / 2.0f, 0), osg::Vec3(-width / 2.0f, height / 2.0f,
-					0) };
-
-	nodeQuad->setUseDisplayList(false);
-
-	nodeQuad->setVertexArray(new osg::Vec3Array(4, coords));
-	nodeQuad->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
-			4));
+	osg::ref_ptr<osg::Geometry> nodeQuad =
+				createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, osg::Vec4f(1, 1, 1, 1));
 
 	osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
 			osg::Vec2(1, 1), osg::Vec2(0, 1) };
 	nodeQuad->setTexCoordArray(0, new osg::Vec2Array(4, texCoords));
 
-	osg::Vec4Array* colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-	ColorIndexArray* colorIndexArray =
-			new osg::TemplateIndexArray<unsigned int,
-					osg::Array::UIntArrayType, 4, 1>;
-	colorIndexArray->push_back(0);
-
-	nodeQuad->setColorArray(colorArray);
-	nodeQuad->setColorIndices(colorIndexArray);
-	nodeQuad->setColorBinding(osg::Geometry::BIND_OVERALL);
-	nodeQuad->setStateSet(bbState);
+	osg::ref_ptr<osg::StateSet> stateSet = createStateSet();
+	if (texture != NULL)
+		stateSet->setTextureAttributeAndModes(0, texture,
+				osg::StateAttribute::ON);
+	nodeQuad->setStateSet(stateSet);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(nodeQuad);
@@ -162,59 +136,51 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 
 osg::ref_ptr<osg::Drawable> OsgNode::createRect(float width, float height,
 		osg::Vec4f color) {
-
 	width /= 2.0f;
 	height /= 2.0f;
-
-	osg::ref_ptr<osg::Geometry> rectLine = new osg::Geometry;
-
 	osg::Vec3 coords[] = { osg::Vec3(-width, -height, 0), osg::Vec3(width,
 			-height, 0), osg::Vec3(width, height, 0), osg::Vec3(-width, height,
 			0), osg::Vec3(-width, -height, 0) };
 
-	rectLine->setVertexArray(new osg::Vec3Array(5, coords));
-	rectLine->addPrimitiveSet(new osg::DrawArrays(
-			osg::PrimitiveSet::LINE_STRIP, 0, 5));
-
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(color);
-
-	rectLine->setColorArray(colorArray);
-	rectLine->setColorBinding(osg::Geometry::BIND_OVERALL);
+	osg::ref_ptr<osg::Geometry> rectLine =
+			createCustomGeometry(coords, 5, osg::PrimitiveSet::LINE_STRIP, color);
 
 	return rectLine;
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createFixed() {
-
 	float size = 2 * node->getType()->getScale();
-
-	osg::ref_ptr<osg::Geometry> crossLine = new osg::Geometry;
-
 	osg::Vec3 coords[] = { osg::Vec3(-size, -size, 0.1), osg::Vec3(size, size,
-			0.1), osg::Vec3(-size, size, 0.1), osg::Vec3(size, -size, 0.1), };
-
-	crossLine->setVertexArray(new osg::Vec3Array(4, coords));
-	crossLine->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0,
-			4));
-
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4f(0, 0, 0, 0.6));
-
-	crossLine->setColorArray(colorArray);
-	crossLine->setColorBinding(osg::Geometry::BIND_OVERALL);
+			0.1), osg::Vec3(-size, size, 0.1), osg::Vec3(size, -size, 0.1)};
+	osg::ref_ptr<osg::Geometry> crossLine =
+			createCustomGeometry(coords, 4, osg::PrimitiveSet::LINES, osg::Vec4f(0, 0, 0, 0.6));
 
 	osg::LineWidth* linewidth = new osg::LineWidth();
-	linewidth->setWidth(1.0f);
-
-	osg::StateSet* stateset = new osg::StateSet;
-	stateset->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
-	crossLine->setStateSet(stateset);
+	linewidth->setWidth(3.0f);
+	osg::StateSet* stateSet = new osg::StateSet;
+	stateSet->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
+	crossLine->setStateSet(stateSet);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(crossLine);
 	geode->setName("fixed");
 	return geode;
+}
+
+osg::ref_ptr<osg::Geometry> OsgNode::createCustomGeometry(
+		osg::Vec3 coords[], const int vertNum, GLenum mode, osg::Vec4 color) {
+	osg::ref_ptr<osg::Geometry> g = new osg::Geometry;
+
+	g->setVertexArray(new osg::Vec3Array(vertNum, coords));
+	g->addPrimitiveSet(new osg::DrawArrays(mode, 0, vertNum));
+	g->setUseDisplayList(false);
+
+	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
+	colorArray->push_back(color);
+	g->setColorArray(colorArray);
+	g->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+	return g;
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
@@ -224,10 +190,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
 	height *= scale;
 
 	osgText::Font* font = osgText::readFontFile("fonts/arial.ttf");
-	QString
-			text(
-					"2. If someone wants to bring Qt widgets inside their OSG scene (to do HUDs or \nan interface on a computer screen which is inside the 3D scene, or even \nfloating Qt widgets, for example). That's where QGraphicsViewAdapter +\nQWidgetImage will be useful.");
-	text.append("A tento text sa tam uz nezmestil....");
+	QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ut eros id augue ullamcorper fringilla at id est. Donec egestas congue pretium. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. ");
 	osg::ref_ptr<osgText::Text> textD = new osgText::Text();
 
 	float charSize = 5.0f;
@@ -326,7 +289,7 @@ void OsgNode::setColor(osg::Vec4 color) {
 
 void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 		osg::Vec4 color) {
-	osg::Geometry * geometry =
+	osg::Geometry* geometry =
 			dynamic_cast<osg::Geometry *> (geode->getDrawable(drawablePos));
 
 	if (geometry != NULL) {
@@ -352,6 +315,7 @@ bool OsgNode::setExpanded(bool flag) {
 		setSize(closedG->getBoundingBox());
 	}
 	setChildValue(frameG, expanded);
+	contentG->load();
 	setChildValue(contentG, expanded);
 
 	setChildValue(closedG, !expanded);

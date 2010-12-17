@@ -85,19 +85,22 @@ void OsgEdge::getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
 		texCoords->push_back((*edgeTexCoords)[i]);
 	}
 
+	osg::Vec4f defaultColor = getEdgeColor();
+	osg::Vec4f selectedColor = OsgNode::selectedColor;
+
 	if (edge->getSrcNode()->getOsgNode()->isSelected()) {
-		colors->push_back(osg::Vec4f(0,1,0,1));
-		colors->push_back(osg::Vec4f(0,1,0,1));
+		colors->push_back(selectedColor);
+		colors->push_back(selectedColor);
 	} else {
-		colors->push_back(getEdgeColor());
-		colors->push_back(getEdgeColor());
+		colors->push_back(defaultColor);
+		colors->push_back(defaultColor);
 	}
 	if (edge->getDstNode()->getOsgNode()->isSelected()) {
-		colors->push_back(osg::Vec4f(0,1,0,1));
-		colors->push_back(osg::Vec4f(0,1,0,1));
+		colors->push_back(selectedColor);
+		colors->push_back(selectedColor);
 	} else {
-		colors->push_back(getEdgeColor());
-		colors->push_back(getEdgeColor());
+		colors->push_back(defaultColor);
+		colors->push_back(defaultColor);
 	}
 }
 
