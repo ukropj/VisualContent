@@ -18,7 +18,7 @@ IOManager::~IOManager() {
 }
 
 Graph* IOManager::loadGraph(QString filepath,
-		Window::MessageWindows* msgWin) {
+		QProgressDialog* progressBar) {
 	// TODO presunut do samostatneho modulu pre spracovanie GraphML
 
 	// ziskame graph element
@@ -78,19 +78,16 @@ Graph* IOManager::loadGraph(QString filepath,
 		qint8 iColor = 0;
 
 		// vypis % pri nacitavani grafu
+		progressBar->reset();
+		progressBar->setLabelText("Loading file...");
+		progressBar->setMaximum((nodes.count() + edges.count()) * 2);
 		int step = 0;
-		int stepLength = (int) (nodes.count() + edges.count()) / 100;
-		if (stepLength == 0) {
-			// zadame defaultnu hodnotu, aby to nezlyhavalo
-			stepLength = 50;
-		}
 
 		// prechadzame uzlami
 		for (unsigned int i = 0; i < nodes.length(); i++) {
-
-			if (i % stepLength == 0) {
-				msgWin->setProgressBarValue(step++);
-			}
+			progressBar->setValue(step++);
+			if (progressBar->wasCanceled())
+				return NULL;
 
 			QDomNode nodeNode = nodes.item(i);
 			if (!nodeNode.isNull() && nodeNode.isElement()) {
@@ -186,10 +183,9 @@ Graph* IOManager::loadGraph(QString filepath,
 
 		// prechadzame hranami
 		for (uint i = 0; i < edges.length(); i++) {
-
-			if (i % stepLength == 0) {
-				msgWin->setProgressBarValue(step++);
-			}
+			progressBar->setValue(step++);
+			if (progressBar->wasCanceled())
+				return NULL;
 
 			QDomNode edgeNode = edges.item(i);
 
@@ -306,10 +302,8 @@ Graph* IOManager::loadGraph(QString filepath,
 				}
 			}
 		}
-
 		return newGraph;
 	}
-
 	return NULL;
 }
 

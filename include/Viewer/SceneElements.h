@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QSet>
 #include <QLinkedList>
+#include <QProgressDialog>
 
 #include <osg/ref_ptr>
 #include <osg/AutoTransform>
@@ -39,7 +40,7 @@ public:
 	 *  \param  nodes    nodes to wrap
 	 */
 	SceneElements(QMap<qlonglong, Model::Node* > *nodes, QMap<qlonglong, Model::Edge* > *edges,
-			SceneGraph* sceneGraph);
+			SceneGraph* sceneGraph, QProgressDialog* progressBar = 0);
 
 	/**
 	 *  \fn public destructor  ~NodeGroup
@@ -105,6 +106,9 @@ private:
 
 	osg::ref_ptr<osg::Geometry> edgesGeometry;
 	osg::ref_ptr<osg::Geometry> edgesOGeometry;
+
+	int step;
+	QProgressDialog* pd;
 };
 }
 

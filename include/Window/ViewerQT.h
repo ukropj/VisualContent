@@ -116,6 +116,15 @@ public:
 
 		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());
+
+	}
+
+	void setRendering(bool flag) {
+		if (flag) {
+			_timer.start();
+		} else {
+			_timer.stop();
+		}
 	}
 
 protected:

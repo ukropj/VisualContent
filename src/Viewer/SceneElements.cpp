@@ -13,8 +13,14 @@ using namespace Vwr;
 using namespace Model;
 
 SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
-		Edge*>* edges, SceneGraph* sceneGraph) {
+		Edge*>* edges, SceneGraph* sceneGraph, QProgressDialog* progressBar) {
 	this->sceneGraph = sceneGraph;
+
+	pd = progressBar;
+	if (pd != NULL) {
+		pd->setLabelText("Drawing graph...");
+		step = pd->value();
+	}
 
 	elementsGroup = new osg::Group();
 	elementsGroup->setName("scene_elements");
@@ -74,6 +80,8 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	int index = 0;
 	int indexO = 0;
 	while (i.hasNext()) {
+		if (pd != NULL)
+			pd->setValue(step++);
 		i.next();
 		OsgEdge* osgEdge = new OsgEdge(i.value(), sceneGraph);
 		edges.insert(i.value()->getId(), osgEdge);
@@ -175,6 +183,9 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 }
 
 osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
+	if (pd != NULL) {
+		pd->setValue(step++);
+	}
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 

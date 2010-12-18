@@ -31,25 +31,6 @@ public:
 	~MessageWindows(void);
 
 	/**
-	 *  \fn public  showProgressBar
-	 *  \brief Show user the progress bar
-	 */
-	void showProgressBar();
-
-	/**
-	 *  \fn public  closeProgressBar
-	 *  \brief Close the progress bar
-	 */
-	void closeProgressBar();
-
-	/**
-	 *  \fn public  setProgressBarValue(int value)
-	 *  \brief Set the actual value for progress bar
-	 *  \param  value
-	 */
-	void setProgressBarValue(int value);
-
-	/**
 	 *  \fn public  showMessageBox(QString title, QString message, bool isError)
 	 *  \brief Show user error or message dialog
 	 *  \param  title   title of the dialog
@@ -58,31 +39,7 @@ public:
 	 */
 	void showMessageBox(QString title, QString message, bool isError);
 
-	/**
-	 *  \fn public  showLoadingDialog(QString message)
-	 *  \brief Show user loading dialog
-	 *  \param message QString    message of the dialog
-	 */
-	void showLoadingDialog(QString message); // UNUSED
-
-	/**
-	 *  \fn public  closeLoadingDialog
-	 *  \brief Close the loading dialog
-	 */
-	void closeLoadingDialog(); //UNUSED
-
 private:
-	/**
-	 *  QProgressDialog * progressBar
-	 *  \brief  Poninter to progress bar
-	 */
-	QProgressDialog * progressBar;
-
-	/**
-	 *  QMessageBox * loadingDialog
-	 *  \brief Pointer to loading dialog
-	 */
-	QMessageBox * loadingDialog;
 
 };
 }

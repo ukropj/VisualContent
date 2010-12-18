@@ -114,7 +114,8 @@ qlonglong Graph::getMaxEleIdFromElements() {
 
 QString Graph::toString() const {
 	QString str;
-	QTextStream(&str) << name << " (" << ele_id_counter << " elements)";
+	QTextStream(&str) << name << " (" << nodes.size() << " nodes, "
+			<< edges.size() << " edges)";
 	return str;
 }
 

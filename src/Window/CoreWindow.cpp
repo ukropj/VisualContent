@@ -36,7 +36,6 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 
 void CoreWindow::createActions() {
 	QIcon loadIcon("img/icons/load.png");
-
 	loadAction = new QAction(loadIcon, tr("&Load"), this);
 	loadAction->setShortcut(tr("CTRL+L"));
 	loadAction->setToolTip(tr("Load graph from file"));
@@ -96,8 +95,18 @@ void CoreWindow::createActions() {
         recentFileActions[i] = new QAction(this);
         recentFileActions[i]->setVisible(false);
         connect(recentFileActions[i], SIGNAL(triggered()),
-                this, SLOT(openRecentFile()));
+        		this, SLOT(openRecentFile()));
     }
+
+    // progress dialog
+	progressBar = new QProgressDialog("", "", 0, 10, this, Qt::Dialog);
+	progressBar->setWindowTitle("Loading");
+	progressBar->setCancelButton(NULL);
+	Qt::WindowFlags flags = progressBar->windowFlags();
+	flags = flags & (~Qt::WindowContextHelpButtonHint);
+	progressBar->setWindowFlags(flags);
+	progressBar->setModal(true);
+	progressBar->setMinimumDuration(1000);
 }
 
 void CoreWindow::createMenus() {
@@ -162,19 +171,21 @@ void CoreWindow::loadFile(QString fileName) {
 
 	layouter->pause();
 	sceneGraph->setUpdatingNodes(false);
+	viewerWidget->setRendering(false);
 
-	messageWindows->showProgressBar();
-	Model::Graph* graph = IOManager->loadGraph(fileName, messageWindows);
+	Model::Graph* graph = IOManager->loadGraph(fileName, progressBar);
 
 	if (graph == NULL) {
-		messageWindows->showMessageBox("Error",
-				"Could not load graph from file" + fileName, true);
+		if (!progressBar->wasCanceled() && !fileName.isEmpty())
+			messageWindows->showMessageBox("Error",
+					"Could not load graph from file" + fileName, true);
 	} else {
 		setWindowFilePath(fileName);
 
 		// reload
-		sceneGraph->reload(graph); // deletes original scene graph
+		sceneGraph->reload(graph, progressBar); // deletes original scene graph
 		layouter->setGraph(graph); // deletes original graph
+		progressBar->setValue(progressBar->maximum());
 
 		//reset camera
 		viewerWidget->getCameraManipulator()->home(0);
@@ -182,9 +193,10 @@ void CoreWindow::loadFile(QString fileName) {
 
 		log(NORMAL, "Graph loaded: " + graph->toString());
 	}
-	messageWindows->closeProgressBar();
+	progressBar->reset();
 
 	// start
+	viewerWidget->setRendering(true);
 	sceneGraph->setUpdatingNodes(true);
 	layouter->play();
 }
@@ -233,7 +245,7 @@ void CoreWindow::toggleLabels(bool checked) {
 }
 
 void CoreWindow::sliderValueChanged(int value) {
-	layouter->setAlphaValue((float) value * 0.001);
+	layouter->setAlphaValue((float) (value + 1) * 0.001); // dont allow 0
 	layouter->wakeUp();
 }
 

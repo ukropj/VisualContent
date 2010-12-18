@@ -23,6 +23,8 @@
 
 #include <qdebug.h>
 #include <QtGui>
+//#include "MyWidget.h"
+#include "OsgQtBrowser/QWebViewImage.h"
 
 using namespace Vwr;
 
@@ -97,6 +99,9 @@ SceneGraph::SceneGraph() {
 
 	graph == NULL;
 
+//	osg::ref_ptr<osgQtWidgetImage> img = new osgQtWidgetImage(new MyWidget);
+//	osg::ref_ptr<QWebViewImage> img = new QWebViewImage();
+//	customNodeList.append(img->);
 	//	customNodeList.append(experiments());
 
 	//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
@@ -107,13 +112,13 @@ SceneGraph::~SceneGraph() {
 	root->removeChild(0, 1);
 }
 
-void SceneGraph::reload(Model::Graph * newGraph) {
+void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	if (newGraph == NULL)
 		return;
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
-	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this);
+	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this, progressBar);
 
 	root->addChild(sceneElements->getElementsGroup());
 	elementsPosition = currentPos++;

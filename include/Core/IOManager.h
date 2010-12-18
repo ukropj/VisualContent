@@ -28,7 +28,7 @@ public:
 	 * \fn loadGraph
 	 * \brief Loads graph from GraphML file.
 	 */
-	Model::Graph* loadGraph(QString filepath, Window::MessageWindows* msgWin);
+	Model::Graph* loadGraph(QString filepath, QProgressDialog* progressBar);
 
 	/**
 	 * \fn simpleGraph

@@ -82,7 +82,7 @@ private:
 	QAction* quitAction;
 	QAction* optionsAction;
 	QAction* separatorAction;
-	QAction *recentFileActions[MaxRecentFiles];
+	QAction* recentFileActions[MaxRecentFiles];
 
 	QAction* playAction;
 	QAction* fixAction;
@@ -96,7 +96,7 @@ private:
 	QMenu* editMenu;
 	QToolBar* toolBar;
 
-	ViewerQT * viewerWidget;
+	ViewerQT* viewerWidget;
 	Model::FRAlgorithm* layouter;
 	Vwr::SceneGraph* sceneGraph;
 	AppCore::IOManager *IOManager;
@@ -110,10 +110,12 @@ private:
 	void createStatusBar();
 
 	static CoreWindow* instanceForStatusLog;
-	QLabel *algStatus;
-	QLabel *pickStatus;
-	QLabel *keyStatus;
-	QLabel *mainStatus;
+	QLabel* algStatus;
+	QLabel* pickStatus;
+	QLabel* keyStatus;
+	QLabel* mainStatus;
+
+	QProgressDialog* progressBar;
 };
 }
 

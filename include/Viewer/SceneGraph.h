@@ -7,6 +7,10 @@
 
 #include <math.h>
 
+#include <QMap>
+#include <QLinkedList>
+#include <QProgressDialog>
+
 #include <osg/ref_ptr>
 #include <osg/CullFace>
 #include <osg/TexMat>
@@ -15,9 +19,6 @@
 #include <osg/TextureCubeMap>
 #include <osg/AutoTransform>
 #include <osgUtil/Optimizer>
-
-#include <QMap>
-#include <QLinkedList>
 
 namespace Model {
 class Graph;
@@ -39,7 +40,7 @@ public:
 	 *  \brief
 	 *  \param   graph
 	 */
-	void reload(Model::Graph* graph = 0);
+	void reload(Model::Graph* graph, QProgressDialog* progressBar = 0);
 
 	/**
 	 *  \fn public  reloadConfig
