@@ -12,29 +12,13 @@ using namespace Model;
 Graph::Graph(QString name, qlonglong ele_id_counter) {
 	this->name = name;
 	this->ele_id_counter = ele_id_counter;
-	this->frozen = false;
-	nodes.clear();
-	edges.clear();
-	types.clear();
-	newTypes.clear();
-	newNodes.clear();
-	newEdges.clear();
-	nodesByType.clear();
-	edgesByType.clear();
-	typesByName.clear();
+	frozen = false;
 }
 
 Graph::~Graph() {
-	qDebug() << "deleting nodes";
-//	qDebug() << nodes.size();
 	qDeleteAll(nodes); // NOTE: deleting nodes will also delete edges
-	qDebug() << "deleting types";
-
 	qDeleteAll(types);
-
-	newTypes.clear();
-	newNodes.clear();
-	newEdges.clear();
+	qDeleteAll(pseudoEdges);
 
 	nodesByType.clear();
 	edgesByType.clear();
@@ -51,7 +35,11 @@ QString Graph::setName(QString newName) {
 Node* Graph::addNode(QString name, Type* type) {
 	Node* node = new Node(incEleIdCounter(), name, type, this);
 
-	newNodes.insert(node->getId(), node);
+	for (QMap<qlonglong, Node*>::const_iterator i = nodes.constBegin(); i != nodes.constEnd(); i++) {
+		PseudoEdge* pe = new PseudoEdge(node, i.value());
+		pseudoEdges.insert(pe->getId(), pe);
+	}
+
 	nodes.insert(node->getId(), node);
 	nodesByType.insert(type->getId(), node);
 
@@ -60,22 +48,38 @@ Node* Graph::addNode(QString name, Type* type) {
 
 Edge* Graph::addEdge(QString name, Node* srcNode, Node* dstNode, Type* type,
 		bool isOriented) {
+	if (srcNode == NULL || dstNode == NULL)
+		return NULL;
+	if (srcNode->equals(dstNode)) {
+		qWarning() << "Trying to add edge to self on node: " << srcNode->toString();
+		return NULL;
+	}
+
+	uint pseudoId = PseudoEdge::computeId(srcNode, dstNode);
+	if (pseudoEdges.contains(pseudoId)) {
+		PseudoEdge* pe = pseudoEdges.value(pseudoId);
+		if (pe->isReal()) { // means that this edge was already added - we don't support multiedges
+			qWarning() << "Edge between " << srcNode->toString() << " and "
+					<< dstNode->toString() << "already exists!";
+			return srcNode->getEdgeTo(dstNode);
+		}
+		pe->setReal(true);
+	} else {
+		qWarning() << "[addEdge] Inconsistent pseudoedge ID!"
+				<< srcNode->getId() << ", " << dstNode->getId();
+	}
+
 	Edge* edge = new Edge(incEleIdCounter(), name, this, srcNode,
 			dstNode, type, isOriented);
 
-	//	edge->linkNodes(&newEdges);
-	//	edge->linkNodes(edges);
-	newEdges.insert(edge->getId(), edge);
 	edges.insert(edge->getId(), edge);
 	edgesByType.insert(type->getId(), edge);
-
 	return edge;
 }
 
 Type* Graph::addType(QString name, QMap<QString, QString> *settings) {
 	Type* type = new Type(incEleIdCounter(), name, this, settings);
 
-	newTypes.insert(type->getId(), type);
 	types.insert(type->getId(), type);
 	typesByName.insert(type->getName(), type);
 
@@ -150,21 +154,26 @@ void Graph::removeAllNodesOfType(Type* type) {
 void Graph::removeNode(Node* node) {
 	if (node != NULL && node->getGraph() == this) {
 		nodes.remove(node->getId());
-		newNodes.remove(node->getId());
 		nodesByType.remove(node->getType()->getId(), node);
-		//		if (this->types->contains(node->getId())) {
-		//			this->removeType(this->types->value(node->getId()));
-		//		}
+		for (QMap<qlonglong, Node*>::const_iterator i = nodes.constBegin(); i != nodes.constEnd(); i++) {
+			uint pseudoId = PseudoEdge::computeId(node, i.value());
+			pseudoEdges.remove(pseudoId);
+		}
 		delete node;
 	}
 }
 
 void Graph::removeEdge(Edge* edge) {
 	if (edge != NULL && edge->getGraph() == this) {
+		uint pseudoId = PseudoEdge::computeId(edge->getSrcNode(), edge->getDstNode());
+		if (pseudoEdges.contains(pseudoId)) {
+			pseudoEdges.value(pseudoId)->setReal(false);
+		} else {
+			qWarning() << "[removeEdge] Inconsistent pseudoedge ID!";
+		}
+
 		edges.remove(edge->getId());
-		newEdges.remove(edge->getId());
 		edgesByType.remove(edge->getType()->getId(), edge);
-		//		edge->unlinkNodes();
 		delete edge;
 	}
 }
@@ -172,10 +181,9 @@ void Graph::removeEdge(Edge* edge) {
 void Graph::removeType(Type* type) {
 	if (type != NULL && type->getGraph() == this) {
 		types.remove(type->getId());
-		newTypes.remove(type->getId());
 		typesByName.remove(type->getName());
 
-		//vymazeme vsetky hrany resp. metahrany daneho typu
+		//vymazeme vsetky hrany daneho typu
 		removeAllEdgesOfType(type);
 		//vymazeme vsetky uzly daneho typu
 		removeAllNodesOfType(type);

@@ -22,7 +22,7 @@ namespace Model  {
 class Type;
 class Node;
 class Edge;
-class Node;
+class PseudoEdge;
 
 /**
  *  \class Graph
@@ -161,6 +161,10 @@ public:
 		return &edges;
 	}
 
+	QMap<uint, PseudoEdge*>* getPseudoEdges() {
+		return &pseudoEdges;
+	}
+
 	/**
 	 *  \fn inline public constant  getTypes
 	 *  \brief Returns QMap of the Types assigned to the Graph
@@ -254,24 +258,6 @@ private:
 	QMultiMap<QString, Type*> typesByName;
 
 	/**
-	 *  QMap<qlonglong,Node* > newNodes
-	 *  \brief New Nodes that have been added to the Graph but are not yet in database
-	 */
-	QMap<qlonglong, Node*> newNodes;
-
-	/**
-	 *  QMap<qlonglong,Type*> newTypes
-	 *  \brief New Types that have been added to the Graph but are not yet in database
-	 */
-	QMap<qlonglong, Type*> newTypes;
-
-	/**
-	 *  QMap<qlonglong,Edge* > newEdges
-	 *  \brief New Edges that have been added to the Graph but are not yet in database
-	 */
-	QMap<qlonglong, Edge*> newEdges;
-
-	/**
 	 *  QMap<qlonglong,Node* > * nodes
 	 *  \brief Nodes in the Graph
 	 */
@@ -282,6 +268,7 @@ private:
 	 *  \brief Edges in the Graph
 	 */
 	QMap<qlonglong, Edge* > edges;
+	QMap<uint, PseudoEdge* > pseudoEdges;
 
 	/**
 	 *  QMap<qlonglong,Type*> * types

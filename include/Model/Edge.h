@@ -25,9 +25,7 @@ class Edge {
 public:
 
 	Edge(qlonglong id, QString name, Graph* graph,
-			Model::Node* srcNode,
-			Model::Node* dstNode,
-			Type* type,
+			Node* srcNode, Node* dstNode, Type* type,
 			bool isOriented);
 
 	~Edge(void);
@@ -65,7 +63,7 @@ public:
 	 * \brief  Returns the starting Model::Node of the Edge
 	 * \return osg::ref_ptr<Model::Model::Node> starting Model::Node of the Edge
 	 */
-	Model::Node* getSrcNode() const {
+	Node* getSrcNode() const {
 		return srcNode;
 	}
 
@@ -74,14 +72,14 @@ public:
 	 * \brief  Returns ending Model::Node of the Edge
 	 * \return osg::ref_ptr<Model::Model::Node> ending Model::Node of the Edge
 	 */
-	Model::Node* getDstNode() const {
+	Node* getDstNode() const {
 		return dstNode;
 	}
 
 	/**
 	 * Retruns the other node of this edge.
 	 */
-	Model::Node* getOtherNode(Model::Node* node) const;
+	Node* getOtherNode(Node* node) const;
 
 	/**
 	 * \fn inline public constant getType
@@ -90,6 +88,14 @@ public:
 	 */
 	Type* getType() const {
 		return type;
+	}
+
+	bool real;
+	void setReal(bool flag) {
+		real = flag;
+	}
+	bool isReal() const {
+		return real;
 	}
 
 	/**
@@ -121,8 +127,6 @@ public:
 		return graph;
 	}
 
-	float getMinNodeDistance();
-
 private:
 	/**
 	 *  Graph * graph
@@ -147,13 +151,13 @@ private:
 	 *  osg::ref_ptr<Model::Model::Node> srcModel::Node
 	 *  \brief Starting Model::Node of the Edge
 	 */
-	Model::Node* srcNode;
+	Node* srcNode;
 
 	/**
 	 *  osg::ref_ptr<Model::Model::Node> dstModel::Node
 	 *  \brief Ending Model::Node of the Edge
 	 */
-	Model::Node* dstNode;
+	Node* dstNode;
 
 	/**
 	 *  Type * type
@@ -177,6 +181,25 @@ private:
 	 *  bool selected
 	 *  \brief True, if edge is picked
 	 */
+};
+
+class PseudoEdge {
+public:
+	PseudoEdge(Node* srcNode, Node* dstNode);
+	~PseudoEdge() {}
+	uint getId() const {return id;}
+	void setReal(bool flag) {real = flag;}
+	bool isReal() const {return real;}
+	Node* getSrcNode() const {return srcNode;}
+	Node* getDstNode() const {return dstNode;}
+
+	static uint computeId(Node* srcNode, Node* dstNode);
+
+private:
+	Node* srcNode;
+	Node* dstNode;
+	uint id;
+	bool real;
 };
 }
 

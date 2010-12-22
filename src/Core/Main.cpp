@@ -2,7 +2,6 @@
 #include "Window/CoreWindow.h"
 
 int main(int argc, char *argv[]) {
-
 	QApplication app(argc, argv);
 	app.setOrganizationName("FIIT STU");
 	app.setApplicationName("DataViz");
@@ -13,4 +12,3 @@ int main(int argc, char *argv[]) {
 
 	return app.exec();
 }
-

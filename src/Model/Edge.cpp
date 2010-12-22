@@ -46,6 +46,19 @@ Node* Edge::getOtherNode(Model::Node* node) const {
 		return srcNode; // returns source node even if node is not a node of this edge
 }
 
-float Edge::getMinNodeDistance() {
-	return srcNode->getRadius() + dstNode->getRadius();
+PseudoEdge::PseudoEdge(Node* srcNode, Node* dstNode) {
+	this->srcNode = srcNode;
+	this->dstNode = dstNode;
+	this->real = false;
+	QString name;
+	id = computeId(srcNode, dstNode);
+}
+
+uint PseudoEdge::computeId(Node* srcNode, Node* dstNode) {
+	QString name;
+	if (srcNode->getId() < dstNode->getId())
+		name = QString::number(srcNode->getId()) + "_" + QString::number(dstNode->getId());
+	else
+		name = QString::number(dstNode->getId()) + "_" + QString::number(srcNode->getId());
+	return qHash(name);
 }

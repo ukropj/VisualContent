@@ -119,6 +119,7 @@ public:
 	 */
 	void addEdge(Edge* edge);
 	void removeEdge(Edge* edge);
+	Edge* getEdgeTo(Node* otherNode);
 
 	/**
 	 *  \fn inline public  setForce(osg::Vec3f v)

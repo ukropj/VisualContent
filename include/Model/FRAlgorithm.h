@@ -24,7 +24,6 @@ class Config;
 namespace Model {
 class Graph;
 class Node;
-class Edge;
 /**
  *  \class FRAlgorithm
  *  \brief Object represents Fruchterman-Reingold layout algorithm
@@ -275,7 +274,7 @@ private:
 	 *  \param  edge  which associate two nodes on which effect attractive force
 	 *  \param  factor  multiplicer of attaractive force
 	 */
-	void addAttractive(Edge* edge, float factor = 1);
+	void addAttractive(Node* u, Node* v, float factor = 1);
 
 	/**
 	 *  \fn private  addRepulsive(Node* u, Node* v, float factor)

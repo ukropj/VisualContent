@@ -46,7 +46,7 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 
 Node::~Node(void) {
 	graph = NULL;
-	qDeleteAll(edges); // NOTE: node deletes edges not vice versa
+	qDeleteAll(edges); // NOTE: node deletes edges, not vice versa
 	osgNode = NULL;
 }
 
@@ -56,6 +56,14 @@ void Node::addEdge(Edge* edge) {
 
 void Node::removeEdge(Edge* edge) {
 	edges.remove(edge->getId());
+}
+
+Edge* Node::getEdgeTo(Node* otherNode) {
+	foreach (Edge* edge, edges) {
+		if (this->equals(edge->getOtherNode(this)))
+			return edge;
+	}
+	return NULL;
 }
 
 bool Node::equals(Node* node) {

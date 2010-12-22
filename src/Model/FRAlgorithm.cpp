@@ -6,7 +6,7 @@
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
 #include "Viewer/OsgNode.h"
-#include <qdebug.h>
+#include <QDebug>
 
 using namespace Model;
 
@@ -16,12 +16,9 @@ typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
 //Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
 	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
-	MIN_MOVEMENT
-			= Util::Config::getValue("Layout.Algorithm.MinMovement").toFloat();
-	MAX_MOVEMENT
-			= Util::Config::getValue("Layout.Algorithm.MaxMovement").toFloat();
-	MAX_DISTANCE
-			= Util::Config::getValue("Layout.Algorithm.MaxDistance").toFloat();
+	MIN_MOVEMENT = Util::Config::getValue("Layout.Algorithm.MinMovement").toFloat();
+	MAX_MOVEMENT = Util::Config::getValue("Layout.Algorithm.MaxMovement").toFloat();
+	MAX_DISTANCE = Util::Config::getValue("Layout.Algorithm.MaxDistance").toFloat();
 
 	state = NO_GRAPH;
 	isIterating = false;
@@ -54,6 +51,7 @@ void FRAlgorithm::setGraph(Graph *newGraph) {
 	}
 
 	notEnd = true;
+	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
 
 	if (graph != NULL)
 		delete graph; // old graph deleted
@@ -170,12 +168,15 @@ void FRAlgorithm::run() {
 				Window::CoreWindow::log(Window::CoreWindow::ALG, "RUNNING");
 //				qDebug() << "Running";
 			}
+//			QTime t = QTime::currentTime();
 			isIterating = true;
 			if (!iterate()) {
 				graph->setFrozen(true);
 				resetNodes();
 //				qDebug() << "should freeze";
 			}
+//			QTime t2 = QTime::currentTime();
+//			qDebug() << t.msecsTo(t2);
 		}
 	} else {
 		qWarning("No graph");
@@ -195,39 +196,31 @@ void FRAlgorithm::resetNodes() {
 bool FRAlgorithm::iterate() {
 	bool changed = false;
 	QMap<qlonglong, Node*>* nodes = graph->getNodes();
-	QMap<qlonglong, Edge*>* edges = graph->getEdges();
 
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		i.value()->resetForce();
 	}
 
-	//uzly
-	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
-		// pre vsetky uzly..
-		Node* u = i.value();
-		for (NodeIt j = nodes->constBegin(); j != nodes->constEnd(); j++) {
-			// pre vsetky uzly..
-			Node* v = j.value();
-			if (!u->equals(v)) {
-				addRepulsive(u, v); // odpudiva sila beznej velkosti
-				addRepulsiveProj(u, v);
-			}
-		}
+	// "pseudo edges" are edges of complete graph (i.e all distinct node pairs)
+	// now only one iteration is needed,
+	// no need any more to compute repulsive force independently for each node in pair
+	// complexity is O((NxN/2) + E), was O(NxN + E)
+	// speed of iteration has nearly doubled :)
+	QMap<uint, PseudoEdge*>* pe = graph->getPseudoEdges();
+	for (QMap<uint, PseudoEdge*>::const_iterator i = pe->constBegin(); i != pe->constEnd(); i++) {
+		PseudoEdge* e = i.value();
+		Node* u = e->getSrcNode();
+		Node* v = e->getDstNode();
+		if (e->isReal())
+			addAttractive(u, v);
+		addRepulsive(u, v);
+		addRepulsiveProj(u, v);
 	}
 
 	if (state != RUNNING)
 		return true;
 
-	//hrany
-	for (EdgeIt i = edges->constBegin(); i != edges->constEnd(); i++) {
-		Edge* e = i.value();
-		addAttractive(e); // pritazliva sila beznej velkosti
-	}
-
-	if (state != RUNNING)
-		return true;
-
-	// aplikuj sily na uzly
+	// apply accumulated forces to nodes
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
 		Node* u = i.value();
 		if (!u->isFrozen() && !u->isFixed()) {
@@ -239,7 +232,7 @@ bool FRAlgorithm::iterate() {
 		}
 	}
 
-	// vracia true ak sa ma pokracovat dalsou iteraciou
+	// if true, iteration wil continue, if false, graph freezes
 	return changed;
 }
 
@@ -258,10 +251,8 @@ bool FRAlgorithm::applyForces(Node* node) {
 			fv.normalize();
 			fv *= MAX_MOVEMENT;
 		}
-
 		// ulozime novu polohu
 		node->setPosition(node->getPosition() + fv);
-
 		// energeticka strata = 1-flexibilita
 		fv *= flexibility;
 		node->setVelocity(fv); // ulozime novu rychlost
@@ -273,21 +264,21 @@ bool FRAlgorithm::applyForces(Node* node) {
 }
 
 /* Pricitanie pritazlivych sil */
-void FRAlgorithm::addAttractive(Edge* edge, float factor) {
-	up = edge->getSrcNode()->getPosition();
-	vp = edge->getDstNode()->getPosition();
+void FRAlgorithm::addAttractive(Node* u, Node* v, float factor) {
+	up = u->getPosition();
+	vp = v->getPosition();
 	dist = distance(up, vp);
 	if (dist == 0)
 		return;
 	fv = vp - up; // smer sily
 	fv.normalize();
 
-	fv *= attr(dist, qMax(K, edge->getSrcNode()->getRadius() +
-			edge->getDstNode()->getRadius())) * factor;// velkost sily
+	fv *= attr(dist, qMax(K, u->getRadius() +
+			v->getRadius())) * factor;// velkost sily
 
-	edge->getSrcNode()->addForce(fv);
+	u->addForce(fv);
 	fv = center - fv;
-	edge->getDstNode()->addForce(fv);
+	v->addForce(fv);
 }
 
 /* Pricitanie odpudivych sil */
@@ -309,7 +300,9 @@ void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
 
 	fv.normalize();
 	fv *= rep(dist, qMax(K, u->getRadius() + v->getRadius())) * factor;
-	u->addForce(fv); // iba k jednemu uzlu!
+	u->addForce(fv);
+	fv = center - fv;
+	v->addForce(fv);
 }
 
 /* Pricitanie projektvnych odpudivych sil */
@@ -359,8 +352,9 @@ void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
 
 	fv *= proj(dist, ideal) * factor;
 
-//	u->addProjForce(fv);
 	u->addForce(fv);
+	fv = center - fv;
+	v->addForce(fv);
 }
 
 float FRAlgorithm::proj(double distance, double ideal) {
