@@ -6,84 +6,31 @@
 #include "Util/TextureWrapper.h"
 #include "Util/Config.h"
 #include "Model/Graph.h"
-#include "Window/ViewerQT.h"
+#include "Viewer/WidgetContent.h"
 
 #include <osg/Geode>
 #include <osg/Node>
 #include <osg/Group>
 #include <osg/ShapeDrawable>
-#include <osgWidget/Box>
-#include <osgWidget/Label>
-#include <osgWidget/Window>
-#include <osgWidget/WindowManager>
-#include <osgWidget/Browser>
-#include <osgViewer/ViewerEventHandlers>
-#include <osg/Texture2D>
+#include <osg/Texture>
+#include <osg/MatrixTransform>
 #include <osgDB/WriteFile>
+#include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 
 #include <qdebug.h>
-#include <QtGui>
-//#include "MyWidget.h"
-#include "OsgQtBrowser/QWebViewImage.h"
+#include <QtGui/QWidget>
+#include <QtGui/QLabel>
+#include <QtGui/QPushButton>
+#include <QtGui/QVBoxLayout>
+#include <QtGui/QWidget>
+#include <QtGui/QTextEdit>
+#include <QtGui/QPalette>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsView>
+#include "OsgQtBrowser/QWidgetImage.h"
 
 using namespace Vwr;
-
-osg::ref_ptr<osg::Node> experiments() {
-
-	osgWidget::Label* label = new osgWidget::Label("", "");
-	label->addSize(22.0f, 22.0f);
-	label->setColor(1.0f, 1.0f, 1.0f, 0.5f);
-	label->setImage("img/devil.jpg", true);
-	//	window->addWidget(label);
-	//	window->resize();
-	//	this->addDrawable(window);
-	//	sw->addChild(window);
-	//
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
-	geode->addDrawable(label);
-
-	//	osgWidget::Window* widget = new osgWidget::Widget("");
-	//	osgWidget::Box* widget = new osgWidget::Box("");
-	//	widget->addWidget(label);
-	//	widget->attachMoveCallback();
-	//	widget->attachScaleCallback();
-	//	widget->resize();
-
-
-	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
-	at->setPosition(osg::Vec3f(0, 0, 0));
-	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-	at->addChild(geode);
-
-	//	return geode;
-	return at;
-
-	//	at->addChild(widget);
-	//	osgWidget::WindowManager* wm = new osgWidget::WindowManager(&viewer,
-	//			1280.0f, 1024.0f, MASK_2D,
-	//			// osgWidget::WindowManager::WM_USE_RENDERBINS |
-	//			osgWidget::WindowManager::WM_PICK_DEBUG);
-	//	wm->addChild(widget);
-	//	at->addChild(widget);
-	//	customNodeList.append(at);
-
-	//	osgWidget::GeometryHints hints(osg::Vec3(0.0f, 0.0f, 0.0f), osg::Vec3(1.0f,
-	//			0.0f, 0.0f), osg::Vec3(0.0f, 0.0f, 1.0f), osg::Vec4(1.0f, 1.0f,
-	//			1.0f, 1.0f),
-	//			osgWidget::GeometryHints::RESIZE_HEIGHT_TO_MAINTAINCE_ASPECT_RATIO);
-	//
-	//	osg::ref_ptr<osg::Group> group = new osg::Group;
-	//
-	//	osg::ref_ptr<osgWidget::Browser> browser = new osgWidget::Browser;
-	//	if (browser->open("www.google.com", hints)) {
-	//		group->addChild(browser.get());
-	//		hints.position.x() += 1.1f;
-	//	}
-	//
-	//	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform;
-	//	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_CAMERA);
-	////	at->addChild(geode);
-}
 
 SceneGraph::SceneGraph() {
 	camera = NULL;
@@ -98,11 +45,6 @@ SceneGraph::SceneGraph() {
 	updateNodes = true;
 
 	graph == NULL;
-
-//	osg::ref_ptr<osgQtWidgetImage> img = new osgQtWidgetImage(new MyWidget);
-//	osg::ref_ptr<QWebViewImage> img = new QWebViewImage();
-//	customNodeList.append(img->);
-	//	customNodeList.append(experiments());
 
 	//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
 }
@@ -130,7 +72,7 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 
 	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
 
-//	osgDB::writeNodeFile(*root, "graph.osg");
+	//	osgDB::writeNodeFile(*root, "graph.osg");
 }
 
 int SceneGraph::cleanUp() {
@@ -220,12 +162,12 @@ void SceneGraph::update(bool forceIdeal) {
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
-//	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(
-//			*sceneElements->getEdges());
-//	while (i.hasNext()) {
-//		i.next();
-//		i.value()->showLabel(visible);
-//	}
+	//	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(
+	//			*sceneElements->getEdges());
+	//	while (i.hasNext()) {
+	//		i.next();
+	//		i.value()->showLabel(visible);
+	//	}
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {
@@ -260,4 +202,55 @@ void SceneGraph::setFrozen(bool val) {
 		return;
 	}
 	graph->setFrozen(val);
+}
+
+
+void SceneGraph::createExperiment() {
+	QWidget* widget = new QWidget;
+	widget->setLayout(new QVBoxLayout);
+
+	QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+	QLabel* l = new QLabel(text);
+	l->setPixmap(QPixmap("img/devil.jpg"));
+
+	widget->layout()->addWidget(l);
+	widget->setGeometry(1, 1, 350, 350);
+
+	osg::ref_ptr<QWidgetImage> widgetImage = new QWidgetImage(widget);
+//	widgetImage->getQWidget()->setAttribute(Qt::WA_TranslucentBackground);
+	widgetImage->getQGraphicsViewAdapter()->setBackgroundColor(QColor(0, 0, 0, 0));
+
+	// determines size & ratio!
+	osg::Geometry* quad = osg::createTexturedQuadGeometry(osg::Vec3(0, 0, 0),
+			osg::Vec3(100, 0, 0), osg::Vec3(0, 100, 0), 1, 1);
+	osg::Geode* geode = new osg::Geode;
+	geode->addDrawable(quad);
+
+	osg::MatrixTransform* mt = new osg::MatrixTransform;
+	mt->setMatrix(osg::Matrix::rotate(osg::Vec3(0, 1, 0),
+			osg::Vec3(0, 0, 1)));
+	mt->addChild(geode);
+
+	mt->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	mt->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
+	mt->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+	mt->getOrCreateStateSet()->setAttribute(new osg::Program);
+
+	osg::Texture2D* texture = new osg::Texture2D(widgetImage.get());
+	texture->setResizeNonPowerOfTwoHint(false);
+	texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
+	texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+	texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+	mt->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture,
+			osg::StateAttribute::ON);
+
+	// this enables interaction with the widget (buggy), use current camera
+	// nothing is shown without this code!
+	osg::Camera* camera = 0;
+	osgViewer::InteractiveImageHandler* handler =
+			new osgViewer::InteractiveImageHandler(widgetImage.get(), texture, camera);
+	quad->setEventCallback(handler);
+	quad->setCullCallback(handler);
+
+//	customNodeList.append(mt);
 }

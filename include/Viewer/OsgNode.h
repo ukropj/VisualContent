@@ -127,13 +127,13 @@ private:
 	osg::ref_ptr<osg::StateSet> createStateSet();
 
 	osg::ref_ptr<osg::Geode> createFrame(osg::BoundingBox box, float margin);
-	osg::ref_ptr<osg::Geode> createContent();
+	void updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float margin = 0);
+	OsgContent* createContent();
 
 	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<osg::Texture2D> texture,
 			float width, float height);
 	osg::ref_ptr<osg::Drawable> createRect(float width, float height, osg::Vec4f color);
 	osg::ref_ptr<osg::Geode> createFixed();
-	osg::ref_ptr<osg::Geode> createText(const float scale = 1);
 	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
 
 	osg::ref_ptr<osg::Geometry> createCustomGeometry(osg::Vec3 coords[], const int vertNum,

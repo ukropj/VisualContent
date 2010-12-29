@@ -79,7 +79,9 @@ public:
 	 */
 	void setCamera(osg::ref_ptr<osg::Camera> camera) {
 		this->camera = camera;
+		createExperiment();
 	}
+	void createExperiment();
 
 	osg::ref_ptr<osg::Camera> getCamera() {
 		return camera;

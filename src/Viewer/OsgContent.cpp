@@ -5,16 +5,13 @@
  *      Author: jakub
  */
 
-#include "Viewer/OsgContent.h"
-#include "Util/TextureWrapper.h"
+//using namespace Vwr;
 
-using namespace Vwr;
-
-// TODO: subclass for each content type
+/*// TODO: subclass for each content type
 OsgContent::OsgContent(QString imagePath) {
-	this->imagePath = imagePath;
-	texture = NULL;
-	addDrawable(createGeometry(20, 20));
+//	this->imagePath = imagePath;
+//	texture = NULL;
+//	addDrawable(createGeometry(20, 20));
 }
 
 OsgContent::~OsgContent() {
@@ -52,17 +49,17 @@ osg::ref_ptr<osg::Geometry> OsgContent::createGeometry(float width, float height
 }
 
 void OsgContent::load() {
-	if (texture == NULL) {
-		texture = Util::TextureWrapper::readTextureFromFile(imagePath);
-
-		osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
-		stateSet->setTextureAttributeAndModes(0, texture,
-				osg::StateAttribute::ON);
-
-		osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
-				osg::Vec2(1, 1), osg::Vec2(0, 1) };
-		osg::Geometry* g = dynamic_cast<osg::Geometry *>(getDrawable(0));
-		g->setTexCoordArray(0, new osg::Vec2Array(4, texCoords));
-		g->setStateSet(stateSet);
-	}
-}
+//	if (texture == NULL) {
+//		texture = Util::TextureWrapper::readTextureFromFile(imagePath);
+//
+//		osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
+//		stateSet->setTextureAttributeAndModes(0, texture,
+//				osg::StateAttribute::ON);
+//
+//		osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
+//				osg::Vec2(1, 1), osg::Vec2(0, 1) };
+//		osg::Geometry* g = dynamic_cast<osg::Geometry *>(getDrawable(0));
+//		g->setTexCoordArray(0, new osg::Vec2Array(4, texCoords));
+//		g->setStateSet(stateSet);
+//	}
+}*/

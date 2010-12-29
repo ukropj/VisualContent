@@ -7,6 +7,8 @@
 
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgContent.h"
+#include "Viewer/ImageContent.h"
+#include "Viewer/TextContent.h"
 #include "Viewer/SceneGraph.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
@@ -28,7 +30,6 @@ osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
 OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 		osg::AutoTransform> nodeTransform) {
-
 	this->node = node;
 	node->setOsgNode(this);
 	setName(node->getName().toStdString());
@@ -42,11 +43,12 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	float scale = node->getType()->getScale();
 
 	closedG = createTextureNode(node->getType()->getTexture(), 2*scale, 2*scale);
-	contentG = new OsgContent("img/devil.jpg");
+//	contentG = new ImageContent("img/devil.jpg");
+	contentG = createContent(); // generates pseudo random content
 
 	size = osg::Vec2f(0, 0);
 
-	frameG = createFrame(contentG->getBoundingBox(), 0.2);
+	frameG = createFrame(closedG->getBoundingBox(), 0.2f); // temporary frame
 	label = createLabel(node->getLabel(), scale);
 	if (fixedG == NULL)
 		fixedG = createFixed();
@@ -77,6 +79,9 @@ OsgNode::~OsgNode(void) {
 
 osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 		float margin) {
+//	qDebug() << box.corner(0).x() << ", " << box.corner(0).y() << " - " <<
+//			box.corner(3).x() << ", " << box.corner(3).y();
+
 	margin *= node->getType()->getScale();
 	osg::Vec3f mx(margin, 0, 0);
 	osg::Vec3f my(0, margin, 0);
@@ -84,6 +89,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 			box.corner(1), box.corner(1) + mx - my, box.corner(3),
 			box.corner(3) + mx + my, box.corner(2), box.corner(2) - mx + my,
 			box.corner(0), box.corner(0) - mx - my, };
+
 
 	osg::ref_ptr<osg::Geometry> frameQuad =
 				createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(1, 1, 1, 1));
@@ -94,17 +100,33 @@ osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 	return geode;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createContent() {
-//	float scale = node->getType()->getScale();
-//
-//	int i = node->getId() % 10;
-//	if (i == 9)
-//		return createText(scale * 2);
-//	if (i == 3) scale *= 1.5f;
-//	if (i == 5) scale *= 1.8f;
-//	return createTextureNode(node->getType()->getPiano(i),
-//			2.0f*scale*2, 2.0f*scale*2);
-	return NULL;
+// TODO refactor
+void OsgNode::updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float margin) {
+	osg::Geometry* geometry =
+			dynamic_cast<osg::Geometry *> (frame->getDrawable(0));
+
+	if (geometry != NULL) {
+		margin *= node->getType()->getScale();
+		osg::Vec3f mx(margin, 0, 0);
+		osg::Vec3f my(0, margin, 0);
+		osg::Vec3 coords[] = { box.corner(0), box.corner(0) - mx - my,
+				box.corner(1), box.corner(1) + mx - my, box.corner(3),
+				box.corner(3) + mx + my, box.corner(2), box.corner(2) - mx + my,
+				box.corner(0), box.corner(0) - mx - my, };
+
+		geometry->setVertexArray(new osg::Vec3Array(10, coords));
+	}
+}
+
+// XXX temporary method (until content info is read from file)
+OsgContent* OsgNode::createContent() {
+	int i = node->getId() % 11;
+	if (i == 0) {
+		QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ut eros id augue ullamcorper fringilla at id est. Donec egestas congue pretium. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. ");
+		return new TextContent(text);
+	}
+	QString path = QString("img/pic%1.jpg").arg(i);
+	return new ImageContent(path);
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
@@ -183,58 +205,6 @@ osg::ref_ptr<osg::Geometry> OsgNode::createCustomGeometry(
 	return g;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createText(const float scale) {
-	float width = 5.0f;
-	float height = 5.0f;
-	width *= scale;
-	height *= scale;
-
-	osgText::Font* font = osgText::readFontFile("fonts/arial.ttf");
-	QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ut eros id augue ullamcorper fringilla at id est. Donec egestas congue pretium. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. ");
-	osg::ref_ptr<osgText::Text> textD = new osgText::Text();
-
-	float charSize = 5.0f;
-	float margin = 0.2f;
-
-	textD->setFont(font);
-	textD->setMaximumHeight(height);
-	textD->setMaximumWidth(width);
-
-	textD->setText(text.toStdString());
-	textD->setLineSpacing(0.2);
-	//	textDrawable->setAxisAlignment(osgText::Text::SCREEN);
-	textD->setCharacterSize(charSize);
-	textD->setDrawMode(osgText::Text::TEXT);// | osgText::Text::BOUNDINGBOX);
-	textD->setAlignment(osgText::Text::LEFT_CENTER);
-	textD->setPosition(osg::Vec3(-width / 2.0f, 0, 0));
-	textD->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-	width += margin * 2;
-	height += margin * 2;
-
-	osg::ref_ptr<osg::Geometry> nodeRect = new osg::Geometry;
-	osg::ref_ptr<osg::Vec3Array> nodeVerts = new osg::Vec3Array(4);
-
-	(*nodeVerts)[0] = osg::Vec3(-width / 2.0f, -height / 2.0f, 0);
-	(*nodeVerts)[1] = osg::Vec3(width / 2.0f, -height / 2.0f, 0);
-	(*nodeVerts)[2] = osg::Vec3(width / 2.0f, height / 2.0f, 0);
-	(*nodeVerts)[3] = osg::Vec3(-width / 2.0f, height / 2.0f, 0);
-
-	nodeRect->setVertexArray(nodeVerts);
-	nodeRect->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
-			4));
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(osg::Vec4(0.5f, 0.5f, 0.5f, 1.0f));
-	nodeRect->setColorArray(colorArray);
-	nodeRect->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
-	geode->addDrawable(textD);
-	geode->addDrawable(nodeRect);
-	geode->setStateSet(getOrCreateStateSet());
-	return geode;
-}
-
 osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 	osg::ref_ptr<osgText::FadeText> textDrawable = new osgText::FadeText();
 	textDrawable->setFadeSpeed(0.04);
@@ -310,12 +280,15 @@ bool OsgNode::setExpanded(bool flag) {
 
 	expanded = flag;
 	if (expanded) {
+		if (contentG->load()) {
+			qDebug() << node->getId() << ": content loaded";
+			updateFrame(frameG, contentG->getBoundingBox(), 0.2f);
+		}
 		setSize(frameG->getBoundingBox());
 	} else {
 		setSize(closedG->getBoundingBox());
 	}
 	setChildValue(frameG, expanded);
-	contentG->load();
 	setChildValue(contentG, expanded);
 
 	setChildValue(closedG, !expanded);

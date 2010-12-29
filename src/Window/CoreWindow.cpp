@@ -31,7 +31,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-	loadFile("input/data/grid7.graphml");
+	loadFile("input/data/triangle.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -228,7 +228,7 @@ void CoreWindow::centerView() {
 	viewerWidget->getCameraManipulator()->setCenter(center);
 }
 
-void CoreWindow::toggleFixNodes() {
+void CoreWindow::toggleFixNodes() { // TODO move to SceneGraph
 	QLinkedList<Vwr::OsgNode* > nodes = viewerWidget->getPickHandler()->getSelectedNodes();
 	QLinkedList<Vwr::OsgNode* >::const_iterator i = nodes.constBegin();
 

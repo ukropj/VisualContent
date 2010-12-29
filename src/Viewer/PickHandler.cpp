@@ -308,9 +308,9 @@ OsgNode* PickHandler::pickOne(osgViewer::Viewer* viewer,
 	OsgNode* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
 
 	if (pickedNode == NULL) {
-		qDebug() << "NO PICK";
+//		qDebug() << "NO PICK";
 	} else {
-		qDebug() << "NODE PICKED";
+//		qDebug() << "NODE PICKED";
 #if 0
 		osg::Camera* camera = viewer->getCamera();
 		osg::Matrixd viewM = camera->getViewMatrix();
@@ -367,10 +367,10 @@ QSet<OsgNode*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 
 	pickedNodes = getNodesInQuad(viewer, x, y, w, h);
 
-	if (pickedNodes.isEmpty())
-		qDebug() << "NO PICK";
-	else {
-		qDebug() << "NODES PICKED";
+	if (pickedNodes.isEmpty()) {
+//		qDebug() << "NO PICK";
+	} else {
+//		qDebug() << "NODES PICKED";
 	}
 	return pickedNodes;
 }
@@ -613,7 +613,7 @@ bool PickHandler::isShift(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
 	if (key & osgGA::GUIEventAdapter::MODKEY_SHIFT) {
 		//		StatusLogger::log(StatusLogger::KEYS, "SHIFT");
-		qDebug() << "SHIFT";
+//		qDebug() << "SHIFT";
 		return true;
 	}
 	return false;
@@ -623,7 +623,7 @@ bool PickHandler::isCtrl(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
 	if (key & osgGA::GUIEventAdapter::MODKEY_CTRL) {
 		//		StatusLogger::log(StatusLogger::KEYS, "CTRL");
-		qDebug() << "CTRL";
+//		qDebug() << "CTRL";
 		return true;
 	}
 	return false;
@@ -633,7 +633,7 @@ bool PickHandler::isAlt(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
 	if (key & osgGA::GUIEventAdapter::MODKEY_ALT) {
 		//		StatusLogger::log(StatusLogger::KEYS, "CTRL");
-		qDebug() << "ALT";
+//		qDebug() << "ALT";
 		return true;
 	}
 	return false;

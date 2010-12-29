@@ -1,6 +1,5 @@
 #include "Util/TextureWrapper.h"
 #include "Util/Config.h"
-#include "OsgQtBrowser/QWebViewImage.h"
 
 using namespace Util;
 
