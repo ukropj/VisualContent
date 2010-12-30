@@ -17,7 +17,7 @@ TextContent::TextContent(QString text) {
 	l->setGeometry(QRect(QPoint(1, 1), size));
 	setWidget(l, 0.2f);
 
-	loaded = true;
+	loaded = false;
 }
 
 TextContent::~TextContent() {
@@ -31,7 +31,6 @@ bool TextContent::load() {
 		loaded = true;
 
 		//TODO
-
 		return true;
 	}
 }

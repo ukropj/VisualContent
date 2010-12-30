@@ -212,46 +212,10 @@ private:
 	osg::Vec3f getRandomLocation();
 
 	/**
-	 *  osg::Vec3f fv
-	 *  \brief force vector
-	 */
-	osg::Vec3f fv;
-
-	/**
 	 *  osg::Vec3f last
 	 *  \brief origin position of node
 	 */
 	osg::Vec3f last;
-
-	/**
-	 *  osg::Vec3f up
-	 *  \brief vector U
-	 */
-	osg::Vec3f up;
-
-	/**
-	 *  osg::Vec3f vp
-	 *  \brief vector V
-	 */
-	osg::Vec3f vp;
-
-	/**
-	 *  osg::Vec3f barycenter
-	 *  \brief barycenter position
-	 */
-	osg::Vec3f barycenter;
-
-	/**
-	 *  osg::Vec3f centripetal
-	 *  \brief centripetal position
-	 */
-	osg::Vec3f centripetal;
-
-	/**
-	 *  double dist
-	 *  \brief distance between two positions
-	 */
-	double dist;
 
 	/**
 	 *  \fn private  iterate
@@ -259,6 +223,12 @@ private:
 	 *  \return bool
 	 */
 	bool iterate();
+
+	void addForces(Node* u, Node* v, bool isEdge);
+
+	osg::Vec3f getVector(Node* u, Node* v);
+	osg::Vec3f getProjVector(Node* u, Node* v);
+	float getMinProjDistance(Node* u, Node* v, osg::Vec3f pv);
 
 	/**
 	 *  \fn private  applyForces(Node* node)
@@ -268,59 +238,11 @@ private:
 	 */
 	bool applyForces(Node* node);
 
-	/**
-	 *  \fn private  addAttractive(Edge* edge, float factor)
-	 *  \brief Adds attractive force to node
-	 *  \param  edge  which associate two nodes on which effect attractive force
-	 *  \param  factor  multiplicer of attaractive force
-	 */
-	void addAttractive(Node* u, Node* v, float factor = 1);
-
-	/**
-	 *  \fn private  addRepulsive(Node* u, Node* v, float factor)
-	 *  \brief Adds repulsive force between two nodes into node U
-	 *  \param  u  node U
-	 *  \param  v  node V
-	 *  \param  factor  multiplicer of repulsive force
-	 */
-	void addRepulsive(Node* u, Node* v, float factor = 1);
-
-	void addRepulsiveProj(Node* u, Node* v, float factor = 1);
-
 	float proj(double distance, double ideal);
-
-	/**
-	 *  \fn private  rep(double distance)
-	 *  \brief Computes repulsive force
-	 *  \param  distance  distance between two vectors
-	 *  \return float size of repulsive force
-	 */
 	float rep(double distance, double ideal);
-
-	/**
-	 *  \fn private  attr(double distance)
-	 *  \brief Computes attractive force
-	 *  \param     distance  distance between two vectors
-	 *  \return float size of attractive force
-	 */
 	float attr(double distance, double ideal);
-
-	/**
-	 *  \fn private  centr(double distance)
-	 *  \brief Computes centripetal force
-	 *  \param      distance   distance between two vectors
-	 *  \return float size of centripetal force
-	 */
 	float centr(double distance);
 
-	/**
-	 *  \fn private  distance(osg::Vec3f u,osg::Vec3f v)
-	 *  \brief Computes distance between vectors U and V.
-	 *  \param       u  vector U
-	 *  \param       v  vector V
-	 *  \return double distance between two vectors
-	 */
-	float distance(osg::Vec3f u, osg::Vec3f v);
 };
 }
 

@@ -92,6 +92,8 @@ public:
 	osg::Vec3f getEye() const;
 	osg::Vec3f getUpVector() const;
 
+	static bool mayOverlap(OsgNode* u, OsgNode* v);
+
 	float getDistanceToEdge(double angle);
 
 	void setPickable(bool flag) {

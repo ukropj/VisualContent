@@ -54,6 +54,7 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	widgetImage->getQGraphicsViewAdapter()->setBackgroundColor(QColor(0, 0, 0, 0));
 
 	QSize size = widget->geometry().size();
+	size = QSize(size.width()*150/((float)size.height()), 150);
 	size *= scale;
 
 	// determines size & ratio!

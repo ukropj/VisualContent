@@ -13,7 +13,6 @@ using namespace Model;
 typedef QMap<qlonglong, Node*>::const_iterator NodeIt;
 typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
 
-//Konstruktor pre vlakno s algoritmom
 FRAlgorithm::FRAlgorithm() {
 	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
 	MIN_MOVEMENT = Util::Config::getValue("Layout.Algorithm.MinMovement").toFloat();
@@ -24,10 +23,7 @@ FRAlgorithm::FRAlgorithm() {
 	isIterating = false;
 	graph = NULL;
 	center = osg::Vec3f(0, 0, 0);
-	fv = osg::Vec3f();
 	last = osg::Vec3f();
-	up = osg::Vec3f();
-	vp = osg::Vec3f();
 	notEnd = true;
 
 	sizeFactor = 30;
@@ -202,19 +198,12 @@ bool FRAlgorithm::iterate() {
 	}
 
 	// "pseudo edges" are edges of complete graph (i.e all distinct node pairs)
-	// now only one iteration is needed,
-	// no need any more to compute repulsive force independently for each node in pair
-	// complexity is O((NxN/2) + E), was O(NxN + E)
-	// speed of iteration has nearly doubled :)
 	QMap<uint, PseudoEdge*>* pe = graph->getPseudoEdges();
 	for (QMap<uint, PseudoEdge*>::const_iterator i = pe->constBegin(); i != pe->constEnd(); i++) {
 		PseudoEdge* e = i.value();
 		Node* u = e->getSrcNode();
 		Node* v = e->getDstNode();
-		if (e->isReal())
-			addAttractive(u, v);
-		addRepulsive(u, v);
-		addRepulsiveProj(u, v);
+		addForces(u, v, e->isReal());
 	}
 
 	if (state != RUNNING)
@@ -238,7 +227,7 @@ bool FRAlgorithm::iterate() {
 
 bool FRAlgorithm::applyForces(Node* node) {
 	// nakumulovana sila
-	fv = node->getForce();
+	osg::Vec3f fv = node->getForce();
 	// zmensenie
 	fv *= ALPHA;
 	// pricitame aktualnu rychlost
@@ -263,130 +252,72 @@ bool FRAlgorithm::applyForces(Node* node) {
 	}
 }
 
-/* Pricitanie pritazlivych sil */
-void FRAlgorithm::addAttractive(Node* u, Node* v, float factor) {
-	up = u->getPosition();
-	vp = v->getPosition();
-	dist = distance(up, vp);
-	if (dist == 0)
-		return;
-	fv = vp - up; // smer sily
-	fv.normalize();
+void FRAlgorithm::addForces(Node* u, Node* v, bool isEdge) {
+	osg::Vec3f fv(0, 0, 0);
+	float ideal = K;								// desired distance
 
-	fv *= attr(dist, qMax(K, u->getRadius() +
-			v->getRadius())) * factor;// velkost sily
+	osg::Vec3f pvec = getProjVector(u, v);	// resolve projective force first
+	if (pvec.length() != 0) {
+		float pdist = pvec.normalize();						// projective distance between nodes
+		float pideal = getMinProjDistance(u, v, pvec); 		// minimal projective distance
+		float projF = proj(pdist, pideal);					// projective force (only if ...)
+		fv += pvec * projF;					// add projective force
+
+		//qDebug() << ideal << ", " << pideal;
+		ideal = qMax(ideal, pideal);		// modify desired distance for standard forces
+	}
+
+	osg::Vec3f vec = getVector(u, v);
+	float dist = vec.normalize();					// distance between nodes
+	float attrF = isEdge ? attr(dist, ideal) : 0;	// attractive force (only if nodes are connected by edge)
+	float replF = rep(dist, ideal);					// repulsive force (always)
+	fv += vec * (attrF + replF);			// add standard forces
 
 	u->addForce(fv);
-	fv = center - fv;
-	v->addForce(fv);
+	v->addForce(-fv);
 }
 
-/* Pricitanie odpudivych sil */
-void FRAlgorithm::addRepulsive(Node* u, Node* v, float factor) {
-	up = u->getPosition();
-	vp = v->getPosition();
-	dist = distance(up, vp);
-	if (useMaxDistance && dist > MAX_DISTANCE) {
-		//		std::cout << "max dist" << std::endl;
-		return;
+osg::Vec3f FRAlgorithm::getVector(Node* u, Node* v) {
+	osg::Vec3f up = u->getPosition();
+	osg::Vec3f vp = v->getPosition();
+	if (up == vp) {
+		vp.set(vp.x() + (rand() % 10), vp.y() + (rand() % 10), vp.z() + (rand()% 10));
 	}
-	if (dist == 0) {
-		// pri splynuti uzlov medzi nimi vytvorime malu vzdialenost
-		vp.set(vp.x() + (rand() % 10), vp.y() + (rand() % 10), vp.z() + (rand()
-				% 10));
-		dist = distance(up, vp);
-	}
-	fv = (vp - up);// smer sily
-
-	fv.normalize();
-	fv *= rep(dist, qMax(K, u->getRadius() + v->getRadius())) * factor;
-	u->addForce(fv);
-	fv = center - fv;
-	v->addForce(fv);
+	return vp - up;
 }
 
-/* Pricitanie projektvnych odpudivych sil */
-void FRAlgorithm::addRepulsiveProj(Node* u, Node* v, float factor) {
-	Vwr::OsgNode* ou = u->getOsgNode();
-	Vwr::OsgNode* ov = v->getOsgNode();
-	// are both nodes rendering?
-	if (ou == NULL || ov == NULL)
-		return;
+osg::Vec3f FRAlgorithm::getProjVector(Node* u, Node* v) {
+	if (!Vwr::OsgNode::mayOverlap(u->getOsgNode(), v->getOsgNode()))
+		return osg::Vec3f(0, 0, 0);
 
-	bool uExp = ou->isExpanded();
-	bool vExp = ov->isExpanded();
-	// is any node expanded?
-	if (!uExp && !vExp)
-		return;
-//		factor /= 2.0f;
-
-	osg::Vec3f eye = ou->getEye();
-	// is any expanded node behind the other one?
-	float udist = distance(up, eye);
-	float vdist = distance(vp, eye);
-	if (!(uExp && udist >= vdist) && !(vExp && vdist >= udist))
-//		return;
-		factor /= 4.0f;
-
-	// is any expanded node on screen?
-	// XXX is this check improving or lowering performance?
-	if ((!vExp && !ou->isOnScreen()) || (!uExp && !ov->isOnScreen()))
-		return;
-
-	up = u->getPosition();
-	vp = v->getPosition();
+	osg::Vec3f up = u->getPosition();
+	osg::Vec3f vp = v->getPosition();
 
 	osg::Vec3f edgeDir = vp - up;
-	osg::Vec3f viewVec = eye - ((up + vp) / 2.0f); // from eye to middle of u,v
-	fv = viewVec ^ (edgeDir ^ viewVec);
+	osg::Vec3f viewVec = u->getOsgNode()->getEye() - ((up + vp) / 2.0f); // from eye to middle of u,v
+	osg::Vec3f pv = viewVec ^ (edgeDir ^ viewVec);
 
 	float length = edgeDir.normalize();
-	fv.normalize();
-	dist = length * qAbs(fv * edgeDir);
+	pv.normalize();
+	float dist = length * qAbs(pv * edgeDir);
 	if (dist == 0)
-		return; // let other forces handle this special case
+		return osg::Vec3f(0, 0, 0);
 
-	double angle = acos(ou->getUpVector() * fv);
+	return pv * dist;
+}
+
+float FRAlgorithm::getMinProjDistance(Node* u, Node* v, osg::Vec3f pv) {
+	if (pv.length() == 0)
+		return 0;
+	Vwr::OsgNode* ou = u->getOsgNode();
+	Vwr::OsgNode* ov = v->getOsgNode();
+	double angle = acos(ou->getUpVector() * pv);
 	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
 			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
-
-	fv *= proj(dist, ideal) * factor;
-
-	u->addForce(fv);
-	fv = center - fv;
-	v->addForce(fv);
+	return ideal;
 }
 
 float FRAlgorithm::proj(double distance, double ideal) {
-	/* Projective repulsive function behaviour
-	 * for dist in ranges:
-	 * <q * ideal, Inf)			-> no repulsion
-	 * <ideal, q * ideal)		-> (weak) linear repulsion, nodes are not overlapping
-	 * 								<-p * ideal, 0)
-	 * (0, ideal)				-> (strong) hyperbolic repulsion, nodes are overlapping
-	 * 								(-Inf, -p * ideal)
-	 *
-	 * meaning of parameters p and q (both arre relative to ideal):
-	 * q is point where repulsion stops, must be more than 1!
-	 * 		f(q * ideal) == 0
-	 * p is multiplier of strong repulsion, must be at least 1!
-	 * 		f(ideal) = -p * ideal;
-	 */
-
-//	float q = 1.5f;	// repulsion will stop soon after overlap is removed
-//	float p = 4.0f;	// 5 times stronger than usual repulsion
-//
-//	if (dist >= q * ideal) {
-//		return 0;
-//	} else if (dist >= ideal) {
-//		return (p/(q-1) * (dist - q * ideal));
-//	} else if (dist > 0) {
-//		return -(p * (ideal * ideal) / dist);
-//	} else {
-//		return 0;
-//	}
-
-	// More elegant funtion proposed:
 	float f = -(4 * ideal * ideal / distance) + 2 * ideal;
 	if (f > 0)
 		return 0;
@@ -395,6 +326,8 @@ float FRAlgorithm::proj(double distance, double ideal) {
 
 /* Vzorec na vypocet odpudivej sily */
 float FRAlgorithm::rep(double distance, double ideal) {
+	if (useMaxDistance && distance > MAX_DISTANCE)
+		return 0;
 	return (float) (-(ideal * ideal) / distance);
 }
 
@@ -406,9 +339,4 @@ float FRAlgorithm::attr(double distance, double ideal) {
 /* Vzorec na vypocet dostredivej sily */
 float FRAlgorithm::centr(double distance) {
 	return (float) distance;
-}
-
-float FRAlgorithm::distance(osg::Vec3f u, osg::Vec3f v) {
-	osg::Vec3f x = u - v;
-	return x.length();
 }

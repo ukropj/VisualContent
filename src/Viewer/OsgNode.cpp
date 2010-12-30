@@ -402,6 +402,22 @@ osg::Vec3f OsgNode::getUpVector() const {
 	return sceneGraph->getUpVector();
 }
 
+bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
+	if (u == NULL || v == NULL)
+		return false;
+	if (!u->isExpanded() && !v->isExpanded())
+		return false;
+	float udist = (u->getPosition() - u->getEye()).length();
+	float vdist = (v->getPosition() - v->getEye()).length();
+	if (u->isExpanded() && udist >= vdist)
+		if (u->isOnScreen())
+			return true;
+	if (v->isExpanded() && vdist >= udist)
+		if (v->isOnScreen())
+			return true;
+	return false;
+}
+
 float OsgNode::getDistanceToEdge(double angle) {
 	float w, h, d;
 
