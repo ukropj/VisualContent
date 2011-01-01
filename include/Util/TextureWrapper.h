@@ -28,7 +28,7 @@ public:
 	 * Nacita textury vo formate PNG.
 	 *
 	 **/
-	static osg::ref_ptr<osg::Texture2D> readTextureFromFile(QString path);
+	static osg::ref_ptr<osg::Texture2D> readTextureFromFile(QString path, bool repeat = false);
 
 	/**
 	 *  \fn public static  createTexture
@@ -36,7 +36,7 @@ public:
 	 *  \param      image    texture image
 	 *  \return osg::ref_ptr texture
 	 */
-	static osg::ref_ptr<osg::Texture2D> createTexture(osg::Image* image);
+	static osg::ref_ptr<osg::Texture2D> createTexture(osg::Image* image, bool repeat = false);
 
 	/**
 	 *  \fn public static  getNodeTexture

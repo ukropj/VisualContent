@@ -131,12 +131,17 @@ OsgContent* OsgNode::createContent() {
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 		osg::ref_ptr<osg::Texture2D> texture, float width, float height) {
+//	osg::Geometry* nodeQuad = osg::createTexturedQuadGeometry(
+//			osg::Vec3(-width/2.0f, -height/2.0f, 0),
+//			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
+
 	width /= 2.0f;
 	height /= 2.0f;
 	osg::Vec3 coords[] = { osg::Vec3(-width, -height, 0),
 			osg::Vec3(width, -height, 0),
 			osg::Vec3(width, height, 0),
 			osg::Vec3(-width, height, 0) };
+
 
 	osg::ref_ptr<osg::Geometry> nodeQuad =
 				createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, osg::Vec4f(1, 1, 1, 1));
@@ -147,8 +152,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 
 	osg::ref_ptr<osg::StateSet> stateSet = createStateSet();
 	if (texture != NULL)
-		stateSet->setTextureAttributeAndModes(0, texture,
-				osg::StateAttribute::ON);
+		stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
 	nodeQuad->setStateSet(stateSet);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
@@ -235,7 +239,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
 
-	stateSet->setDataVariance(osg::Object::DYNAMIC);
+	stateSet->setDataVariance(osg::Object::STATIC);
 	//	stateSet->setMode(GL_DEPTH_TEST,osg::StateAttribute::OFF);
 	return stateSet;
 }
@@ -267,6 +271,8 @@ void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 				dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
 		colorArray->pop_back();
 		colorArray->push_back(color);
+	} else {
+		qWarning() << "Cannot set color for geometry in " << QString::fromStdString(geode->getName());
 	}
 }
 

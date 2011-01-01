@@ -7,23 +7,30 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::nodeTexture;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::edgeTexture;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::orientedEdgeTexture;
 
-osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path) {
+osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path, bool repeat) {
 	osg::ref_ptr<osg::Texture2D> texture = NULL;
 	if (path != NULL) {
 		osg::Image* img = osgDB::readImageFile(path.toStdString());
-		texture = createTexture(img);
+		texture = createTexture(img, repeat);
 	}
 	if (texture == NULL)
 		qWarning("Unable to read texture from file.");
 	return texture;
 }
 
-osg::ref_ptr<osg::Texture2D> TextureWrapper::createTexture(osg::Image* image) {
-	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D;
-	texture->setImage(image);
-	texture->setDataVariance(osg::Object::DYNAMIC);
-	texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-	texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+osg::ref_ptr<osg::Texture2D> TextureWrapper::createTexture(osg::Image* image, bool repeat) {
+	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D(image);
+	texture->setResizeNonPowerOfTwoHint(false);
+	texture->setDataVariance(osg::Object::STATIC);
+
+	osg::Texture::WrapMode wrapMode;
+	if (repeat) {
+		wrapMode = osg::Texture::REPEAT;
+	} else {
+		wrapMode = osg::Texture::CLAMP_TO_EDGE;
+	}
+	texture->setWrap(osg::Texture::WRAP_S, wrapMode);
+	texture->setWrap(osg::Texture::WRAP_T, wrapMode);
 	return texture;
 }
 
@@ -37,7 +44,7 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::getNodeTexture() {
 osg::ref_ptr<osg::Texture2D> TextureWrapper::getEdgeTexture() {
 	if (edgeTexture == NULL)
 		edgeTexture = readTextureFromFile(Config::getValue(
-				"Viewer.Textures.Edge"));
+				"Viewer.Textures.Edge"), true);
 	return edgeTexture;
 }
 

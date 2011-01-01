@@ -15,34 +15,12 @@
 #include <osgViewer/ViewerEventHandlers>
 
 #include "OsgQtBrowser/QWidgetImage.h"
+#include "Util/TextureWrapper.h"
 
 namespace Vwr {
 
 WidgetContent::WidgetContent() : OsgContent() {
 }
-
-/*WidgetContent::WidgetContent(QString imagePath) : OsgContent(imagePath) {
-//	QWidget* w = new QWidget;
-//	w->setLayout(new QVBoxLayout);
-
-	QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-	QLabel* l = new QLabel;
-	QImage image;
-	image.load("img/pic.jpg");
-//	l->setPixmap(QPixmap(imagePath));
-//	l->setText(text);
-	l->setPixmap(QPixmap::fromImage(image));
-//	w->layout()->addWidget(l);
-	QRect g = l->geometry();
-	qDebug() << g;
-	qDebug() << image.rect();
-//	w->setGeometry(0, 0, 400, 400);
-//	l->setGeometry(1, 1, 500, 500);
-	QSize size = image.size();
-	l->setGeometry(QRect(QPoint(1, 1), size));
-
-	setWidget(l, 0.2f);
-}*/
 
 WidgetContent::~WidgetContent() {
 }
@@ -54,29 +32,22 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	widgetImage->getQGraphicsViewAdapter()->setBackgroundColor(QColor(0, 0, 0, 0));
 
 	QSize size = widget->geometry().size();
-	size = QSize(size.width()*150/((float)size.height()), 150);
-	size *= scale;
+	float width = size.width()*150 / ((float)size.height());
+	float height = 150;
+
+	width *= scale;
+	height *= scale;
 
 	// determines size & ratio!
 	osg::Geometry* quad = osg::createTexturedQuadGeometry(
-			osg::Vec3(-size.width()/2.0f, -size.height()/2.0f, 0),
-			osg::Vec3(size.width(), 0, 0), osg::Vec3(0, size.height(), 0), 1, 1);
-
+			osg::Vec3(-width/2.0f, -height/2.0f, 0),
+			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
 	addDrawable(quad);
 	osg::ref_ptr<osg::StateSet> stateSet = getOrCreateStateSet();
 
-	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
-	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-	stateSet->setAttribute(new osg::Program);
-
-	osg::Texture2D* texture = new osg::Texture2D(widgetImage.get());
-	texture->setResizeNonPowerOfTwoHint(false);
+	osg::ref_ptr<osg::Texture2D> texture = Util::TextureWrapper::createTexture(widgetImage);
 	texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
-	texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
-	texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
-	stateSet->setTextureAttributeAndModes(0, texture,
-			osg::StateAttribute::ON);
+	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
 
 	// this enables interaction with the widget (buggy), use current camera
 	// nothing is shown without this code!

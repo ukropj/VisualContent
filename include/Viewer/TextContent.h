@@ -19,6 +19,7 @@ public:
 	bool load();
 private:
 	bool loaded;
+	QString text;
 };
 
 }

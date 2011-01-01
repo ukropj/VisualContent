@@ -10,18 +10,11 @@
 
 using namespace Vwr;
 
-TextContent::TextContent(QString text) {
-	QTextEdit* l = new QTextEdit;
-	l->setText(text);
-	QSize size(200, 150);
-	l->setGeometry(QRect(QPoint(1, 1), size));
-	setWidget(l, 0.2f);
-
+TextContent::TextContent(QString text) : text(text) {
 	loaded = false;
 }
 
 TextContent::~TextContent() {
-	// TODO Auto-generated destructor stub
 }
 
 bool TextContent::load() {
@@ -30,7 +23,12 @@ bool TextContent::load() {
 	} else {
 		loaded = true;
 
-		//TODO
+		QTextEdit* l = new QTextEdit;
+		l->setText(text);
+		QSize size(200, 150);
+		l->setGeometry(QRect(QPoint(1, 1), size));
+		setWidget(l, 0.2f); 	// XXX magic number
+
 		return true;
 	}
 }
