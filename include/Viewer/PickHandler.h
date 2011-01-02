@@ -202,6 +202,8 @@ private:
 	 */
 	osg::ref_ptr<osg::Geode> selectionQuad;
 
+	char pressedKey;
+
 	osgViewer::Viewer* getViewer(osgGA::GUIActionAdapter& aa) {
 		return dynamic_cast<osgViewer::Viewer*> (&aa);
 	}
@@ -219,7 +221,7 @@ private:
 	 */
 	SelectionType selectionType;
 
-	bool select(OsgNode* node = NULL);
+	bool select(OsgNode* node = NULL, bool singleOnly = false);
 
 	void deselectAll();
 
@@ -282,6 +284,9 @@ private:
 	bool isShift(const osgGA::GUIEventAdapter& event);
 	bool isCtrl(const osgGA::GUIEventAdapter& event);
 	bool isAlt(const osgGA::GUIEventAdapter& event);
+	bool isKey(char key, const osgGA::GUIEventAdapter& event);
+
+	osg::Vec2f toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer);
 
 	/**
 	 *  const osgGA::GUIEventAdapter * eaPush

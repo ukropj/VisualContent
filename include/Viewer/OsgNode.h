@@ -71,9 +71,9 @@ public:
 
 	float getRadius() const;
 
-	osg::Vec2f getSize() const {
-		return size;
-	}
+//	osg::Vec2f getSize() const {
+//		return size;
+//	}
 
 	void showLabel(bool visible);
 
@@ -100,7 +100,7 @@ public:
 		pickable = flag;
 	}
 
-	void resize(float radius);
+	void resize(float factor);
 
 	static osg::Vec4 selectedColor;
 

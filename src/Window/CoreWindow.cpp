@@ -7,7 +7,6 @@
 #include "Model/Graph.h"
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
-#include "Viewer/OsgNode.h"
 #include "osgDB/WriteFile"
 
 using namespace Window;
@@ -228,15 +227,8 @@ void CoreWindow::centerView() {
 	viewerWidget->getCameraManipulator()->setCenter(center);
 }
 
-void CoreWindow::toggleFixNodes() { // TODO move to SceneGraph
-	QLinkedList<Vwr::OsgNode* > nodes = viewerWidget->getPickHandler()->getSelectedNodes();
-	QLinkedList<Vwr::OsgNode* >::const_iterator i = nodes.constBegin();
-
-	while (i != nodes.constEnd()) {
-		(*i)->setFixed(!(*i)->isFixed());
-		++i;
-	}
-
+void CoreWindow::toggleFixNodes() {
+	sceneGraph->toggleFixedNodes(viewerWidget->getPickHandler()->getSelectedNodes());
 	layouter->wakeUp();
 }
 

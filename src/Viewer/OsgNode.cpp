@@ -244,6 +244,11 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 	return stateSet;
 }
 
+void OsgNode::resize(float factor) {
+	float newScale = nodeTransform->getScale().x() * factor;
+	nodeTransform->setScale(newScale);
+}
+
 void OsgNode::setSize(osg::BoundingBox box) {
 	setSize(box.xMax() - box.xMin(), box.yMax() - box.yMin());
 }
@@ -341,7 +346,7 @@ bool OsgNode::setFixed(bool flag) {
 }
 
 float OsgNode::getRadius() const {
-	return size.length() / 2;
+	return (size.length() / 2) * nodeTransform->getScale().x();;
 }
 
 void OsgNode::reloadConfig() {
@@ -427,8 +432,8 @@ bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
 float OsgNode::getDistanceToEdge(double angle) {
 	float w, h, d;
 
-	w = size.x();
-	h = size.y();
+	w = size.x() * nodeTransform->getScale().x();
+	h = size.y() * nodeTransform->getScale().x();
 
 	if (tan(angle) < -w / h || tan(angle) > w / h) {
 		d = qAbs(w / (2 * sin(angle)));

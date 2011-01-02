@@ -179,6 +179,14 @@ void SceneGraph::setNodeLabelsVisible(bool visible) {
 	}
 }
 
+void SceneGraph::toggleFixedNodes(QLinkedList<OsgNode* > nodes) {
+	QLinkedList<OsgNode* >::const_iterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		(*i)->setFixed(!(*i)->isFixed());
+		++i;
+	}
+}
+
 void SceneGraph::reloadConfig() {
 	Util::TextureWrapper::reloadTextures();
 

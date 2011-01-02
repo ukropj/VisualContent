@@ -101,6 +101,8 @@ public:
 	 */
 	void setNodeLabelsVisible(bool visible);
 
+	void toggleFixedNodes(QLinkedList<Vwr::OsgNode* > nodes);
+
 	/**
 	 * Freezes/unfreezes current graph
 	 */
