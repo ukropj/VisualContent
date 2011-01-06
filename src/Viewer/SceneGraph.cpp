@@ -18,7 +18,7 @@
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 
-#include <qdebug.h>
+#include <QDebug>
 #include <QtGui/QWidget>
 #include <QtGui/QLabel>
 #include <QtGui/QPushButton>
@@ -218,8 +218,8 @@ void SceneGraph::createExperiment() {
 	widget->setLayout(new QVBoxLayout);
 
 	QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-	QLabel* l = new QLabel(text);
-	l->setPixmap(QPixmap("img/devil.jpg"));
+	QLabel* l = new QLabel();
+	l->setPixmap(QPixmap("img/pic11.jpg"));
 
 	widget->layout()->addWidget(l);
 	widget->setGeometry(1, 1, 350, 350);
@@ -234,9 +234,12 @@ void SceneGraph::createExperiment() {
 	osg::Geode* geode = new osg::Geode;
 	geode->addDrawable(quad);
 
-	osg::MatrixTransform* mt = new osg::MatrixTransform;
-	mt->setMatrix(osg::Matrix::rotate(osg::Vec3(0, 1, 0),
-			osg::Vec3(0, 0, 1)));
+	osg::AutoTransform* mt = new osg::AutoTransform;
+	mt->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
+	mt->setAutoScaleToScreen(true);
+	mt->setPosition(osg::Vec3d(30,30,30));
+//	mt->setMatrix(osg::Matrix::rotate(osg::Vec3(0, 1, 0),
+//			osg::Vec3(0, 0, 1)));
 	mt->addChild(geode);
 
 	mt->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
@@ -259,6 +262,7 @@ void SceneGraph::createExperiment() {
 			new osgViewer::InteractiveImageHandler(widgetImage.get(), texture, camera);
 	quad->setEventCallback(handler);
 	quad->setCullCallback(handler);
+
 
 //	customNodeList.append(mt);
 }

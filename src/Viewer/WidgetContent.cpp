@@ -17,7 +17,7 @@
 #include "OsgQtBrowser/QWidgetImage.h"
 #include "Util/TextureWrapper.h"
 
-namespace Vwr {
+using namespace Vwr;
 
 WidgetContent::WidgetContent() : OsgContent() {
 }
@@ -48,6 +48,7 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	osg::ref_ptr<osg::Texture2D> texture = Util::TextureWrapper::createTexture(widgetImage);
 	texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
 	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
+//	stateSet->setAttribute(new osg::Program);
 
 	// this enables interaction with the widget (buggy), use current camera
 	// nothing is shown without this code!
@@ -64,4 +65,3 @@ bool WidgetContent::load() {
 	return false;
 }
 
-}

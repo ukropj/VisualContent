@@ -9,6 +9,7 @@
 #include "Viewer/OsgContent.h"
 #include "Viewer/ImageContent.h"
 #include "Viewer/TextContent.h"
+#include "Viewer/OsgFrame.h"
 #include "Viewer/SceneGraph.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
@@ -40,15 +41,20 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	expanded = false;
 	usingInterpolation = true;
 	pickable = true;
+	myFrame = NULL;
 	float scale = node->getType()->getScale();
 
 	closedG = createTextureNode(node->getType()->getTexture(), 2*scale, 2*scale);
 //	contentG = new ImageContent("img/devil.jpg");
 	contentG = createContent(); // generates pseudo random content
+	osg::PositionAttitudeTransform* contentT = new osg::PositionAttitudeTransform;
+	contentT->setName("content_transform");
+	contentT->addChild(contentG);
+	contentG->setTransform(contentT);
 
-	size = osg::Vec2f(0, 0);
+	size = osg::Vec3f(0, 0, 0);
 
-	frameG = createFrame(closedG->getBoundingBox(), 0.2f); // temporary frame
+	frameG = initFrame();
 	label = createLabel(node->getLabel(), scale);
 	if (fixedG == NULL)
 		fixedG = createFixed();
@@ -59,7 +65,7 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	label->setName("label");
 
 	addChild(closedG);
-	addChild(contentG);
+	addChild(contentG->getTransform());
 	addChild(label);
 	addChild(frameG);
 	addChild(fixedG);
@@ -77,19 +83,11 @@ OsgNode::~OsgNode(void) {
 	delete contentG;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
-		float margin) {
-//	qDebug() << box.corner(0).x() << ", " << box.corner(0).y() << " - " <<
-//			box.corner(3).x() << ", " << box.corner(3).y();
-
-	margin *= node->getType()->getScale();
-	osg::Vec3f mx(margin, 0, 0);
-	osg::Vec3f my(0, margin, 0);
-	osg::Vec3 coords[] = { box.corner(0), box.corner(0) - mx - my,
-			box.corner(1), box.corner(1) + mx - my, box.corner(3),
-			box.corner(3) + mx + my, box.corner(2), box.corner(2) - mx + my,
-			box.corner(0), box.corner(0) - mx - my, };
-
+osg::ref_ptr<osg::Geode> OsgNode::initFrame() {
+	osg::Vec3 v(0,0,0);
+	osg::Vec3 coords[] = {
+			v,v,v,v,v,
+			v,v,v,v,v};
 
 	osg::ref_ptr<osg::Geometry> frameQuad =
 				createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(1, 1, 1, 1));
@@ -101,7 +99,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createFrame(osg::BoundingBox box,
 }
 
 // TODO refactor
-void OsgNode::updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float margin) {
+void OsgNode::updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float scale, float margin) {
 	osg::Geometry* geometry =
 			dynamic_cast<osg::Geometry *> (frame->getDrawable(0));
 
@@ -109,10 +107,12 @@ void OsgNode::updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, 
 		margin *= node->getType()->getScale();
 		osg::Vec3f mx(margin, 0, 0);
 		osg::Vec3f my(0, margin, 0);
-		osg::Vec3 coords[] = { box.corner(0), box.corner(0) - mx - my,
-				box.corner(1), box.corner(1) + mx - my, box.corner(3),
-				box.corner(3) + mx + my, box.corner(2), box.corner(2) - mx + my,
-				box.corner(0), box.corner(0) - mx - my, };
+		osg::Vec3 coords[] = {
+				box.corner(0)*scale, box.corner(0)*scale - mx - my,
+				box.corner(1)*scale, box.corner(1)*scale + mx - my,
+				box.corner(3)*scale, box.corner(3)*scale + mx + my,
+				box.corner(2)*scale, box.corner(2)*scale - mx + my,
+				box.corner(0)*scale, box.corner(0)*scale - mx - my, };
 
 		geometry->setVertexArray(new osg::Vec3Array(10, coords));
 	}
@@ -245,17 +245,25 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 }
 
 void OsgNode::resize(float factor) {
-	float newScale = nodeTransform->getScale().x() * factor;
-	nodeTransform->setScale(newScale);
+	osg::Vec3d newScale = contentG->getScale() * factor;
+	if (newScale.x() > 3) newScale.set(3,3,3);
+	contentG->setScale(newScale);
+	updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f);
+	if (myFrame != NULL)
+		myFrame->updatePosition();
 }
 
 void OsgNode::setSize(osg::BoundingBox box) {
 	setSize(box.xMax() - box.xMin(), box.yMax() - box.yMin());
 }
 
-void OsgNode::setSize(float width, float height) {
-	size = osg::Vec2f(width, height);// * nodeTransform->getScale().x();
-	node->setRadius(getRadius());
+void OsgNode::setSize(float width, float height, float depth) {
+	size = osg::Vec3f(width, height, depth);
+	node->setRadius(getSize().length()/2.0f);
+}
+
+osg::Vec3f OsgNode::getSize() const {
+	return size * contentG->getScale().x();
 }
 
 void OsgNode::setColor(osg::Vec4 color) {
@@ -293,14 +301,14 @@ bool OsgNode::setExpanded(bool flag) {
 	if (expanded) {
 		if (contentG->load()) {
 			qDebug() << node->getId() << ": content loaded";
-			updateFrame(frameG, contentG->getBoundingBox(), 0.2f);
+			updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f);
 		}
 		setSize(frameG->getBoundingBox());
 	} else {
 		setSize(closedG->getBoundingBox());
 	}
 	setChildValue(frameG, expanded);
-	setChildValue(contentG, expanded);
+	setChildValue(contentG->getTransform(), expanded);
 
 	setChildValue(closedG, !expanded);
 	return true;
@@ -346,7 +354,7 @@ bool OsgNode::setFixed(bool flag) {
 }
 
 float OsgNode::getRadius() const {
-	return (size.length() / 2) * nodeTransform->getScale().x();;
+	return node->getRadius();
 }
 
 void OsgNode::reloadConfig() {
@@ -386,7 +394,11 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 	if (usingInterpolation)
 		directionVector *= interpolationSpeed;
 
-	nodeTransform->setPosition(currentPos + directionVector);
+	if (nodeTransform != NULL)
+		nodeTransform->setPosition(currentPos + directionVector);
+
+	if (myFrame != NULL)
+		myFrame->updatePosition();
 }
 
 void OsgNode::setPosition(osg::Vec3f pos) {
@@ -396,9 +408,8 @@ void OsgNode::setPosition(osg::Vec3f pos) {
 
 bool OsgNode::isOnScreen() const {
 	osg::Vec3f pos = node->getPosition();
-	pos = sceneGraph->byProjectionInv(sceneGraph->byView(pos));
+	pos = sceneGraph->byProjection(sceneGraph->byView(pos));
 
-	// if top left and botom right points are out of screen, node is not visible at all
 	if (qAbs(pos.x()) > 1 || qAbs(pos.y()) > 1) {
 		return false;
 	}
@@ -420,6 +431,8 @@ bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
 		return false;
 	float udist = (u->getPosition() - u->getEye()).length();
 	float vdist = (v->getPosition() - v->getEye()).length();
+//	qDebug() << u->getName().c_str() << ": " << udist;
+//	qDebug() << v->getName().c_str() << ": " << vdist;
 	if (u->isExpanded() && udist >= vdist)
 		if (u->isOnScreen())
 			return true;
@@ -429,11 +442,11 @@ bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
 	return false;
 }
 
-float OsgNode::getDistanceToEdge(double angle) {
+float OsgNode::getDistanceToEdge(double angle) const {
 	float w, h, d;
 
-	w = size.x() * nodeTransform->getScale().x();
-	h = size.y() * nodeTransform->getScale().x();
+	w = getSize().x();
+	h = getSize().y();
 
 	if (tan(angle) < -w / h || tan(angle) > w / h) {
 		d = qAbs(w / (2 * sin(angle)));
@@ -453,3 +466,15 @@ QString OsgNode::toString() const {
 	return str;
 }
 
+bool OsgNode::equals(OsgNode* other) const {
+	if (this == other) {
+		return true;
+	}
+	if (other == NULL) {
+		return false;
+	}
+	if (!node->equals(other->node)) {
+		return false;
+	}
+	return true;
+}

@@ -1,8 +1,5 @@
 #include "Window/CoreWindow.h"
-#include "Window/OptionsWindow.h"
-#include "Window/CheckBoxList.h"
 #include "Window/ViewerQT.h"
-#include "Window/MessageWindows.h"
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
 #include "Core/IOManager.h"
@@ -57,6 +54,13 @@ void CoreWindow::createActions() {
 	playAction->setCheckable(true);
 	playAction->setChecked(true);
 	connect(playAction, SIGNAL(triggered(bool)), this, SLOT(toggleLayouting(bool)));
+
+	QIcon modeIcon("img/icons/debug.png");
+	debugAction = new QAction(modeIcon, tr("&Debug"), this);
+	debugAction->setShortcut(tr("CTRL+D"));
+	debugAction->setCheckable(true);
+	debugAction->setChecked(false);
+	connect(debugAction, SIGNAL(triggered()), this, SLOT(toggleDebug()));
 
 	QIcon fixIcon("img/icons/fix.png");
 	fixAction = new QAction(fixIcon, tr("&Fix/Unfix"), this);
@@ -148,6 +152,9 @@ void CoreWindow::createToolBars() {
 	slider->setFixedHeight(150);
 	toolBar->addWidget(slider);
 
+	toolBar->addSeparator();
+	toolBar->addAction(debugAction);
+
 	toolBar->setMovable(false);
 	addToolBar(Qt::LeftToolBarArea, toolBar);
 }
@@ -182,6 +189,7 @@ void CoreWindow::loadFile(QString fileName) {
 		setWindowFilePath(fileName);
 
 		// reload
+		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar); // deletes original scene graph
 		layouter->setGraph(graph); // deletes original graph
 		progressBar->setValue(progressBar->maximum());
@@ -230,6 +238,10 @@ void CoreWindow::centerView() {
 void CoreWindow::toggleFixNodes() {
 	sceneGraph->toggleFixedNodes(viewerWidget->getPickHandler()->getSelectedNodes());
 	layouter->wakeUp();
+}
+
+void CoreWindow::toggleDebug() {
+	viewerWidget->getPickHandler()->changeMode();
 }
 
 void CoreWindow::toggleLabels(bool checked) {

@@ -8,13 +8,12 @@
 #ifndef WIDGETCONTENT_H_
 #define WIDGETCONTENT_H_
 
-#include "OsgContent.h"
-#include <osg/Geode>
+#include "Viewer/OsgContent.h"
 #include <QtGui/QWidget>
 
 namespace Vwr {
 
-class WidgetContent: public OsgContent {
+class WidgetContent : public OsgContent {
 public:
 	WidgetContent();
 //	WidgetContent(QString imagePath);

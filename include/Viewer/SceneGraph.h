@@ -26,7 +26,6 @@ class Graph;
 
 namespace Vwr {
 class SceneElements;
-class EdgeGroup;
 class OsgNode;
 class OsgEdge;
 

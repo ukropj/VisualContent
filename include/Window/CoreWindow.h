@@ -70,6 +70,8 @@ public slots:
 	void captureScreen();
 	void sliderValueChanged(int value);
 
+	void toggleDebug();
+
 private:
 	void loadFile(QString fileName);
 	void readSettings();
@@ -91,6 +93,7 @@ private:
 	QAction* labelsAction;
 	QAction* captureAction;
 	QSlider* slider;
+	QAction* debugAction;
 
 	QMenu* fileMenu;
 	QMenu* editMenu;

@@ -9,12 +9,11 @@
 #include "Util/TextureWrapper.h"
 
 #include <QDebug>
-#include <QString>
-#include <QtGui/QLabel>
-#include <QtGui/QPixmap>
 
 #include <osg/Geometry>
+#include <osg/Image>
 #include <osg/Texture2D>
+#include <osgDB/ReadFile>
 
 using namespace Vwr;
 
@@ -28,11 +27,9 @@ ImageContent::~ImageContent() {
 osg::ref_ptr<osg::Geometry> ImageContent::createGeometry(QString imagePath) {
 	float scale = 0.2f;	// XXX magic number
 
-	QImage image;
-	image.load(imagePath);
+	osg::Image* image = osgDB::readImageFile(imagePath.toStdString());
 
-	QSize size = image.size();
-	float width = size.width()*150 / ((float)size.height());
+	float width = image->s()*150 / ((float)image->t());
 	float height = 150;
 
 	width *= scale;
@@ -42,8 +39,9 @@ osg::ref_ptr<osg::Geometry> ImageContent::createGeometry(QString imagePath) {
 			osg::Vec3(-width/2.0f, -height/2.0f, 0),
 			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
 	g->setUseDisplayList(false);
+
 	osg::ref_ptr<osg::Texture2D> texture =
-			Util::TextureWrapper::readTextureFromFile(imagePath);
+			Util::TextureWrapper::createTexture(image, false);
 	osg::ref_ptr<osg::StateSet> stateSet = getOrCreateStateSet();
 	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
 	g->setStateSet(stateSet);

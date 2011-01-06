@@ -22,6 +22,7 @@ class CameraManipulator;
 class SceneGraph;
 class OsgNode;
 class OsgEdge;
+class OsgFrame;
 
 /**
  *  \class PickHandler
@@ -35,17 +36,7 @@ typedef QLinkedList<OsgNode* > NodeList;
 public:
 
 	enum InputMode {
-		NONE = 0, SELECT = 1
-	};
-
-	/**
-	 *  \class SelectionType
-	 *  \brief Selection types
-	 *  \author Michal Paprcka
-	 *  \date 29. 4. 2010
-	 */
-	enum SelectionType {
-		ALL = 0, NODE = 1, EDGE = 2
+		NORMAL = 0, DEBUG = 1
 	};
 
 	/**
@@ -57,6 +48,8 @@ public:
 	PickHandler(Vwr::CameraManipulator * cameraManipulator,
 			Vwr::SceneGraph * sceneGraph);
 
+	void reset();
+
 	/**
 	 *  \fn public virtual  handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 	 *  \brief Handles events
@@ -66,31 +59,8 @@ public:
 	 */
 	bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
 
-	/**
-	 *  \fn inline public  setPickMode( int pickMode )
-	 *  \brief Sets pick mode
-	 *  \param     pickMode
-	 */
-	void setPickMode(InputMode pickMode) {
-		this->mode = pickMode;
-	}
-
-	/**
-	 *  \fn inline public  setSelectionType( int selectionType )
-	 *  \brief Sets selection type
-	 *  \param      selectionType
-	 */
-	void setSelectionType(SelectionType type) {
-		this->selectionType = type;
-	}
-
-	/**
-	 *  \fn inline public constant  getSelectionType
-	 *  \brief Returns selection type
-	 *  \return int selection type
-	 */
-	SelectionType getSelectionType() const {
-		return selectionType;
+	void changeMode() {
+		mode = mode == DEBUG ? NORMAL : DEBUG;
 	}
 
 	/**
@@ -110,21 +80,10 @@ public:
 		return selectedNodes;
 	}
 
-	/**
-	 *  \fn inline public  getSelectedEdges
-	 *  \brief Returns selected edges
-	 *  \return QLinkedList<osg::ref_ptr<OsgEdge> > * selected edges
-	 */
-	//	QLinkedList<osg::ref_ptr<OsgEdge> > getSelectedEdges() {
-	//		return selectedEdges;
-	//	}
-
-protected:
 private:
 	// Store mouse xy location for button press & move events.
 	osg::Vec2f lastPos;
 	osg::Vec2f originPos;
-	osg::Vec2f originNormPos;
 
 	bool leftButtonPressed; // not used now
 
@@ -139,6 +98,7 @@ private:
 	QSet<OsgNode*> getNodesInQuad(osgViewer::Viewer* viewer,
 			const double xMin, const double yMin, const double xMax,
 			const double yMax);
+	OsgNode* getNode(osg::NodePath nodePath, bool pickActions = true);
 	OsgEdge* getEdgeAt(osgViewer::Viewer* viewer, const double x,
 			const double y);//todo implement ..
 
@@ -164,6 +124,8 @@ private:
 	 */
 	NodeList selectedNodes;
 
+	OsgFrame* nodeFrame;
+
 	bool multiPickEnabled;
 
 	/**
@@ -176,7 +138,7 @@ private:
 	 *  osg::ref_ptr projection
 	 *  \brief custom node projection
 	 */
-	osg::ref_ptr<osg::Projection> projection;
+	osg::ref_ptr<osg::Projection> quadProjection;
 
 	/**
 	 *  bool isDrawingSelectionQuad
@@ -215,12 +177,6 @@ private:
 	 */
 	InputMode mode;
 
-	/**
-	 *  int selectionType
-	 *  \brief current selection type
-	 */
-	SelectionType selectionType;
-
 	bool select(OsgNode* node = NULL, bool singleOnly = false);
 
 	void deselectAll();
@@ -234,8 +190,8 @@ private:
 	 *  \param   aa    action adapter
 	 *  \return bool true, if event was handled
 	 */
-	bool handlePush(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
+	bool handlePush(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 
 	/**
 	 *  \fn private  handleDoubleclick( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -244,8 +200,8 @@ private:
 	 *  \param  aa    action adapter
 	 *  \return bool true, if event was handled
 	 */
-	bool handleDoubleclick(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
+	bool handleDoubleclick(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 
 	/**
 	 *  \fn private  handleDrag( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -254,8 +210,8 @@ private:
 	 *  \param   aa   action adapter
 	 *  \return bool true, if event was handled
 	 */
-	bool handleDrag(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
+	bool handleDrag(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 
 	/**
 	 *  \fn private  handleMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -264,8 +220,8 @@ private:
 	 *  \param   aa   action adapter
 	 *  \return bool true, if event was handled
 	 */
-	bool handleMove(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
+	bool handleMove(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 
 	/**
 	 *  \fn private  handleRelease( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
@@ -274,8 +230,8 @@ private:
 	 *  \param  aa    action adapter
 	 *  \return bool true, if event was handled
 	 */
-	bool handleRelease(const osgGA::GUIEventAdapter& ea,
-			osgGA::GUIActionAdapter& aa);
+	bool handleRelease(const osgGA::GUIEventAdapter& event,
+			osgGA::GUIActionAdapter& action);
 	bool handleKeyDown(const osgGA::GUIEventAdapter& event,
 			osgGA::GUIActionAdapter& action);
 	bool handleKeyUp(const osgGA::GUIEventAdapter& event,

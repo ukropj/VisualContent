@@ -66,7 +66,7 @@ Edge* Node::getEdgeTo(Node* otherNode) {
 	return NULL;
 }
 
-bool Node::equals(Node* node) {
+bool Node::equals(Node* node) const {
 	if (this == node) {
 		return true;
 	}

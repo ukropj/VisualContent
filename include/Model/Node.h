@@ -45,7 +45,7 @@ public:
 	 *  \brief Returns Graph to which the Nodes belongs
 	 *  \return Graph * Graph
 	 */
-	Graph* getGraph() {
+	Graph* getGraph() const {
 		return graph;
 	}
 
@@ -225,7 +225,7 @@ public:
 	 *  \param   node     Node to compare
 	 *  \return bool true, if this object and node are the same object
 	 */
-	bool equals(Node* node);
+	bool equals(Node* node) const;
 
 	/**
 	 *  \fn inline public constant  toString

@@ -9,6 +9,7 @@
 #include "Viewer/CameraManipulator.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
+#include "Viewer/OsgFrame.h"
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
 #include <iostream>
@@ -36,13 +37,28 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 
 	isDrawingSelectionQuad = false;
 	isResizingNode = false;
+	multiPickEnabled = false;
 	pressedKey = 0;
-	mode = NONE;
-	selectionType = ALL;
+	mode = NORMAL;
 	QApplication::setOverrideCursor(Qt::ArrowCursor);
 
-	multiPickEnabled = false;
 	createSelectionQuad();
+
+	nodeFrame = new OsgFrame;
+	sceneGraph->getCustomNodeList()->push_back(nodeFrame);
+}
+
+void PickHandler::reset() {
+	deselectAll();
+	multiPickEnabled = false;
+	isResizingNode = false;
+	isDrawingSelectionQuad = false;
+	pressedKey = 0;
+	QApplication::restoreOverrideCursor();
+	nodeFrame->hide();
+	quadProjection->setNodeMask(0);
+	originPos = osg::Vec2f(0.0, 0.0);
+	lastPos = osg::Vec2f(0.0, 0.0);
 }
 
 bool PickHandler::handle(const osgGA::GUIEventAdapter& event,
@@ -117,9 +133,6 @@ void PickHandler::mouseTimerTimeout() {
 	//	//v pripade ze bol aj release tak sa vyvola aj release
 	//	if (releaseEvent != NULL)
 	//		handleRelease(*releaseEvent, *releaseAction);
-
-	// otazka je naco to cele bolo dobre?
-	// preco potrebujeme opozdovat realny handling push eventov?
 }
 
 bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
@@ -133,49 +146,61 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 	originPos.set(event.getX(), event.getY());
 	lastPos.set(originPos.x(), originPos.y());
-	originNormPos.set(event.getXnormalized(), event.getYnormalized());
 
-	if (isAlt(event)) { // toggle nodes
-		OsgNode* node  = pickOne(getViewer(action), event);
-		if (selectedNodes.contains(node)) {
-			NodeList::const_iterator i;
-			i = selectedNodes.constBegin();
+	if (mode == DEBUG) {
+		if (isAlt(event)) { // toggle nodes
+			OsgNode* node  = pickOne(getViewer(action), event);
+			if (selectedNodes.contains(node)) {
+				NodeList::const_iterator i;
+				i = selectedNodes.constBegin();
+				while (i != selectedNodes.constEnd()) {
+					(*i)->toggleExpanded();
+					++i;
+				}
+				return true;
+			} else {
+				if (node != NULL) {
+					node->toggleExpanded();
+					return true;
+				}
+			}
+			return false;
+		} else if ('a' == pressedKey) {	// start resizing
+			select(pickOne(getViewer(action), event), true);
+			if (selectedNodes.size() == 1 && selectedNodes.first()->isExpanded()) {
+				selectedNodes.first()->setFrozen(true);
+				isResizingNode = true;
+				QApplication::setOverrideCursor(Qt::SizeAllCursor);
+				return true;
+			} else {
+				return false;
+			}
+		} else { // normal selection
+			multiPickEnabled = isShift(event);
+
+			bool ret = select(pickOne(getViewer(action), event));
+
+			NodeList::const_iterator i = selectedNodes.constBegin();
 			while (i != selectedNodes.constEnd()) {
-				(*i)->toggleExpanded();
+				(*i)->setFrozen(true);
 				++i;
 			}
-			return true;
-		} else {
-			if (node != NULL) {
-				node->toggleExpanded();
-				return true;
+
+			if (selectedNodes.isEmpty() || multiPickEnabled) {
+				// drawing quad might follow
 			}
+			return ret;
 		}
-		return false;
-	} else if ('a' == pressedKey) {	// start resizing
-		select(pickOne(getViewer(action), event), true);
-		if (selectedNodes.size() == 1) {
-			selectedNodes.first()->setFrozen(true);
-			isResizingNode = true;
-			QApplication::setOverrideCursor(Qt::SizeAllCursor);
-			return true;
+	} else {
+		bool ret = select(pickOne(getViewer(action), event), true);
+		if (!selectedNodes.isEmpty()) {
+			OsgNode* picked = *(selectedNodes.constBegin());
+			nodeFrame->show(picked);
 		} else {
-			return false;
+			nodeFrame->hide();
 		}
-	} else { // normal selection
-		multiPickEnabled = isShift(event);
+		nodeFrame->handlePush(event, getViewer(action));
 
-		bool ret = select(pickOne(getViewer(action), event));
-
-		NodeList::const_iterator i = selectedNodes.constBegin();
-		while (i != selectedNodes.constEnd()) {
-			(*i)->setFrozen(true);
-			++i;
-		}
-
-		if (selectedNodes.isEmpty() || multiPickEnabled) {
-			// drawing quad might follow
-		}
 		return ret;
 	}
 }
@@ -189,32 +214,33 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 	}
 	//	qDebug() << " release handled\n";
 
-	originPos.set(event.getX(), event.getY());
+	if (mode == DEBUG) {
+		if (isDrawingSelectionQuad) {
+			isDrawingSelectionQuad = false;
+			quadProjection->setNodeMask(0);
 
-	if (isDrawingSelectionQuad) {
-		isDrawingSelectionQuad = false;
-		projection->setNodeMask(0);
-
-		if (!multiPickEnabled)
-			deselectAll();
-		QSet<OsgNode*> nodes = pickMore(getViewer(action), event);
-		QSet<OsgNode*>::const_iterator ni = nodes.constBegin();
-		multiPickEnabled = true; // temporary to select form quad
-		while (ni != nodes.constEnd()) {
-			select(*ni); // select node found in quad
-			++ni;
+			if (!multiPickEnabled)
+				deselectAll();
+			QSet<OsgNode*> nodes = pickMore(getViewer(action), event);
+			QSet<OsgNode*>::const_iterator ni = nodes.constBegin();
+			multiPickEnabled = true; // temporary to select form quad
+			while (ni != nodes.constEnd()) {
+				select(*ni); // select node found in quad
+				++ni;
+			}
+			multiPickEnabled = false; // not important even if was true before
 		}
-		multiPickEnabled = false; // not important even if was true before
-	}
-	if (isResizingNode) {
-		isResizingNode = false;
-		QApplication::restoreOverrideCursor();
-	}
-
-	NodeList::const_iterator i = selectedNodes.constBegin();
-	while (i != selectedNodes.constEnd()) {
-		(*i)->setFrozen(false);
-		++i;
+		if (isResizingNode) {
+			isResizingNode = false;
+			QApplication::restoreOverrideCursor();
+		}
+		NodeList::const_iterator i = selectedNodes.constBegin();
+		while (i != selectedNodes.constEnd()) {
+			(*i)->setFrozen(false);
+			++i;
+		}
+	} else {
+		nodeFrame->handleRelease(event, getViewer(action));
 	}
 	sceneGraph->setFrozen(false);
 
@@ -248,47 +274,56 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 	//	qDebug() << "dragged";
 	osg::Vec2f thisPos(event.getX(), event.getY());
 
-	if (!selectedNodes.isEmpty() && !multiPickEnabled
-			&& !isDrawingSelectionQuad) {
-		if (isResizingNode) {	// resize node (s)
-			NodeList::const_iterator i = selectedNodes.constBegin();
-			osg::Vec2f nodePos = toScreenCoordinates((*i)->getPosition(), getViewer(action));
-			osg::Vec2f newVect = thisPos - nodePos;
-			osg::Vec2f oldVect = lastPos - nodePos;
+	if (mode == DEBUG) {
+		if (!selectedNodes.isEmpty() && !multiPickEnabled
+				&& !isDrawingSelectionQuad) {
+			if (isResizingNode) {	// resize node (s)
+				NodeList::const_iterator i = selectedNodes.constBegin();
+				osg::Vec2f nodePos = toScreenCoordinates((*i)->getPosition(), getViewer(action));
+				osg::Vec2f newVect = thisPos - nodePos;
+				osg::Vec2f oldVect = lastPos - nodePos;
 
-			(*i)->resize(newVect.length() / oldVect.length());
-			lastPos.set(thisPos.x(), thisPos.y());
-		} else { 				// drag node(s)
-			NodeList::const_iterator i = selectedNodes.constBegin();
-			osg::Vec2f dragVect = thisPos - lastPos;
+				(*i)->resize(newVect.length() / oldVect.length());
+				lastPos.set(thisPos.x(), thisPos.y());
+			} else { 				// drag node(s)
+				NodeList::const_iterator i = selectedNodes.constBegin();
+				osg::Vec2f dragVect = thisPos - lastPos;
 
-			while (i != selectedNodes.constEnd()) {
-				(*i)->setPosition(getMousePos((*i)->getPosition(), dragVect,
-						getViewer(action)));
-				++i;
+				while (i != selectedNodes.constEnd()) {
+					(*i)->setPosition(getMousePos((*i)->getPosition(), dragVect,
+							getViewer(action)));
+					++i;
+				}
+
+				lastPos.set(thisPos.x(), thisPos.y());
+				sceneGraph->setFrozen(false);
+				return true;
 			}
-
+		} else {					// draw selecting rectangle
 			lastPos.set(thisPos.x(), thisPos.y());
-			sceneGraph->setFrozen(false);
+			if (!isDrawingSelectionQuad) { // init quad
+				isDrawingSelectionQuad = true;
+				drawSelectionQuad(); // to rewrite old coords before first showing
+				initSelectionQuad(getViewer(action));
+			}
+			drawSelectionQuad();
 			return true;
 		}
-	} else {					// draw selecting rectangle
-		lastPos.set(thisPos.x(), thisPos.y());
-		if (!isDrawingSelectionQuad) { // init quad
-			isDrawingSelectionQuad = true;
-			drawSelectionQuad(); // to rewrite old coords before first showing
-			initSelectionQuad(getViewer(action));
+		return false;
+	} else {
+		if (nodeFrame->handleDrag(event, getViewer(action))) {
+			sceneGraph->setFrozen(false);
+			return true;
+		} else {
+			return false;
 		}
-		drawSelectionQuad();
-		return true;
 	}
-	return false;
 }
 
 bool PickHandler::handleKeyDown(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
-//	qDebug () << event.getKey();
-//	qDebug () << event.getModKeyMask();
+	//	qDebug () << event.getKey();
+	//	qDebug () << event.getModKeyMask();
 
 	pressedKey = event.getKey(); // TODO more keys??
 	if (isAlt(event)) {
@@ -300,8 +335,8 @@ bool PickHandler::handleKeyDown(const osgGA::GUIEventAdapter& event,
 
 bool PickHandler::handleKeyUp(const osgGA::GUIEventAdapter& event,
 		osgGA::GUIActionAdapter& action) {
-//	qDebug () << event.getKey();
-//	qDebug () << event.getModKeyMask();
+	//	qDebug () << event.getKey();
+	//	qDebug () << event.getModKeyMask();
 	QApplication::restoreOverrideCursor();
 	pressedKey = 0; // TODO more keys??
 	return false;
@@ -335,9 +370,9 @@ OsgNode* PickHandler::pickOne(osgViewer::Viewer* viewer,
 	OsgNode* pickedNode = getNodeAt(viewer, event.getX(), event.getY());
 
 	if (pickedNode == NULL) {
-//		qDebug() << "NO PICK";
+		qDebug() << "NO PICK";
 	} else {
-//		qDebug() << "NODE PICKED";
+		qDebug() << "NODE PICKED";
 #if 0
 		osg::Camera* camera = viewer->getCamera();
 		osg::Matrixd viewM = camera->getViewMatrix();
@@ -349,12 +384,12 @@ OsgNode* PickHandler::pickOne(osgViewer::Viewer* viewer,
 		qDebug() << "XY: " << event.getX() << "," << event.getY();
 		//		qDebug() << "normXY: " << event.getXnormalized() << ","
 		//				<< event.getYnormalized();
-//		printVect(pos);
-//		printVect((pos * viewM));
+		//		printVect(pos);
+		//		printVect((pos * viewM));
 		//		printVect((pos * (viewM * projM)));
 		osg::Matrixd m = viewM * projM * windM;
 		pos = pos * m;
-//		printVect(pos * m);
+		//		printVect(pos * m);
 		qDebug() << "NP: " << pos.x() << "," << pos.y();
 		//		printVect(((pos * m) * osg::Matrixd::inverse(m)));
 		//		osg::Vec3f pos2 = osg::Vec3f(event.getX(), event.getY(), 0.0f);
@@ -374,28 +409,28 @@ QSet<OsgNode*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 
 	float x, y, w, h;
 
-	if (originNormPos.x() < event.getXnormalized()) {
-		x = originNormPos.x();
-		w = event.getXnormalized();
+	if (originPos.x() < event.getX()) {
+		x = originPos.x();
+		w = event.getX();
 	} else {
-		x = event.getXnormalized();
-		w = originNormPos.x();
+		x = event.getX();
+		w = originPos.x();
 	}
 
-	if (originNormPos.y() < event.getYnormalized()) {
-		y = originNormPos.y();
-		h = event.getYnormalized();
+	if (originPos.y() < event.getY()) {
+		y = originPos.y();
+		h = event.getY();
 	} else {
-		y = event.getYnormalized();
-		h = originNormPos.y();
+		y = event.getY();
+		h = originPos.y();
 	}
 
 	pickedNodes = getNodesInQuad(viewer, x, y, w, h);
 
 	if (pickedNodes.isEmpty()) {
-//		qDebug() << "NO PICK";
+		//		qDebug() << "NO PICK";
 	} else {
-//		qDebug() << "NODES PICKED";
+		//		qDebug() << "NODES PICKED";
 	}
 	return pickedNodes;
 }
@@ -409,17 +444,9 @@ OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x,
 				intersections.begin(); hitr != intersections.end(); hitr++) {
 			if (hitr->nodePath.size() <= 2)
 				continue;
-			osg::NodePath nodePath = hitr->nodePath;
-
-			OsgNode* n =
-					dynamic_cast<OsgNode *> (nodePath[nodePath.size() - 2]);
-			// NOTE: 2 because structure is Node-Geode-(Drawable)
-			// OsgNode is second Node to last
-			if (n != NULL) {
-				osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
-				if (n->isPickable(g))
-					return n;
-			}
+			OsgNode* n = getNode(hitr->nodePath, mode == NORMAL);
+			if (n != NULL)
+				return n;
 		}
 	}
 	return NULL;
@@ -431,7 +458,7 @@ QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 	QSet<OsgNode*> nodes;
 
 	osgUtil::PolytopeIntersector* picker = new osgUtil::PolytopeIntersector(
-			osgUtil::Intersector::PROJECTION, xMin, yMin, xMax, yMax);
+			osgUtil::Intersector::WINDOW, xMin, yMin, xMax, yMax);
 	osgUtil::IntersectionVisitor iv(picker);
 	viewer->getCamera()->accept(iv);
 
@@ -442,21 +469,34 @@ QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 				intersections.begin(); hitr != intersections.end(); hitr++) {
 			if (hitr->nodePath.size() <= 2)
 				continue;
-			osg::NodePath nodePath = hitr->nodePath;
-			//	std::cout << nodePath.size()
-			//			<< ": \"" << nodePath.back()->getName() << "\""
-			//			<< std::endl;
 
-			OsgNode* n =
-					dynamic_cast<OsgNode *> (nodePath[nodePath.size() - 2]);
-			if (n != NULL) {
-				osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
-				if (n->isPickable(g))
-					nodes.insert(n); // don't insert duplicates
-			}
+			OsgNode* n = getNode(hitr->nodePath, false);
+			if (n != NULL)
+				nodes.insert(n);
 		}
 	}
 	return nodes;
+}
+
+OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
+	osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
+	if (g != NULL) {
+		OsgNode* n = NULL;
+		osg::Group* parent = g->getParent(0);
+
+		osg::NodePath::const_iterator i;
+		i = nodePath.end() - 1;
+		while (n == NULL && i != nodePath.begin()) {
+			//	qDebug() << ((*i)->getName().c_str());
+			n = dynamic_cast<OsgNode *> (*i);
+			i--;
+		}
+		if (n != NULL && n->isPickable(g))
+			return n;
+		if (pickActions && nodeFrame->activateAction(g))
+			return nodeFrame->getNode();
+	}
+	return NULL;
 }
 
 osg::Vec2f PickHandler::toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer) {
@@ -518,52 +558,6 @@ void PickHandler::deselectAll() {
 	selectedNodes.clear();
 }
 
-//bool PickHandler::doEdgePick(osg::NodePath nodePath,
-//		unsigned int primitiveIndex) {
-//	return false;
-//	osg::Geode * geode = dynamic_cast<osg::Geode *> (nodePath[nodePath.size()
-//			- 1]);
-//
-//	if (geode != 0) {
-//		osg::Drawable * d = geode->getDrawable(0);
-//		osg::Geometry * geometry = d->asGeometry();
-//
-//		if (geometry != NULL) {
-//			OsgEdge * e =
-//					dynamic_cast<OsgEdge *> (geometry->getPrimitiveSet(
-//							primitiveIndex));
-//
-//			if (e != NULL) {
-//				if (isAltPressed && mode == InputMode::NONE) {
-//					osg::ref_ptr<osg::Vec3Array> coords = e->getCooridnates();
-//
-//					cameraManipulator->setCenter(
-//							Util::DataHelper::getMassCenter(coords));
-//					cameraManipulator->setDistance(
-//							Util::Config::getInstance()->getValue(
-//									"Viewer.PickHandler.PickedEdgeDistance").toFloat());
-//				} else if (mode != InputMode::NONE) {
-//					if (!pickedEdges.contains(e)) {
-//						pickedEdges.append(e);
-//						e->setSelected(true);
-//						//						pickMsg("Edge selected");
-//					}
-//
-//					//					if (isCtrlPressed) {
-//					//						unselectPickedEdges(e);
-//					//					}
-//
-//					return true;
-//				}
-//
-//				return true;
-//			}
-//		}
-//	}
-//	//	pickMsg("Nothing selected");
-//	return false;
-//}
-
 void PickHandler::createSelectionQuad() {
 	osg::ref_ptr<osg::StateSet> quadStateSet = new osg::StateSet;
 	quadStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
@@ -586,8 +580,7 @@ void PickHandler::createSelectionQuad() {
 	colors->push_back(osg::Vec4(1, 1, 1, 0.1f));
 
 	geometry->setVertexArray(coordinates);
-	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0,
-			4));
+	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));
 	geometry->setColorArray(colors);
 	geometry->setStateSet(quadStateSet);
 	geometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
@@ -602,13 +595,13 @@ void PickHandler::createSelectionQuad() {
 	modelViewMatrix->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
 
 	osg::ref_ptr<osg::Group> group = new osg::Group;
-	projection = new osg::Projection;
-	group->addChild(projection);
-	projection->addChild(modelViewMatrix);
+	quadProjection = new osg::Projection;
+	group->addChild(quadProjection);
+	quadProjection->addChild(modelViewMatrix);
 	modelViewMatrix->addChild(selectionQuad);
 
 	sceneGraph->getCustomNodeList()->push_back(group);
-	projection->setNodeMask(0);
+	quadProjection->setNodeMask(0);
 }
 
 void PickHandler::initSelectionQuad(osgViewer::Viewer * viewer) {
@@ -616,8 +609,8 @@ void PickHandler::initSelectionQuad(osgViewer::Viewer * viewer) {
 	viewer->getWindows(win);
 	int x, y, w, h;
 	win.at(0)->getWindowRectangle(x, y, w, h);
-	projection->setMatrix(osg::Matrix::ortho2D(x, w, y, h));
-	projection->setNodeMask(1); // make visible
+	quadProjection->setMatrix(osg::Matrix::ortho2D(x, w, y, h));
+	quadProjection->setNodeMask(1); // make visible
 }
 
 void PickHandler::drawSelectionQuad() {
@@ -651,7 +644,7 @@ bool PickHandler::isShift(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
 	if (key & osgGA::GUIEventAdapter::MODKEY_SHIFT) {
 		//		StatusLogger::log(StatusLogger::KEYS, "SHIFT");
-//		qDebug() << "SHIFT";
+		//		qDebug() << "SHIFT";
 		return true;
 	}
 	return false;
@@ -661,7 +654,7 @@ bool PickHandler::isCtrl(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
 	if (key & osgGA::GUIEventAdapter::MODKEY_CTRL) {
 		//		StatusLogger::log(StatusLogger::KEYS, "CTRL");
-//		qDebug() << "CTRL";
+		//		qDebug() << "CTRL";
 		return true;
 	}
 	return false;
@@ -671,15 +664,15 @@ bool PickHandler::isAlt(const osgGA::GUIEventAdapter& event) {
 	int key = event.getModKeyMask();
 	if (key & osgGA::GUIEventAdapter::MODKEY_ALT) {
 		//		StatusLogger::log(StatusLogger::KEYS, "CTRL");
-//		qDebug() << "ALT";
+		//		qDebug() << "ALT";
 		return true;
 	}
 	return false;
 }
 
 bool PickHandler::isKey(char key, const osgGA::GUIEventAdapter& event) {
-//	qDebug() << event.getKey();
-//	qDebug() << event.getModKeyMask();
+	//	qDebug() << event.getKey();
+	//	qDebug() << event.getModKeyMask();
 	if (event.getKey() & key) {
 		return true;
 	}

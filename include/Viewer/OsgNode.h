@@ -20,6 +20,7 @@
 #include <osg/Depth>
 #include <osg/CullFace>
 #include <osg/AutoTransform>
+#include <osg/PositionAttitudeTransform>
 #include <osgText/Text>
 
 namespace Model {
@@ -29,6 +30,7 @@ class Node;
 namespace Vwr {
 class SceneGraph;
 class OsgContent;
+class OsgFrame;
 
 class OsgNode: public osg::Switch {
 public:
@@ -59,6 +61,10 @@ public:
 	}
 	bool setExpanded(bool flag);
 
+	void setFrame(OsgFrame* frame) {
+		myFrame = frame;
+	}
+
 	bool isPickable(osg::Geode* geode) const;
 	bool isResizable(osg::Geode* geode) const;
 
@@ -71,9 +77,7 @@ public:
 
 	float getRadius() const;
 
-//	osg::Vec2f getSize() const {
-//		return size;
-//	}
+	osg::Vec3f getSize() const;
 
 	void showLabel(bool visible);
 
@@ -94,7 +98,7 @@ public:
 
 	static bool mayOverlap(OsgNode* u, OsgNode* v);
 
-	float getDistanceToEdge(double angle);
+	float getDistanceToEdge(double angle) const;
 
 	void setPickable(bool flag) {
 		pickable = flag;
@@ -104,12 +108,14 @@ public:
 
 	static osg::Vec4 selectedColor;
 
+	bool equals(OsgNode* other) const;
+
 private:
 
 	void setSize(osg::BoundingBox box);
-	void setSize(float width, float height);
+	void setSize(float width, float height, float depth = 0);
 
-	osg::Vec2f size;
+	osg::Vec3f size;
 
 	Model::Node* node;
 
@@ -128,8 +134,8 @@ private:
 
 	osg::ref_ptr<osg::StateSet> createStateSet();
 
-	osg::ref_ptr<osg::Geode> createFrame(osg::BoundingBox box, float margin);
-	void updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float margin = 0);
+	osg::ref_ptr<osg::Geode> initFrame();
+	void updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float scale = 1, float margin = 0);
 	OsgContent* createContent();
 
 	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<osg::Texture2D> texture,
@@ -152,6 +158,8 @@ private:
 
 	osg::ref_ptr<osg::Geode> closedG;
 	OsgContent* contentG;
+
+	OsgFrame* myFrame;
 
 	// constants
 

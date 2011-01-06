@@ -1,5 +1,6 @@
 #include "Util/TextureWrapper.h"
 #include "Util/Config.h"
+#include <osgDB/ReadFile>
 
 using namespace Util;
 
