@@ -21,8 +21,9 @@ public:
 
 	void setWidget(QWidget* widget, float scale);
 
-	virtual bool load();
-
+	virtual bool load() = 0;
+private:
+	bool loaded;
 };
 
 }

@@ -6,11 +6,8 @@
  */
 
 #include "Viewer/WidgetContent.h"
-#include <osg/Geode>
-#include <osg/Node>
-#include <osg/Group>
-#include <osg/ShapeDrawable>
 #include <osg/Texture>
+#include <osg/ShapeDrawable>
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 
@@ -20,6 +17,7 @@
 using namespace Vwr;
 
 WidgetContent::WidgetContent() : OsgContent() {
+	loaded = false;
 }
 
 WidgetContent::~WidgetContent() {
@@ -42,7 +40,6 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	osg::Geometry* quad = osg::createTexturedQuadGeometry(
 			osg::Vec3(-width/2.0f, -height/2.0f, 0),
 			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
-	addDrawable(quad);
 	osg::ref_ptr<osg::StateSet> stateSet = getOrCreateStateSet();
 
 	osg::ref_ptr<osg::Texture2D> texture = Util::TextureWrapper::createTexture(widgetImage);
@@ -58,10 +55,12 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	quad->setEventCallback(handler);
 	quad->setCullCallback(handler);
 
-	setStateSet(stateSet);
+	contentGeode = new osg::Geode;
+	contentGeode->addDrawable(quad);
+	contentGeode->setStateSet(stateSet);
+	contentGeode->setName("node_content_widget");
+	addChild(contentGeode);
+	loaded = true;
 }
 
-bool WidgetContent::load() {
-	return false;
-}
 

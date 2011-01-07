@@ -136,7 +136,6 @@ private:
 
 	osg::ref_ptr<osg::Geode> initFrame();
 	void updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float scale = 1, float margin = 0);
-	OsgContent* createContent();
 
 	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<osg::Texture2D> texture,
 			float width, float height);

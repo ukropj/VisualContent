@@ -7,6 +7,7 @@
 
 #include "Viewer/OsgFrame.h"
 #include "Viewer/OsgNode.h"
+#include "Util/TextureWrapper.h"
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <stdlib.h>
@@ -20,14 +21,39 @@ OsgFrame::OsgFrame() {
 	originPos = osg::Vec2f(0.0, 0.0);
 	lastPos = osg::Vec2f(0.0, 0.0);
 
-	mt = new osg::PositionAttitudeTransform(); // TODO remove?
+	mt = new osg::AutoTransform();
+	mt2 = new osg::AutoTransform();
 
-	mt->addChild(createButton(HIDE, osg::Vec3f(30, 30, 2), osg::Vec4f(1, 0, 0, 1)));
-	mt->addChild(createButton(MOVE, osg::Vec3f(30, -20, 2), osg::Vec4f(0, 1, 0, 1)));
-	mt->addChild(createButton(RESIZE, osg::Vec3f(-20, 30, 2), osg::Vec4f(0, 0, 1, 1)));
+	mt->addChild(createButton(HIDE, osg::Vec3f(30, 30, 2), "b_close.png"));
+	mt->addChild(createButton(MOVE, osg::Vec3f(30, -20, 2), "b_move.png"));
+	mt->addChild(createButton(RESIZE, osg::Vec3f(-20, 30, 2), "b_resize.png"));
+	mt2->addChild(createButton(FIX, osg::Vec3f(-30, -30, 2), "b_lock.png"));
 	addChild(mt);
+	addChild(mt2);
 
-	osg::ref_ptr<osg::StateSet> stateSet = getOrCreateStateSet();
+	mt->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
+	mt->setAutoScaleToScreen(true);
+	mt2->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
+	mt2->setAutoScaleToScreen(true);
+	setNodeMask(false);
+}
+
+OsgFrame::~OsgFrame() {
+}
+
+osg::ref_ptr<osg::Geode> OsgFrame::createButton(ButtonType type, osg::Vec3f pos, QString imagePath) {
+	float width = 40;
+	float height = 40;
+
+	osg::Geometry* g = osg::createTexturedQuadGeometry(
+			osg::Vec3(pos.x()-width/2.0f, pos.y()-height/2.0f, 0),
+			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
+	g->setUseDisplayList(false);
+
+	osg::ref_ptr<osg::Texture2D> texture =
+			Util::TextureWrapper::readTextureFromFile("img/texture/"+imagePath, false);
+	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet;
+	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
 	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
@@ -37,39 +63,11 @@ OsgFrame::OsgFrame() {
 	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
 	cull->setMode(osg::CullFace::BACK);
 	stateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
-	setStateSet(stateSet);
-
-	setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-	setAutoScaleToScreen(true);
-	setNodeMask(false);
-}
-
-OsgFrame::~OsgFrame() {
-}
-
-osg::ref_ptr<osg::Geode> OsgFrame::createButton(ButtonType type,
-		osg::Vec3f pos, osg::Vec4f color) {
-	float width = 40 / 2;
-	float height = 40 / 2;
-	osg::Vec3 coords[] = { osg::Vec3(pos.x() - width, pos.y() - height, pos.z()
-			+ 0), osg::Vec3(pos.x() + width, pos.y() - height, pos.z() + 0),
-			osg::Vec3(pos.x() + width, pos.y() + height, pos.z() + 0),
-			osg::Vec3(pos.x() - width, pos.y() + height, pos.z() + 0) };
-
-	osg::ref_ptr<osg::Geometry> g = new osg::Geometry;
-
-	g->setVertexArray(new osg::Vec3Array(4, coords));
-	g->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));
-	g->setUseDisplayList(false);
-
-	osg::ref_ptr<osg::Vec4Array> colorArray = new osg::Vec4Array;
-	colorArray->push_back(color);
-	g->setColorArray(colorArray);
-	g->setColorBinding(osg::Geometry::BIND_OVERALL);
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(g);
 	geode->setName(QString("%1").arg(type).toStdString());
+	geode->setStateSet(stateSet);
 
 	return geode;
 }
@@ -98,8 +96,9 @@ void OsgFrame::hide() {
 }
 
 void OsgFrame::updatePosition() {
-	osg::Vec3f localPos = getRotation() * (refNode->getSize()/2.0f);
-	setPosition(refNode->getPosition() + localPos);
+	setPosition(refNode->getPosition());
+	mt->setPosition(mt->getRotation() * (refNode->getSize()/2.0f));
+	mt2->setPosition(mt2->getRotation() * (refNode->getSize()/-2.0f));
 }
 
 bool OsgFrame::activateAction(osg::Geode* button) {

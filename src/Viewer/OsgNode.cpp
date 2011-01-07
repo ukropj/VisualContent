@@ -45,12 +45,7 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	float scale = node->getType()->getScale();
 
 	closedG = createTextureNode(node->getType()->getTexture(), 2*scale, 2*scale);
-//	contentG = new ImageContent("img/devil.jpg");
-	contentG = createContent(); // generates pseudo random content
-	osg::PositionAttitudeTransform* contentT = new osg::PositionAttitudeTransform;
-	contentT->setName("content_transform");
-	contentT->addChild(contentG);
-	contentG->setTransform(contentT);
+	contentG = ContentFactory::createContent(node);
 
 	size = osg::Vec3f(0, 0, 0);
 
@@ -59,13 +54,13 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	if (fixedG == NULL)
 		fixedG = createFixed();
 
-	closedG->setName("node");
+	closedG->setName("closed_node");
 	contentG->setName("content");
 	frameG->setName("frame");
 	label->setName("label");
 
 	addChild(closedG);
-	addChild(contentG->getTransform());
+	addChild(contentG);
 	addChild(label);
 	addChild(frameG);
 	addChild(fixedG);
@@ -116,17 +111,6 @@ void OsgNode::updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, 
 
 		geometry->setVertexArray(new osg::Vec3Array(10, coords));
 	}
-}
-
-// XXX temporary method (until content info is read from file)
-OsgContent* OsgNode::createContent() {
-	int i = node->getId() % 11;
-	if (i == 0) {
-		QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ut eros id augue ullamcorper fringilla at id est. Donec egestas congue pretium. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. ");
-		return new TextContent(text);
-	}
-	QString path = QString("img/pic%1.jpg").arg(i);
-	return new ImageContent(path);
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
@@ -254,7 +238,7 @@ void OsgNode::resize(float factor) {
 }
 
 void OsgNode::setSize(osg::BoundingBox box) {
-	setSize(box.xMax() - box.xMin(), box.yMax() - box.yMin());
+	setSize(box.xMax() - box.xMin(), box.yMax() - box.yMin(), box.zMax() - box.zMin());
 }
 
 void OsgNode::setSize(float width, float height, float depth) {
@@ -303,12 +287,12 @@ bool OsgNode::setExpanded(bool flag) {
 			qDebug() << node->getId() << ": content loaded";
 			updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f);
 		}
-		setSize(frameG->getBoundingBox());
+		setSize(contentG->getBoundingBox());
 	} else {
 		setSize(closedG->getBoundingBox());
 	}
 	setChildValue(frameG, expanded);
-	setChildValue(contentG->getTransform(), expanded);
+	setChildValue(contentG, expanded);
 
 	setChildValue(closedG, !expanded);
 	return true;
@@ -364,8 +348,8 @@ void OsgNode::reloadConfig() {
 bool OsgNode::isPickable(osg::Geode* geode) const {
 	if (!pickable)
 		return false;
-	if (geode->getName() == closedG->getName() || geode->getName()
-			== contentG->getName())
+	if (geode->getName() == closedG->getName() ||
+			geode->getName() == contentG->getGeodeName())
 		return true;
 	else
 		return false;

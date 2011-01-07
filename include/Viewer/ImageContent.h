@@ -18,6 +18,7 @@ public:
 	~ImageContent();
 
 	bool load();
+
 private:
 	osg::ref_ptr<osg::Geometry> createGeometry(QString imagePath);
 	QString imagePath;

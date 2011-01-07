@@ -8,35 +8,38 @@
 #ifndef OSGCONTENT_H_
 #define OSGCONTENT_H_
 
+#include <osg/Node>
+#include <osg/Group>
 #include <osg/Geode>
+#include <osg/Geometry>
+#include <osg/BoundingBox>
 #include <osg/PositionAttitudeTransform>
+#include <QString>
+#include <QDebug>
+
+namespace Model {
+	class Node;
+}
 
 namespace Vwr {
 
-class OsgContent : public osg::Geode {
+class OsgContent : public osg::PositionAttitudeTransform {
 public:
 	OsgContent();
 	~OsgContent();
 
 	virtual bool load() = 0;
+	std::string getGeodeName() const;
+	virtual const osg::BoundingBox& getBoundingBox() const;
 
-	void setTransform(osg::PositionAttitudeTransform* tr) {
-		transform = tr;
-	}
-	osg::PositionAttitudeTransform* getTransform() const {
-		return transform;
-	}
-	void setScale(osg::Vec3d scale) {
-		if (transform != NULL)
-			transform->setScale(scale);
-	}
-	osg::Vec3d getScale() const {
-		if (transform == NULL)
-			return osg::Vec3d(0, 0, 0);
-		return transform->getScale();
-	}
+protected:
+	osg::ref_ptr<osg::Geode> contentGeode;
+};
+
+class ContentFactory {
+public:
+	static OsgContent* createContent(Model::Node* node);
 private:
-	osg::ref_ptr<osg::PositionAttitudeTransform> transform;
 };
 }
 #endif /* CONTENT_H_ */

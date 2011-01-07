@@ -8,6 +8,7 @@
 #ifndef OSGFRAME_H_
 #define OSGFRAME_H_
 
+#include <QString>
 #include <osg/AutoTransform>
 #include <osg/PositionAttitudeTransform>
 #include <osgGA/GUIEventAdapter>
@@ -52,9 +53,8 @@ public:
 	bool handleKeyUp(const osgGA::GUIEventAdapter& event,
 			osgGA::GUIActionAdapter& action);
 private:
-	// Store mouse xy location for button press & move events.
 
-	osg::ref_ptr<osg::Geode> createButton(ButtonType type, osg::Vec3f pos, osg::Vec4f color);
+	osg::ref_ptr<osg::Geode> createButton(ButtonType type, osg::Vec3f pos, QString imagePath);
 	osg::Vec2f toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer);
 	osg::Vec3f getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector,
 			osgViewer::Viewer* viewer);
@@ -63,7 +63,8 @@ private:
 	osg::Vec2f originPos;
 	OsgNode* refNode;
 	ButtonType currentAction;
-	osg::ref_ptr<osg::PositionAttitudeTransform> mt;
+	osg::ref_ptr<osg::AutoTransform> mt;
+	osg::ref_ptr<osg::AutoTransform> mt2;
 };
 
 }

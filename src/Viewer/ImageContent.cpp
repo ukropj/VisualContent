@@ -10,7 +10,6 @@
 
 #include <QDebug>
 
-#include <osg/Geometry>
 #include <osg/Image>
 #include <osg/Texture2D>
 #include <osgDB/ReadFile>
@@ -54,16 +53,10 @@ bool ImageContent::load() {
 		return false;
 	} else {
 		loaded = true;
-
-//		QLabel* l = new QLabel;
-//		QImage image;
-//		image.load(imagePath);
-//		l->setPixmap(QPixmap::fromImage(image));
-//		QSize size = image.size();
-//		l->setGeometry(QRect(QPoint(1, 1), size));
-//		setWidget(l, 0.2f);
-
-		addDrawable(createGeometry(imagePath));
+		contentGeode = new osg::Geode;
+		contentGeode->addDrawable(createGeometry(imagePath));
+		contentGeode->setName("node_content_image");
+		addChild(contentGeode);
 		return true;
 	}
 }
