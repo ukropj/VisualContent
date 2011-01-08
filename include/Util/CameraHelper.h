@@ -84,8 +84,11 @@ public:
 		return byProjection(byView(scenePos)).z();
 	}
 
-	static void printVec3(osg::Vec3f vec, QString str = "") {
+	static void printVec(osg::Vec3f vec, QString str = "") {
 		qDebug() << str << " [" << vec.x() << "," << vec.y() << "," << vec.z() << "]";
+	}
+	static void printVec(osg::Vec2f vec, QString str = "") {
+		qDebug() << str << " [" << vec.x() << "," << vec.y() << "]";
 	}
 private:
 	CameraHelper();

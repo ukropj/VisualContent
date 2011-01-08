@@ -8,30 +8,27 @@
 #ifndef OSGFRAME_H_
 #define OSGFRAME_H_
 
-#include <QString>
 #include <osg/AutoTransform>
 #include <osg/PositionAttitudeTransform>
 #include <osgGA/GUIEventAdapter>
-#include <osgGA/GUIActionAdapter>
-#include <osgViewer/Viewer>
+
+#include <string>
+
+#include <QString>
+#include <QMap>
 
 namespace Vwr {
 class OsgNode;
+class FrameButton;
 
 class OsgFrame : public osg::AutoTransform {
 public:
-	enum ButtonType {
-		NONE = 0, MOVE = 1, RESIZE = 2, HIDE = 3, FIX = 4
-	};
 	OsgFrame();
 	~OsgFrame();
 	void show(OsgNode* node);
 	void hide();
 	bool isShowing() {
 		return refNode != NULL;
-	}
-	bool isActivated() {
-		return currentAction != NONE;
 	}
 	OsgNode* getNode() const {return refNode;}
 	void updatePosition();
@@ -45,14 +42,27 @@ public:
 	bool handleRelease(const osgGA::GUIEventAdapter& event);
 	bool handleKeyDown(const osgGA::GUIEventAdapter& event);
 	bool handleKeyUp(const osgGA::GUIEventAdapter& event);
+
+	osg::Vec2f getPushPos() {
+		return originPos;
+	}
+	osg::Vec2f getCurrentPos() {
+		return currentPos;
+	}
+	osg::Vec2f getLastDragPos() {
+		return lastDragPos;
+	}
 private:
-
-	osg::ref_ptr<osg::Geode> createButton(ButtonType type, osg::Vec3f pos, QString imagePath);
-
-	osg::Vec2f lastPos;
 	osg::Vec2f originPos;
+	osg::Vec2f currentPos;
+	osg::Vec2f lastDragPos;
+
 	OsgNode* refNode;
-	ButtonType currentAction;
+
+	QMap<std::string, FrameButton*> buttons;
+	FrameButton* activeButton;
+	FrameButton* nullButton;
+
 	osg::ref_ptr<osg::AutoTransform> mt;
 	osg::ref_ptr<osg::AutoTransform> mt2;
 };

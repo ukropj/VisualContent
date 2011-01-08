@@ -52,8 +52,7 @@ public:
 
 		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());
-		osg::DisplaySettings::instance()->setStereoMode(
-				osg::DisplaySettings::ANAGLYPHIC);
+		osg::DisplaySettings::instance()->setStereoMode(osg::DisplaySettings::ANAGLYPHIC);
 
 		getCamera()->setViewport(new osg::Viewport(0, 0, width(), height()));
 		getCamera()->setProjectionMatrixAsPerspective(60,
@@ -80,7 +79,7 @@ public:
 		connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
 
 		_timer.start(10);
-		setSceneData(sceneGr->getRoot()); // TODO move to ViewerQT
+		setSceneData(sceneGr->getRoot());
 	}
 
 	~ViewerQT() {

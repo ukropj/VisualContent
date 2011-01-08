@@ -242,7 +242,6 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 	} else {
 		nodeFrame->handleRelease(event);
 	}
-	sceneGraph->setFrozen(false);
 
 	return true;
 }
