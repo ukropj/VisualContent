@@ -5,6 +5,7 @@
 #include "Model/Graph.h"
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
+#include "Util/CameraHelper.h"
 #include "Viewer/OsgNode.h"
 #include <QDebug>
 
@@ -294,7 +295,7 @@ osg::Vec3f FRAlgorithm::getProjVector(Node* u, Node* v) {
 	osg::Vec3f vp = v->getPosition();
 
 	osg::Vec3f edgeDir = vp - up;
-	osg::Vec3f viewVec = u->getOsgNode()->getEye() - ((up + vp) / 2.0f); // from eye to middle of u,v
+	osg::Vec3f viewVec = Util::CameraHelper::getEye() - ((up + vp) / 2.0f); // from eye to middle of u,v
 	osg::Vec3f pv = viewVec ^ (edgeDir ^ viewVec);
 
 	float length = edgeDir.normalize();
@@ -311,7 +312,7 @@ float FRAlgorithm::getMinProjDistance(Node* u, Node* v, osg::Vec3f pv) {
 		return 0;
 	Vwr::OsgNode* ou = u->getOsgNode();
 	Vwr::OsgNode* ov = v->getOsgNode();
-	double angle = acos(ou->getUpVector() * pv);
+	double angle = acos(Util::CameraHelper::getUp() * pv);
 	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
 			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
 	return ideal;

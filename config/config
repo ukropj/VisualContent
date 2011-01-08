@@ -24,3 +24,4 @@ Viewer.Textures.EdgeScale=2
 Viewer.Textures.Node=img/texture/node.png
 Viewer.Textures.OrientedEdgePrefix=img/texture/arrows/arrow
 Viewer.Textures.OrientedEdgeSuffix=.png
+Viewer.Node.MaxScale=4

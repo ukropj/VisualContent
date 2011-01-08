@@ -8,11 +8,11 @@
 #include "Viewer/SceneGraph.h"
 #include "Viewer/CameraManipulator.h"
 #include "Viewer/OsgNode.h"
-#include "Viewer/OsgEdge.h"
 #include "Viewer/OsgFrame.h"
-#include "Window/CoreWindow.h"
-#include "Util/Config.h"
+#include "Util/CameraHelper.h"
+
 #include <iostream>
+#include <QApplication>
 
 #include <osg/MatrixTransform>
 #include <osg/Projection>
@@ -199,7 +199,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 		} else {
 			nodeFrame->hide();
 		}
-		nodeFrame->handlePush(event, getViewer(action));
+		nodeFrame->handlePush(event);
 
 		return ret;
 	}
@@ -240,7 +240,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 			++i;
 		}
 	} else {
-		nodeFrame->handleRelease(event, getViewer(action));
+		nodeFrame->handleRelease(event);
 	}
 	sceneGraph->setFrozen(false);
 
@@ -279,7 +279,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 				&& !isDrawingSelectionQuad) {
 			if (isResizingNode) {	// resize node (s)
 				NodeList::const_iterator i = selectedNodes.constBegin();
-				osg::Vec2f nodePos = toScreenCoordinates((*i)->getPosition(), getViewer(action));
+				osg::Vec2f nodePos = Util::CameraHelper::worldToScreen((*i)->getPosition());
 				osg::Vec2f newVect = thisPos - nodePos;
 				osg::Vec2f oldVect = lastPos - nodePos;
 
@@ -290,8 +290,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 				osg::Vec2f dragVect = thisPos - lastPos;
 
 				while (i != selectedNodes.constEnd()) {
-					(*i)->setPosition(getMousePos((*i)->getPosition(), dragVect,
-							getViewer(action)));
+					(*i)->setPosition(Util::CameraHelper::moveByScreenVector((*i)->getPosition(), dragVect));
 					++i;
 				}
 
@@ -311,7 +310,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 		}
 		return false;
 	} else {
-		if (nodeFrame->handleDrag(event, getViewer(action))) {
+		if (nodeFrame->handleDrag(event)) {
 			sceneGraph->setFrozen(false);
 			return true;
 		} else {
@@ -340,22 +339,6 @@ bool PickHandler::handleKeyUp(const osgGA::GUIEventAdapter& event,
 	QApplication::restoreOverrideCursor();
 	pressedKey = 0; // TODO more keys??
 	return false;
-}
-
-osg::Vec3f PickHandler::getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector,
-		osgViewer::Viewer* viewer) {
-	osg::Camera* cam = viewer->getCamera();
-	osg::Matrixd& viewM = cam->getViewMatrix();
-	osg::Matrixd& projM = cam->getProjectionMatrix();
-	osg::Matrixd screenM = cam->getViewport()->computeWindowMatrix();
-	osg::Matrixd compositeM = viewM * projM * screenM;
-	osg::Matrixd compositeMi = compositeMi.inverse(compositeM);
-
-	osg::Vec3f screenPoint = origPos * compositeM;
-	osg::Vec3f newPosition = osg::Vec3f(screenPoint.x() + dragVector.x(),
-			screenPoint.y() + dragVector.y(), screenPoint.z() + 0);
-
-	return newPosition * compositeMi;
 }
 
 void printVect(osg::Vec3f vec) {
@@ -497,17 +480,6 @@ OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
 			return nodeFrame->getNode();
 	}
 	return NULL;
-}
-
-osg::Vec2f PickHandler::toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer) {
-	osg::Camera* camera = viewer->getCamera();
-	osg::Matrixd viewM = camera->getViewMatrix();
-	osg::Matrixd projM = camera->getProjectionMatrix();
-	osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
-	osg::Matrixd m = viewM * projM * windM;
-	scenePos = scenePos * m;
-
-	return osg::Vec2f(scenePos.x(), scenePos.y());
 }
 
 bool PickHandler::select(OsgNode* node, bool singleOnly) {

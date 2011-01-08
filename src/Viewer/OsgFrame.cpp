@@ -8,6 +8,7 @@
 #include "Viewer/OsgFrame.h"
 #include "Viewer/OsgNode.h"
 #include "Util/TextureWrapper.h"
+#include "Util/CameraHelper.h"
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <stdlib.h>
@@ -108,13 +109,16 @@ bool OsgFrame::activateAction(osg::Geode* button) {
 	int type = atoi(button->getName().c_str());
 	switch (type) {
 	case MOVE:
-		currentAction = MOVE;qDebug() << "MOVE";
+		currentAction = MOVE;//qDebug() << "MOVE";
 		break;
 	case RESIZE:
-		currentAction = RESIZE;qDebug() << "RESIZE";
+		currentAction = RESIZE;//qDebug() << "RESIZE";
 		break;
 	case HIDE:
-		currentAction = HIDE;qDebug() << "HIDE";
+		currentAction = HIDE;//qDebug() << "HIDE";
+		break;
+	case FIX:
+		currentAction = FIX;//qDebug() << "HIDE";
 		break;
 	default:
 		deactivateAction();
@@ -124,10 +128,10 @@ bool OsgFrame::activateAction(osg::Geode* button) {
 }
 
 void OsgFrame::deactivateAction() {
-	currentAction = NONE;qDebug() << "NONE";
+	currentAction = NONE;//qDebug() << "NONE";
 }
 
-bool OsgFrame::handlePush(const osgGA::GUIEventAdapter& event, osgViewer::Viewer* viewer) {
+bool OsgFrame::handlePush(const osgGA::GUIEventAdapter& event) {
 	if (isShowing()) {
 		originPos.set(event.getX(), event.getY());
 		lastPos.set(originPos.x(), originPos.y());
@@ -136,6 +140,9 @@ bool OsgFrame::handlePush(const osgGA::GUIEventAdapter& event, osgViewer::Viewer
 		case HIDE :
 			refNode->setExpanded(false);
 			hide();
+			break;
+		case FIX :
+			refNode->setFixed(!refNode->isFixed());
 			break;
 		case MOVE :
 		case RESIZE :
@@ -149,13 +156,13 @@ bool OsgFrame::handlePush(const osgGA::GUIEventAdapter& event, osgViewer::Viewer
 	}
 }
 
-bool OsgFrame::handleDrag(const osgGA::GUIEventAdapter& event, osgViewer::Viewer* viewer) {
+bool OsgFrame::handleDrag(const osgGA::GUIEventAdapter& event) {
 	if (isShowing()) {
 		osg::Vec2f thisPos(event.getX(), event.getY());
 
 		switch(currentAction) {
 		case RESIZE	: {
-			osg::Vec2f nodePos = toScreenCoordinates(refNode->getPosition(), viewer);
+			osg::Vec2f nodePos = Util::CameraHelper::worldToScreen(refNode->getPosition());
 			osg::Vec2f newVect = thisPos - nodePos;
 			osg::Vec2f oldVect = lastPos - nodePos;
 
@@ -165,8 +172,7 @@ bool OsgFrame::handleDrag(const osgGA::GUIEventAdapter& event, osgViewer::Viewer
 		}
 		case MOVE : {
 			osg::Vec2f dragVect = thisPos - lastPos;
-
-			refNode->setPosition(getMousePos(refNode->getPosition(), dragVect, viewer));
+			refNode->setPosition(Util::CameraHelper::moveByScreenVector(refNode->getPosition(), dragVect));
 
 			lastPos.set(thisPos.x(), thisPos.y());
 			return true;
@@ -179,40 +185,11 @@ bool OsgFrame::handleDrag(const osgGA::GUIEventAdapter& event, osgViewer::Viewer
 	}
 }
 
-bool OsgFrame::handleRelease(const osgGA::GUIEventAdapter& event, osgViewer::Viewer* viewer) {
+bool OsgFrame::handleRelease(const osgGA::GUIEventAdapter& event) {
 	if (isShowing()) {
 		refNode->setFrozen(false);
 		return true;
 	} else {
 		return false;
 	}
-}
-
-// TODO move to helper class
-osg::Vec2f OsgFrame::toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer) {
-	osg::Camera* camera = viewer->getCamera();
-	osg::Matrixd viewM = camera->getViewMatrix();
-	osg::Matrixd projM = camera->getProjectionMatrix();
-	osg::Matrixd windM = camera->getViewport()->computeWindowMatrix();
-	osg::Matrixd compositeM = viewM * projM * windM;
-	scenePos = scenePos * compositeM;
-
-	return osg::Vec2f(scenePos.x(), scenePos.y());
-}
-
-// TODO move to helper class
-osg::Vec3f OsgFrame::getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector,
-		osgViewer::Viewer* viewer) {
-	osg::Camera* cam = viewer->getCamera();
-	osg::Matrixd& viewM = cam->getViewMatrix();
-	osg::Matrixd& projM = cam->getProjectionMatrix();
-	osg::Matrixd screenM = cam->getViewport()->computeWindowMatrix();
-	osg::Matrixd compositeM = viewM * projM * screenM;
-	osg::Matrixd compositeMi = compositeMi.inverse(compositeM);
-
-	osg::Vec3f screenPoint = origPos * compositeM;
-	osg::Vec3f newPosition = osg::Vec3f(screenPoint.x() + dragVector.x(),
-			screenPoint.y() + dragVector.y(), screenPoint.z() + 0);
-
-	return newPosition * compositeMi;
 }

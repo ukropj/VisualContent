@@ -4,6 +4,7 @@
 #include "Model/Graph.h"
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
+
 #include "osgDB/WriteFile"
 
 using namespace Window;

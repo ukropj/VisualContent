@@ -85,7 +85,7 @@ int SceneGraph::cleanUp() {
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
-	osg::ref_ptr<osg::Texture2D> skymap = Util::TextureWrapper::getCoudTexture(
+	osg::ref_ptr<osg::Texture2D> skymap = Util::TextureWrapper::createCloudTexture(
 			2048, 1024,
 			Util::Config::getValue("Viewer.Display.BackGround.R").toInt(),
 			Util::Config::getValue("Viewer.Display.BackGround.G").toInt(),

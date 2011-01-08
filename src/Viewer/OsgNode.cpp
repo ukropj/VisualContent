@@ -7,12 +7,10 @@
 
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgContent.h"
-#include "Viewer/ImageContent.h"
-#include "Viewer/TextContent.h"
 #include "Viewer/OsgFrame.h"
-#include "Viewer/SceneGraph.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
+#include "Util/CameraHelper.h"
 #include "Model/Type.h"
 #include "Model/Node.h"
 
@@ -29,12 +27,10 @@ typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 osg::Vec4 OsgNode::selectedColor = osg::Vec4(0.0, 1.0, 0.0, 0.9);
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
-OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
-		osg::AutoTransform> nodeTransform) {
+OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransform) {
 	this->node = node;
 	node->setOsgNode(this);
 	setName(node->getName().toStdString());
-	this->sceneGraph = sceneGraph;
 	this->nodeTransform = nodeTransform;
 
 	selected = false;
@@ -42,6 +38,7 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 	usingInterpolation = true;
 	pickable = true;
 	myFrame = NULL;
+	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	float scale = node->getType()->getScale();
 
 	closedG = createTextureNode(node->getType()->getTexture(), 2*scale, 2*scale);
@@ -74,7 +71,6 @@ OsgNode::OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
 
 OsgNode::~OsgNode(void) {
 	node->setOsgNode(NULL);
-	sceneGraph = NULL;
 	delete contentG;
 }
 
@@ -230,9 +226,9 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 
 void OsgNode::resize(float factor) {
 	osg::Vec3d newScale = contentG->getScale() * factor;
-	if (newScale.x() > 3) newScale.set(3,3,3);
+	if (newScale.x() > maxScale) newScale.set(maxScale, maxScale, maxScale);
 	contentG->setScale(newScale);
-	updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f);
+	updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f); // XXX magic num
 	if (myFrame != NULL)
 		myFrame->updatePosition();
 }
@@ -392,7 +388,7 @@ void OsgNode::setPosition(osg::Vec3f pos) {
 
 bool OsgNode::isOnScreen() const {
 	osg::Vec3f pos = node->getPosition();
-	pos = sceneGraph->byProjection(sceneGraph->byView(pos));
+	pos = Util::CameraHelper::byProjection(Util::CameraHelper::byView(pos));
 
 	if (qAbs(pos.x()) > 1 || qAbs(pos.y()) > 1) {
 		return false;
@@ -400,21 +396,13 @@ bool OsgNode::isOnScreen() const {
 	return true;
 }
 
-osg::Vec3f OsgNode::getEye() const {
-	return sceneGraph->getEye();
-}
-
-osg::Vec3f OsgNode::getUpVector() const {
-	return sceneGraph->getUpVector();
-}
-
 bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
 	if (u == NULL || v == NULL)
 		return false;
 	if (!u->isExpanded() && !v->isExpanded())
 		return false;
-	float udist = (u->getPosition() - u->getEye()).length();
-	float vdist = (v->getPosition() - v->getEye()).length();
+	float udist = (u->getPosition() - Util::CameraHelper::getEye()).length();
+	float vdist = (v->getPosition() - Util::CameraHelper::getEye()).length();
 //	qDebug() << u->getName().c_str() << ": " << udist;
 //	qDebug() << v->getName().c_str() << ": " << vdist;
 	if (u->isExpanded() && udist >= vdist)

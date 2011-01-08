@@ -9,6 +9,7 @@
 #include <osgViewer/ViewerBase>
 
 #include "Util/Config.h"
+#include "Util/CameraHelper.h"
 #include "Viewer/PickHandler.h"
 #include "Viewer/CameraManipulator.h"
 #include "Viewer/SceneGraph.h"
@@ -46,8 +47,8 @@ public:
 			const char * name = 0, const QGLWidget * shareWidget = 0,
 			WindowFlags f = 0) :
 		AdapterWidget(parent, name, shareWidget, f) {
+		Util::CameraHelper::setCamera(getCamera());
 		this->sceneGr = sceneGraph;
-		sceneGr->setCamera(this->getCamera());
 
 		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());

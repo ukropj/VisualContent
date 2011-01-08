@@ -76,7 +76,7 @@ public:
 	 *  \param        alpha    alpha amount
 	 *  \return osg::ref_ptr texture
 	 */
-	static osg::ref_ptr<osg::Texture2D> getCoudTexture(int w, int h, int r,
+	static osg::ref_ptr<osg::Texture2D> createCloudTexture(int w, int h, int r,
 			int g, int b, int alpha);
 
 private:

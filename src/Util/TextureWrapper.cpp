@@ -92,9 +92,9 @@ void TextureWrapper::reloadTextures() {
 
 using namespace noise;
 
-osg::ref_ptr<osg::Texture2D> TextureWrapper::getCoudTexture(int w, int h,
-		int r, int g, int b, int alpha)//w and h speak for themselves, zoom wel zoom in and out on it, I usually  use 75. P stands for persistence, this controls the roughness of the picture, i use 1/2
-{
+//w and h speak for themselves, zoom wel zoom in and out on it, I usually  use 75. P stands for persistence, this controls the roughness of the picture, i use 1/2
+osg::ref_ptr<osg::Texture2D> TextureWrapper::createCloudTexture(int w, int h,
+		int r, int g, int b, int alpha) {
 	module::Perlin perlinModule;
 
 	utils::NoiseMap heightMap;

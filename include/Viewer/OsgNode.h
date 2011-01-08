@@ -28,15 +28,13 @@ class Node;
 }
 
 namespace Vwr {
-class SceneGraph;
 class OsgContent;
 class OsgFrame;
 
 class OsgNode: public osg::Switch {
 public:
 
-	OsgNode(Model::Node* node, SceneGraph* sceneGraph, osg::ref_ptr<
-			osg::AutoTransform> nodeTansform);
+	OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTansform);
 
 	~OsgNode();
 
@@ -93,9 +91,6 @@ public:
 
 	bool isOnScreen() const;
 
-	osg::Vec3f getEye() const;
-	osg::Vec3f getUpVector() const;
-
 	static bool mayOverlap(OsgNode* u, OsgNode* v);
 
 	float getDistanceToEdge(double angle) const;
@@ -119,15 +114,11 @@ private:
 
 	Model::Node* node;
 
-	SceneGraph* sceneGraph;
-
 	bool selected;
-
 	bool usingInterpolation;
-
 	bool pickable;
-
 	bool expanded;
+	float maxScale;
 
 	void setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 			osg::Vec4 color);

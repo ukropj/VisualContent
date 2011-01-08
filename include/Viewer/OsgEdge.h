@@ -21,7 +21,6 @@ class Edge;
 }
 
 namespace Vwr {
-class SceneGraph;
 
 class OsgEdge {
 	// OsgEdge is not Geode any more (for performance reasons),
@@ -32,7 +31,7 @@ public:
 		ORIENTED, UNORIENTED, ENDPOINT
 	};
 
-	OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph);
+	OsgEdge(Model::Edge* edge);
 	~OsgEdge();
 
 	void updateGeometry();
@@ -66,7 +65,6 @@ public:
 private:
 
 	Model::Edge* edge;
-	Vwr::SceneGraph* sceneGraph;
 
 	bool selected;
 

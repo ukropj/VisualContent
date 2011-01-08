@@ -2,8 +2,8 @@
  *  PickHandler.h
  *  Projekt 3DVisual
  */
-#ifndef VIEWER_INPUT_HANDLER_DEF
-#define VIEWER_INPUT_HANDLER_DEF 1
+#ifndef PICKHANDLER_DEF
+#define PICKHANDLER_DEF 1
 
 #include <osgGA/GUIEventHandler>
 #include <osgGA/GUIEventAdapter>
@@ -170,7 +170,6 @@ private:
 		return dynamic_cast<osgViewer::Viewer*> (&aa);
 	}
 
-	osg::Vec3f getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector, osgViewer::Viewer* viewer);
 	/**
 	 *  int pickMode
 	 *  \brief current pick mode
@@ -241,8 +240,6 @@ private:
 	bool isCtrl(const osgGA::GUIEventAdapter& event);
 	bool isAlt(const osgGA::GUIEventAdapter& event);
 	bool isKey(char key, const osgGA::GUIEventAdapter& event);
-
-	osg::Vec2f toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer);
 
 	/**
 	 *  const osgGA::GUIEventAdapter * eaPush

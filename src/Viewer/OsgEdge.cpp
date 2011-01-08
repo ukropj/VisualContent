@@ -7,19 +7,18 @@
 
 #include "Viewer/OsgEdge.h"
 #include "Viewer/OsgNode.h"
-#include "Viewer/SceneGraph.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
+#include "Util/CameraHelper.h"
 #include "Model/Node.h"
 #include "Model/Edge.h"
 #include "Model/Type.h"
 
 using namespace Vwr;
 
-OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
+OsgEdge::OsgEdge(Model::Edge* edge) {
 
 	this->edge = edge;
-	this->sceneGraph = sceneGraph;
 
 	edgeCoords = new osg::Vec3Array(4);
 	edgeTexCoords = new osg::Vec2Array(4);
@@ -34,7 +33,6 @@ OsgEdge::OsgEdge(Model::Edge* edge, SceneGraph* sceneGraph) {
 OsgEdge::~OsgEdge() {
 	//	edge->setOsgEdge(NULL);
 	edge = NULL;
-	sceneGraph = NULL;
 }
 
 void OsgEdge::updateGeometry() {
@@ -50,7 +48,7 @@ void OsgEdge::updateGeometry() {
 	float scale = Util::Config::getValue("Viewer.Textures.EdgeScale").toFloat();
 
 	osg::Vec3f edgeDir = x - y;
-	osg::Vec3f viewVec = sceneGraph->getEye() - (x + y) / 2;
+	osg::Vec3f viewVec = Util::CameraHelper::getEye() - (x + y) / 2;
 
 	osg::Vec3f up = edgeDir ^ viewVec;
 	up.normalize();

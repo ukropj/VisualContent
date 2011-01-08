@@ -83,7 +83,7 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		if (pd != NULL)
 			pd->setValue(step++);
 		i.next();
-		OsgEdge* osgEdge = new OsgEdge(i.value(), sceneGraph);
+		OsgEdge* osgEdge = new OsgEdge(i.value());
 		edges.insert(i.value()->getId(), osgEdge);
 		if (!osgEdge->isOriented()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
@@ -189,7 +189,7 @@ osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 
-	osg::ref_ptr<OsgNode> osgNode = new OsgNode(node, sceneGraph, at);
+	osg::ref_ptr<OsgNode> osgNode = new OsgNode(node, at);
 	nodes.insert(node->getId(), osgNode);
 
 	at->setName("node_transform");

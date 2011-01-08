@@ -16,7 +16,7 @@
 #include <QTextEdit>
 #include <QtGui>
 #include <QDebug>
-#include <Qt/qstringlist.h>
+#include <QStringList>
 
 namespace AppCore {
 class IOManager;

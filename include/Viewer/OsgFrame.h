@@ -38,26 +38,16 @@ public:
 	bool activateAction(osg::Geode* button);
 	void deactivateAction();
 
-	bool handlePush(const osgGA::GUIEventAdapter& event,
-			osgViewer::Viewer* viewer);
-	bool handleDoubleclick(const osgGA::GUIEventAdapter& event,
-			osgViewer::Viewer* viewer);
-	bool handleDrag(const osgGA::GUIEventAdapter& event,
-			osgViewer::Viewer* viewer);
-	bool handleMove(const osgGA::GUIEventAdapter& event,
-			osgViewer::Viewer* viewer);
-	bool handleRelease(const osgGA::GUIEventAdapter& event,
-			osgViewer::Viewer* viewer);
-	bool handleKeyDown(const osgGA::GUIEventAdapter& event,
-			osgGA::GUIActionAdapter& action);
-	bool handleKeyUp(const osgGA::GUIEventAdapter& event,
-			osgGA::GUIActionAdapter& action);
+	bool handlePush(const osgGA::GUIEventAdapter& event);
+	bool handleDoubleclick(const osgGA::GUIEventAdapter& event);
+	bool handleDrag(const osgGA::GUIEventAdapter& event);
+	bool handleMove(const osgGA::GUIEventAdapter& event);
+	bool handleRelease(const osgGA::GUIEventAdapter& event);
+	bool handleKeyDown(const osgGA::GUIEventAdapter& event);
+	bool handleKeyUp(const osgGA::GUIEventAdapter& event);
 private:
 
 	osg::ref_ptr<osg::Geode> createButton(ButtonType type, osg::Vec3f pos, QString imagePath);
-	osg::Vec2f toScreenCoordinates(osg::Vec3f scenePos, osgViewer::Viewer* viewer);
-	osg::Vec3f getMousePos(osg::Vec3f origPos, osg::Vec2f dragVector,
-			osgViewer::Viewer* viewer);
 
 	osg::Vec2f lastPos;
 	osg::Vec2f originPos;

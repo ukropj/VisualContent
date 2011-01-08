@@ -5,15 +5,17 @@
 #ifndef LAYOUT_FRALGORITHM_DEF
 #define LAYOUT_FRALGORITHM_DEF 1
 
-#include <stdio.h>
-#include <iostream>
-#include <sstream>
-#include <string.h>
-#include <osg/Vec3f>
-#include <osg/Matrixd>
-#include <QMap>
+//#include <stdio.h>
+//#include <iostream>
+//#include <sstream>
+//#include <string.h>
 #include <math.h>
 #include <ctime>
+
+#include <osg/Vec3f>
+#include <osg/Matrixd>
+
+#include <QMap>
 #include <QMutex>
 #include <QThread>
 
