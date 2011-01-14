@@ -8,31 +8,44 @@
 #ifndef OSGFRAME_H_
 #define OSGFRAME_H_
 
-#include <osg/AutoTransform>
 #include <osg/PositionAttitudeTransform>
+#include <osg/AutoTransform>
+#include <osg/Geode>
 #include <osgGA/GUIEventAdapter>
 
 #include <string>
 
+#include <QObject>
 #include <QString>
 #include <QMap>
 
 namespace Vwr {
-class OsgNode;
+class AbstractNode;
 class FrameButton;
 
-class OsgFrame : public osg::AutoTransform {
+class OsgFrame: public QObject, public osg::PositionAttitudeTransform {
+Q_OBJECT
+public slots:
+	void myNodePosChanged(osg::Vec3f oldPos, osg::Vec3f newPos);
+	void myNodeSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize);
+	void nodeAdded(AbstractNode* node);
+	void nodeRemoved(AbstractNode* node);
 public:
 	OsgFrame();
 	~OsgFrame();
-	void show(OsgNode* node);
+	void show();
 	void hide();
-	bool isShowing() {
-		return refNode != NULL;
+	void setNode(AbstractNode* node);
+	AbstractNode* getNode() {
+		return myNode;
 	}
-	OsgNode* getNode() const {return refNode;}
+	bool isNodeSet();
+	bool isActive() {
+		return activeButton != nullButton;
+	}
 	void updatePosition();
-	bool activateAction(osg::Geode* button);
+	void updateProjection();
+	void activateAction(osg::Geode* button);
 	void deactivateAction();
 
 	bool handlePush(const osgGA::GUIEventAdapter& event);
@@ -57,7 +70,7 @@ private:
 	osg::Vec2f currentPos;
 	osg::Vec2f lastDragPos;
 
-	OsgNode* refNode;
+	AbstractNode* myNode;
 
 	QMap<std::string, FrameButton*> buttons;
 	FrameButton* activeButton;
@@ -65,6 +78,7 @@ private:
 
 	osg::ref_ptr<osg::AutoTransform> mt;
 	osg::ref_ptr<osg::AutoTransform> mt2;
+	osg::ref_ptr<osg::Geode> rect;
 };
 
 }

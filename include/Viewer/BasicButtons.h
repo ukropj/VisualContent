@@ -23,6 +23,9 @@ public:
 	void handlePush();
 	void handleDrag();
 	void handleRelease();
+
+	void activate();
+	void deactivate();
 };
 
 class ResizeButton : public FrameButton {
@@ -31,6 +34,9 @@ public:
 	void handlePush();
 	void handleDrag();
 	void handleRelease();
+
+	void activate();
+	void deactivate();
 };
 
 class HideButton : public FrameButton {
@@ -42,6 +48,18 @@ public:
 class FixButton : public FrameButton {
 public:
 	FixButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	void handlePush();
+};
+
+class ExpandButton : public FrameButton {
+public:
+	ExpandButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	void handlePush();
+};
+
+class CompactButton : public FrameButton {
+public:
+	CompactButton(OsgFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 };
 

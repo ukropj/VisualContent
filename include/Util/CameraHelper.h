@@ -84,6 +84,22 @@ public:
 		return byProjection(byView(scenePos)).z();
 	}
 
+	static int windowWidth() {
+		return camera->getViewport()->width();
+	}
+	static int windowHeight() {
+		return camera->getViewport()->height();
+	}
+	static int windowX() {
+		return camera->getViewport()->x();
+	}
+	static int windowY() {
+		return camera->getViewport()->y();
+	}
+	static osg::Matrix getProjectionMatrix() {
+		return osg::Matrix::ortho2D(windowX(), windowWidth(), windowY(), windowHeight());
+	}
+
 	static void printVec(osg::Vec3f vec, QString str = "") {
 		qDebug() << str << " [" << vec.x() << "," << vec.y() << "," << vec.z() << "]";
 	}

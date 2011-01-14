@@ -29,6 +29,9 @@ public:
 	virtual void handleRelease() {}
 	virtual void handleKeyDown() {}
 	virtual void handleKeyUp() {}
+
+	virtual void activate() {}
+	virtual void deactivate() {}
 protected:
 	OsgFrame* frame;
 };

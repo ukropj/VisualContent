@@ -8,6 +8,8 @@
 #ifndef OSGNODE_H_
 #define OSGNODE_H_
 
+#include "Viewer/AbstractNode.h"
+
 #include <QMap>
 #include <QString>
 #include <QTextStream>
@@ -29,9 +31,8 @@ class Node;
 
 namespace Vwr {
 class OsgContent;
-class OsgFrame;
 
-class OsgNode: public osg::Switch {
+class OsgNode: public osg::Switch, public AbstractNode {
 public:
 
 	OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTansform);
@@ -42,6 +43,10 @@ public:
 	void updatePosition(float interpolationSpeed = 1);
 	void setPosition(osg::Vec3f pos);
 
+	void resize(float factor);
+	float getRadius() const;
+	osg::Vec3f getSize() const;
+
 	bool setFixed(bool flag);
 	bool isFixed() const;
 	void setFrozen(bool flag);
@@ -50,18 +55,10 @@ public:
 	bool isSelected() const {
 		return selected;
 	}
-
 	bool isExpanded() const {
 		return expanded;
 	}
-	void toggleExpanded() {
-		setExpanded(!expanded);
-	}
 	bool setExpanded(bool flag);
-
-	void setFrame(OsgFrame* frame) {
-		myFrame = frame;
-	}
 
 	bool isPickable(osg::Geode* geode) const;
 	bool isResizable(osg::Geode* geode) const;
@@ -72,10 +69,6 @@ public:
 	osg::Vec4 getColor() const {
 		return color;
 	}
-
-	float getRadius() const;
-
-	osg::Vec3f getSize() const;
 
 	void showLabel(bool visible);
 
@@ -98,8 +91,6 @@ public:
 	void setPickable(bool flag) {
 		pickable = flag;
 	}
-
-	void resize(float factor);
 
 	static osg::Vec4 selectedColor;
 
@@ -148,8 +139,6 @@ private:
 
 	osg::ref_ptr<osg::Geode> closedG;
 	OsgContent* contentG;
-
-	OsgFrame* myFrame;
 
 	// constants
 

@@ -21,6 +21,7 @@ namespace Vwr {
 class CameraManipulator;
 class SceneGraph;
 class OsgNode;
+class AbstractNode;
 class OsgEdge;
 class OsgFrame;
 
@@ -102,8 +103,9 @@ private:
 	OsgEdge* getEdgeAt(osgViewer::Viewer* viewer, const double x,
 			const double y);//todo implement ..
 
+	void createControlHUD();
 	void createSelectionQuad();
-	void initSelectionQuad(osgViewer::Viewer * viewer);
+	void initSelectionQuad();
 	void drawSelectionQuad();
 
 	/**
@@ -123,6 +125,7 @@ private:
 	 *  \brief picked nodes list
 	 */
 	NodeList selectedNodes;
+	AbstractNode* selectedNode;
 
 	OsgFrame* nodeFrame;
 
@@ -277,6 +280,7 @@ public slots:
 	 *	\brief called when user don't double click
 	 */
 	void mouseTimerTimeout(); // not used now
+	void windowResized();
 };
 }
 #endif

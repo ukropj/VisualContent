@@ -39,6 +39,7 @@ FRAlgorithm::FRAlgorithm() {
 void FRAlgorithm::setGraph(Graph *newGraph) {
 	if (newGraph == NULL)
 		return;
+	State origState = state;
 
 	state = PAUSED;
 	while (isIterating) {
@@ -54,6 +55,7 @@ void FRAlgorithm::setGraph(Graph *newGraph) {
 		delete graph; // old graph deleted
 	graph = newGraph;
 
+	state = origState;
 	randomize();
 }
 

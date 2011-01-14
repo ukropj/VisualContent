@@ -14,10 +14,11 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	// initialize moduls
 	layouter = new Model::FRAlgorithm();
 	IOManager = new AppCore::IOManager();
-	messageWindows = new Window::MessageWindows();
+	messageWindows = new Window::MessageWindows(); //TODO remove
 	sceneGraph = new Vwr::SceneGraph();
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
+	connect(this, SIGNAL(windowResized()), viewerWidget->getPickHandler(), SLOT(windowResized()));
 
 	// create GUI
 	createActions();
@@ -181,6 +182,7 @@ void CoreWindow::loadFile(QString fileName) {
 	viewerWidget->setRendering(false);
 
 	Model::Graph* graph = IOManager->loadGraph(fileName, progressBar);
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	if (graph == NULL) {
 		if (!progressBar->wasCanceled() && !fileName.isEmpty())
@@ -202,11 +204,13 @@ void CoreWindow::loadFile(QString fileName) {
 		log(NORMAL, "Graph loaded: " + graph->toString());
 	}
 	progressBar->reset();
+	QApplication::restoreOverrideCursor();
 
 	// start
 	viewerWidget->setRendering(true);
 	sceneGraph->setUpdatingNodes(true);
-	layouter->play();
+	if (playAction->isChecked())
+		layouter->play();
 }
 
 void CoreWindow::showOptions() {
@@ -281,6 +285,10 @@ void CoreWindow::closeEvent(QCloseEvent *event) {
 	layouter->wait();
 	writeSettings();
 	event->accept();
+}
+
+void CoreWindow::resizeEvent (QResizeEvent * event) {
+	emit windowResized();
 }
 
 Window::CoreWindow* CoreWindow::instanceForStatusLog = NULL;

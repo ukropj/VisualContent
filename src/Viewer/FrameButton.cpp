@@ -10,6 +10,7 @@
 #include "Util/TextureWrapper.h"
 
 #include <osg/CullFace>
+#include <osg/BlendFunc>
 
 using namespace Vwr;
 
@@ -32,10 +33,11 @@ FrameButton::FrameButton(OsgFrame* parentFrame, osg::Vec3f pos, QString imagePat
 	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet;
 	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
 	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF); // OFF
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+	stateSet->setAttributeAndModes(new osg::BlendFunc, osg::StateAttribute::ON);
 	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-	stateSet->setRenderBinDetails(10, "DepthSortedBin");
+	stateSet->setRenderBinDetails(11, "RenderBin");
 
 	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
 	cull->setMode(osg::CullFace::BACK);

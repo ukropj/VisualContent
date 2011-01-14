@@ -3,8 +3,9 @@
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
 #include "Viewer/SkyTransform.h"
-#include "Util/TextureWrapper.h"
 #include "Util/Config.h"
+#include "Util/TextureWrapper.h"
+#include "Util/CameraHelper.h"
 #include "Model/Graph.h"
 #include "Viewer/WidgetContent.h"
 
@@ -62,8 +63,8 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	graph = newGraph;
 	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this, progressBar);
 
-	root->addChild(sceneElements->getElementsGroup());
 	elementsPosition = currentPos++;
+	root->addChild(sceneElements->getElementsGroup());
 	customNodesPosition = currentPos++;
 
 	osgUtil::Optimizer opt;
@@ -159,6 +160,15 @@ void SceneGraph::update(bool forceIdeal) {
 
 	sceneElements->updateEdges();
 	root->addChild(initCustomNodes());
+
+//	if (!customNodeList.isEmpty()) {
+//		QLinkedList<osg::ref_ptr<osg::Node> >::const_iterator i =
+//				customNodeList.constBegin();
+//		while (i != customNodeList.constEnd()) {
+//			customNodes->addChild(*i);
+//			++i;
+//		}
+//	}
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
@@ -214,6 +224,7 @@ void SceneGraph::setFrozen(bool val) {
 
 
 void SceneGraph::createExperiment() {
+/*
 	QWidget* widget = new QWidget;
 	widget->setLayout(new QVBoxLayout);
 
@@ -263,6 +274,31 @@ void SceneGraph::createExperiment() {
 	quad->setEventCallback(handler);
 	quad->setCullCallback(handler);
 
+	customNodeList.append(mt);
+*/
 
-//	customNodeList.append(mt);
+	// HUD dislpay:
+
+	osg::Camera* camera = new osg::Camera;
+	camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+	camera->setClearMask(GL_DEPTH_BUFFER_BIT);
+	camera->setRenderOrder(osg::Camera::POST_RENDER);
+	camera->setAllowEventFocus(false);
+	camera->setProjectionMatrix(osg::Matrix::ortho2D(
+			Util::CameraHelper::windowX(), Util::CameraHelper::windowWidth(),
+			Util::CameraHelper::windowY(), Util::CameraHelper::windowHeight()));
+
+	osg::ref_ptr<osgText::Text> text = new osgText::Text;
+	text->setCharacterSize(50);
+	text->setAxisAlignment(osgText::TextBase::XY_PLANE);
+	text->setPosition(osg::Vec3f(100.0f, 400.0f, 0.0f));
+	text->setText("QWERTY Z");
+	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
+	textGeode->addDrawable(text.release());
+
+//	camera->addChild(nodeFrame);
+	camera->addChild(textGeode);
+	camera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	osg::ref_ptr<osg::Group> abc = new osg::Group;
+	customNodeList.append(camera);
 }

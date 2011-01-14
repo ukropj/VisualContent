@@ -7,7 +7,6 @@
 
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgContent.h"
-#include "Viewer/OsgFrame.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
@@ -37,7 +36,6 @@ OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransfo
 	expanded = false;
 	usingInterpolation = true;
 	pickable = true;
-	myFrame = NULL;
 	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	float scale = node->getType()->getScale();
 
@@ -69,7 +67,7 @@ OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransfo
 	setColor(node->getType()->getColor());
 }
 
-OsgNode::~OsgNode(void) {
+OsgNode::~OsgNode() {
 	node->setOsgNode(NULL);
 	delete contentG;
 }
@@ -225,12 +223,16 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 }
 
 void OsgNode::resize(float factor) {
+	if (factor == 1)
+		return;
+	osg::Vec3f oldSize = getSize();
 	osg::Vec3d newScale = contentG->getScale() * factor;
-	if (newScale.x() > maxScale) newScale.set(maxScale, maxScale, maxScale);
+	if (newScale.x() > maxScale)
+		newScale.set(maxScale, maxScale, maxScale);
 	contentG->setScale(newScale);
 	updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f); // XXX magic num
-	if (myFrame != NULL)
-		myFrame->updatePosition();
+	if (oldSize != getSize())
+		emit changedSize(oldSize, getSize());
 }
 
 void OsgNode::setSize(osg::BoundingBox box) {
@@ -351,6 +353,7 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 		return false;
 }
 
+// TODO unused
 bool OsgNode::isResizable(osg::Geode* geode) const {
 	if (!pickable)
 		return false;
@@ -367,18 +370,21 @@ osg::Vec3f OsgNode::getPosition() const {
 }
 
 void OsgNode::updatePosition(float interpolationSpeed) {
-	osg::Vec3f targetPos = node->getPosition();
+	if (nodeTransform == NULL)
+		return;
 	osg::Vec3f currentPos = getPosition();
-	osg::Vec3 directionVector = osg::Vec3(targetPos - currentPos);
+	osg::Vec3f targetPos = node->getPosition();
 
-	if (usingInterpolation)
+	if (!usingInterpolation || interpolationSpeed == 1) {
+		nodeTransform->setPosition(targetPos);
+	} else {
+		osg::Vec3 directionVector = osg::Vec3(targetPos - currentPos);
 		directionVector *= interpolationSpeed;
-
-	if (nodeTransform != NULL)
 		nodeTransform->setPosition(currentPos + directionVector);
+	}
 
-	if (myFrame != NULL)
-		myFrame->updatePosition();
+	if (currentPos != getPosition())
+		emit changedPosition(currentPos, getPosition());
 }
 
 void OsgNode::setPosition(osg::Vec3f pos) {

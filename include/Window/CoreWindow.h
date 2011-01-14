@@ -54,13 +54,15 @@ public:
 	}
 
 	static void log(StatusMsgType type, QString msg);
-
+signals:
+	void windowResized();
 public slots:
 
 	void openFile();
 	void openRecentFile();
 	void showOptions();
 	void closeEvent(QCloseEvent *event);
+	void resizeEvent(QResizeEvent *event);
 
 	void centerView();
 	void randomize();
