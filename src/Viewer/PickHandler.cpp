@@ -45,21 +45,7 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 	mode = NORMAL;
 
 	createSelectionQuad();
-	createControlHUD();
-}
-
-void PickHandler::createControlHUD() {
-	nodeFrame = new OsgFrame;
-
-    osg::Camera* hudCamera = new osg::Camera;
-    hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-    hudCamera->setProjectionMatrixAsOrtho2D(0,1,0,1);
-    hudCamera->setViewMatrix(osg::Matrix::identity());
-    hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
-    hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
-
-	hudCamera->addChild(nodeFrame);
-	sceneGraph->getCustomNodeList()->push_back(hudCamera);
+	nodeFrame = sceneGraph->getNodeFrame();
 }
 
 void PickHandler::reset() {
@@ -281,8 +267,8 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 					group->addNode(*i, true, false);
 					++i;
 				}
-				group->updatePosition();
-				group->updateSize();
+				group->updateSizeAndPos();
+//				group->updatePosition();
 				if (multiPickEnabled) {
 					nodeFrame->setNode(Vwr::OsgNodeGroup::merge(nodeFrame->getNode(), group));
 				} else {
@@ -473,9 +459,9 @@ QSet<OsgNode*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 	pickedNodes = getNodesInQuad(viewer, x, y, w, h);
 
 	if (pickedNodes.isEmpty()) {
-		//		qDebug() << "NO PICK";
+		qDebug() << "NO PICK";
 	} else {
-		//		qDebug() << "NODES PICKED";
+		qDebug() << "NODES PICKED";
 	}
 	return pickedNodes;
 }
@@ -488,8 +474,10 @@ OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x, const
 				intersections.begin(); hitr != intersections.end(); hitr++) {
 //			qDebug() << "intersection";
 			OsgNode* n = getNode(hitr->nodePath, mode == NORMAL);
-			if (n != NULL)
-				return n;
+//			if (n != NULL)
+//				return n;
+			if (mode == NORMAL && nodeFrame->isActive())
+				return NULL;
 		}
 	} else {
 //		qDebug() << "no intersections";
@@ -526,13 +514,13 @@ QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
 	osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
 	if (g != NULL) {
-//				qDebug() << "Picked geode: " << g->getName().c_str();
+				qDebug() << "Picked geode: " << g->getName().c_str();
 		OsgNode* n = NULL;
 		osg::Group* parent = g->getParent(0);
 
 		osg::NodePath::const_iterator i = nodePath.end() - 1;
 		while (n == NULL && i != nodePath.begin()) {
-			//	qDebug() << ((*i)->getName().c_str());
+//				qDebug() << ((*i)->getName().c_str());
 			n = dynamic_cast<OsgNode *> (*i);
 			i--;
 		}
@@ -541,7 +529,7 @@ OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
 		if (pickActions)
 			nodeFrame->activateAction(g);
 	} else {
-//				qDebug() << "Picked geode: " << "null";
+				qDebug() << "Picked geode: " << "null";
 	}
 	return NULL;
 }
@@ -599,8 +587,7 @@ void PickHandler::createSelectionQuad() {
 	quadStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
 	quadStateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 	quadStateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	quadStateSet->setAttributeAndModes(new osg::BlendFunc,
-			osg::StateAttribute::ON);
+	quadStateSet->setAttributeAndModes(new osg::BlendFunc, osg::StateAttribute::ON);
 	quadStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
 	quadStateSet->setRenderBinDetails(11, "RenderBin");
 

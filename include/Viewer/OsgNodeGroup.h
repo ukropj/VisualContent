@@ -34,10 +34,9 @@ public:
 
 	osg::Vec3f getPosition() const;
 	void setPosition(osg::Vec3f pos);
-	void updatePosition();
 	void resize(float factor);
 	osg::Vec3f getSize() const;
-	void updateSize();
+	void updateSizeAndPos();
 
 	bool setFixed(bool flag);
 	bool isFixed() const;
@@ -47,6 +46,8 @@ public:
 	bool isSelected() const;
 	bool setExpanded(bool flag);
 	bool isExpanded() const;
+
+	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
 //	bool isResizable(osg::Geode* geode) const;
 

@@ -38,10 +38,7 @@ public:
 	virtual bool setExpanded(bool flag) = 0;
 	virtual bool isExpanded() const = 0;
 
-//	bool isPickable(osg::Geode* geode) const;
-//	bool isResizable(osg::Geode* geode) const;
-
-//	virtual bool equals(OsgNode* other) const = 0;
+	virtual void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) = 0;
 };
 
 }

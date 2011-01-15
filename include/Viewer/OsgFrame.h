@@ -26,8 +26,6 @@ class FrameButton;
 class OsgFrame: public QObject, public osg::PositionAttitudeTransform {
 Q_OBJECT
 public slots:
-	void myNodePosChanged(osg::Vec3f oldPos, osg::Vec3f newPos);
-	void myNodeSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize);
 	void nodeAdded(AbstractNode* node);
 	void nodeRemoved(AbstractNode* node);
 public:
@@ -43,7 +41,7 @@ public:
 	bool isActive() {
 		return activeButton != nullButton;
 	}
-	void updatePosition();
+	void updateGeometry();
 	void updateProjection();
 	void activateAction(osg::Geode* button);
 	void deactivateAction();
@@ -66,6 +64,10 @@ public:
 		return lastDragPos;
 	}
 private:
+	void createButtons();
+	void createBorder();
+	void insertButton(FrameButton* button, osg::Transform* transform);
+
 	osg::Vec2f originPos;
 	osg::Vec2f currentPos;
 	osg::Vec2f lastDragPos;

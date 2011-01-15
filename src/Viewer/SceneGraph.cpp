@@ -2,6 +2,7 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
+#include "Viewer/OsgFrame.h"
 #include "Viewer/SkyTransform.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
@@ -39,6 +40,7 @@ SceneGraph::SceneGraph() {
 	root = new osg::Group();
 	root->setName("root");
 	root->addChild(createSkyBox());
+	root->addChild(createControlFrame());
 	backgroundPosition = 0;
 	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (), new QMap<qlonglong, Model::Edge*> (),
 			this);
@@ -52,7 +54,8 @@ SceneGraph::SceneGraph() {
 
 SceneGraph::~SceneGraph() {
 	cleanUp();
-	root->removeChild(0, 1);
+	root->removeChild(0, 2);
+	delete nodeFrame;
 }
 
 void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
@@ -77,12 +80,26 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 }
 
 int SceneGraph::cleanUp() {
-	root->removeChildren(1, root->getNumChildren() - 1);
-	// NOTE: first child is skybox
+	root->removeChildren(2, root->getNumChildren() - 1);
+	// NOTE: first child is skybox, second is frame
 
 	delete sceneElements;
 	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
-	return 1;
+	return 2;
+}
+
+osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
+	nodeFrame = new OsgFrame;
+
+    osg::Camera* hudCamera = new osg::Camera;
+    hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+    hudCamera->setProjectionMatrixAsOrtho2D(0,1,0,1);
+    hudCamera->setViewMatrix(osg::Matrix::identity());
+    hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
+    hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+
+	hudCamera->addChild(nodeFrame);
+	return hudCamera;
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
@@ -159,6 +176,8 @@ void SceneGraph::update(bool forceIdeal) {
 	}
 
 	sceneElements->updateEdges();
+	nodeFrame->updateGeometry();
+
 	root->addChild(initCustomNodes());
 
 //	if (!customNodeList.isEmpty()) {

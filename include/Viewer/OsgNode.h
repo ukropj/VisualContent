@@ -52,13 +52,9 @@ public:
 	void setFrozen(bool flag);
 	bool isFrozen() const;
 	bool setSelected(bool flag);
-	bool isSelected() const {
-		return selected;
-	}
-	bool isExpanded() const {
-		return expanded;
-	}
+	bool isSelected() const;
 	bool setExpanded(bool flag);
+	bool isExpanded() const;
 
 	bool isPickable(osg::Geode* geode) const;
 	bool isResizable(osg::Geode* geode) const;
@@ -95,6 +91,8 @@ public:
 	static osg::Vec4 selectedColor;
 
 	bool equals(OsgNode* other) const;
+
+	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
 private:
 

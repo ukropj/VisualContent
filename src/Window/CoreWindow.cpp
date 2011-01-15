@@ -29,7 +29,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-	loadFile("input/data/triangle.graphml");
+	loadFile("input/foaf/daco.graphml");
 }
 
 void CoreWindow::createActions() {

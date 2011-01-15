@@ -20,10 +20,9 @@
 #include <qDebug>
 
 using namespace Vwr;
-typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
-		ColorIndexArray;
+typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1> ColorIndexArray;
 
-osg::Vec4 OsgNode::selectedColor = osg::Vec4(0.0, 1.0, 0.0, 0.9);
+osg::Vec4 OsgNode::selectedColor = osg::Vec4(0.0, 1.0, 0.0, 1.0);
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
 OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransform) {
@@ -79,7 +78,7 @@ osg::ref_ptr<osg::Geode> OsgNode::initFrame() {
 			v,v,v,v,v};
 
 	osg::ref_ptr<osg::Geometry> frameQuad =
-				createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(1, 1, 1, 1));
+			createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(1, 1, 1, 1));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->setStateSet(getOrCreateStateSet());
@@ -109,9 +108,9 @@ void OsgNode::updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, 
 
 osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 		osg::ref_ptr<osg::Texture2D> texture, float width, float height) {
-//	osg::Geometry* nodeQuad = osg::createTexturedQuadGeometry(
-//			osg::Vec3(-width/2.0f, -height/2.0f, 0),
-//			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
+	//	osg::Geometry* nodeQuad = osg::createTexturedQuadGeometry(
+	//			osg::Vec3(-width/2.0f, -height/2.0f, 0),
+	//			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
 
 	width /= 2.0f;
 	height /= 2.0f;
@@ -122,7 +121,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 
 
 	osg::ref_ptr<osg::Geometry> nodeQuad =
-				createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, osg::Vec4f(1, 1, 1, 1));
+			createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, osg::Vec4f(1, 1, 1, 1));
 
 	osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
 			osg::Vec2(1, 1), osg::Vec2(0, 1) };
@@ -144,7 +143,7 @@ osg::ref_ptr<osg::Drawable> OsgNode::createRect(float width, float height,
 	height /= 2.0f;
 	osg::Vec3 coords[] = { osg::Vec3(-width, -height, 0), osg::Vec3(width,
 			-height, 0), osg::Vec3(width, height, 0), osg::Vec3(-width, height,
-			0), osg::Vec3(-width, -height, 0) };
+					0), osg::Vec3(-width, -height, 0) };
 
 	osg::ref_ptr<osg::Geometry> rectLine =
 			createCustomGeometry(coords, 5, osg::PrimitiveSet::LINE_STRIP, color);
@@ -248,6 +247,22 @@ osg::Vec3f OsgNode::getSize() const {
 	return size * contentG->getScale().x();
 }
 
+void OsgNode::getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) {
+	osg::Vec3f pos = Util::CameraHelper::byView(getPosition());
+	osg::Vec3f size = getSize() / 2.0f;
+	size.z() = 0;
+
+	osg::Vec3f maxPos = Util::CameraHelper::byWindow(
+			Util::CameraHelper::byProjection(pos + size));
+	xMax = maxPos.x();
+	yMax = maxPos.y();
+
+	osg::Vec3f minPos = Util::CameraHelper::byWindow(
+			Util::CameraHelper::byProjection(pos - size));
+	xMin = minPos.x();
+	yMin = minPos.y();
+}
+
 void OsgNode::setColor(osg::Vec4 color) {
 	this->color = color;
 	if (!isSelected()) {
@@ -296,6 +311,10 @@ bool OsgNode::setExpanded(bool flag) {
 	return true;
 }
 
+bool OsgNode::isExpanded() const {
+	return expanded;
+}
+
 bool OsgNode::setSelected(bool flag) {
 	if (flag == selected)
 		return false;
@@ -310,6 +329,10 @@ bool OsgNode::setSelected(bool flag) {
 	}
 
 	return true;
+}
+
+bool OsgNode::isSelected() const {
+	return selected;
 }
 
 void OsgNode::setFrozen(bool flag) {
@@ -409,8 +432,8 @@ bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
 		return false;
 	float udist = (u->getPosition() - Util::CameraHelper::getEye()).length();
 	float vdist = (v->getPosition() - Util::CameraHelper::getEye()).length();
-//	qDebug() << u->getName().c_str() << ": " << udist;
-//	qDebug() << v->getName().c_str() << ": " << vdist;
+	//	qDebug() << u->getName().c_str() << ": " << udist;
+	//	qDebug() << v->getName().c_str() << ": " << vdist;
 	if (u->isExpanded() && udist >= vdist)
 		if (u->isOnScreen())
 			return true;

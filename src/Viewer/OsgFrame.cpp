@@ -7,12 +7,16 @@
 
 #include "Viewer/OsgFrame.h"
 #include "Viewer/AbstractNode.h"
+#include "Viewer/OsgNodeGroup.h"
 #include "Viewer/BasicButtons.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
+
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/Projection>
+#include <osg/BlendFunc>
+
 #include <stdlib.h>
 #include <QDebug>
 
@@ -21,15 +25,25 @@ using namespace Vwr;
 OsgFrame::OsgFrame() {
 	myNode = NULL;
 
-	nullButton = new NullButton(this);
-	activeButton = nullButton;
-
 	originPos = osg::Vec2f(0.0, 0.0);
 	currentPos = osg::Vec2f(0.0, 0.0);
 	lastDragPos = osg::Vec2f(0.0, 0.0);
 
-	mt = new osg::AutoTransform();
-	mt2 = new osg::AutoTransform();
+	createButtons();
+	createBorder();
+	activeButton = nullButton;
+
+	setNodeMask(false);
+}
+
+OsgFrame::~OsgFrame() {
+	setNode(NULL);
+	qDeleteAll(buttons);
+	delete nullButton;
+}
+
+void OsgFrame::createButtons() {
+	nullButton = new NullButton(this);
 
 	FrameButton* mb = new MoveButton(this, osg::Vec3f(30, -20, 2));
 	FrameButton* eb = new ExpandButton(this, osg::Vec3f(30, -70, 2));
@@ -37,71 +51,71 @@ OsgFrame::OsgFrame() {
 	FrameButton* hb = new HideButton(this, osg::Vec3f(30, 30, 2));
 	FrameButton* rb = new ResizeButton(this, osg::Vec3f(-20, 30, 2));
 	FrameButton* fb = new FixButton(this, osg::Vec3f(-30, -30, 2));
-	buttons.insert(mb->getName(), mb);
-	buttons.insert(eb->getName(), eb);
-	buttons.insert(cb->getName(), cb);
-	buttons.insert(hb->getName(), hb);
-	buttons.insert(rb->getName(), rb);
-	buttons.insert(fb->getName(), fb);
-	mt->addChild(mb);
-	mt->addChild(eb);
-	mt->addChild(cb);
-	mt->addChild(hb);
-	mt->addChild(rb);
-	mt2->addChild(fb);
+
+	mt = new osg::AutoTransform();
+	mt2 = new osg::AutoTransform();
+	insertButton(mb, mt);
+	insertButton(eb, mt);
+	insertButton(cb, mt);
+	insertButton(hb, mt);
+	insertButton(rb, mt);
+	insertButton(fb, mt2);
 
 //	mt->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 //	mt2->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 //	mt->setAutoScaleToScreen(true);
 //	mt2->setAutoScaleToScreen(true);
-//	mt->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-//	mt2->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+
 	addChild(mt);
 	addChild(mt2);
-
-	setNodeMask(false);
-
-
-//	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
-//	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-//	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
-//
-//	coordinates->push_back(osg::Vec3(100, 100, 0));
-//	coordinates->push_back(osg::Vec3(100, -100, 0));
-//	coordinates->push_back(osg::Vec3(-100, -100, 0));
-//	coordinates->push_back(osg::Vec3(-100, 100, 0));
-//	coordinates->push_back(osg::Vec3(100, 100, 0));
-//
-//	colors->push_back(osg::Vec4(1, 1, 1, 1));
-//
-//	geometry->setVertexArray(coordinates);
-//	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, 5));
-//	geometry->setColorArray(colors);
-////	geometry->setStateSet(quadStateSet);
-//	geometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-//
-//	rect = new osg::Geode;
-//	rect->addDrawable(geometry);
-//
-//	addChild(rect);
 }
 
-OsgFrame::~OsgFrame() {
-	setNode(NULL);
+void OsgFrame::insertButton(FrameButton* button, osg::Transform* tf) {
+	buttons.insert(button->getName(), button);
+	tf->addChild(button);
+}
+
+void OsgFrame::createBorder() {
+	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+	osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
+
+	coordinates->push_back(osg::Vec3(1, 1, 0));
+	coordinates->push_back(osg::Vec3(1, -1, 0));
+	coordinates->push_back(osg::Vec3(-1, -1, 0));
+	coordinates->push_back(osg::Vec3(-1, 1, 0));
+
+	colors->push_back(osg::Vec4(1, 1, 1, 1));
+
+	geometry->setVertexArray(coordinates);
+	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP, 0, 4));
+	geometry->setColorArray(colors);
+	geometry->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+
+	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet;
+	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+	stateSet->setAttributeAndModes(new osg::BlendFunc, osg::StateAttribute::ON);
+	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+	rect = new osg::Geode;
+	rect->setName("frame_border");
+	rect->addDrawable(geometry);
+	rect->setStateSet(stateSet);
+
+	addChild(rect);
 }
 
 void OsgFrame::show() {
 	if (!isNodeSet())
 		return;
 	qDebug() << "show";
-
-	updatePosition();
 	setNodeMask(true);
 }
 
 void OsgFrame::hide() {
 	qDebug() << "hide";
-
 	setNodeMask(false);
 	if (isActive())
 		deactivateAction();
@@ -122,57 +136,36 @@ void OsgFrame::setNode(AbstractNode* node) {
 	if (node != NULL) {
 		node->setSelected(true);
 		node->setExpanded(true);
-		connect(node, SIGNAL(changedPosition(osg::Vec3f, osg::Vec3f)),
-				this, SLOT(myNodePosChanged(osg::Vec3f, osg::Vec3f)));
-		connect(node, SIGNAL(changedSize(osg::Vec3f, osg::Vec3f)),
-				this, SLOT(myNodeSizeChanged(osg::Vec3f, osg::Vec3f)));
 		connect(node, SIGNAL(nodeAdded(AbstractNode*)),
 				this, SLOT(nodeAdded(AbstractNode*)));
 		connect(node, SIGNAL(nodeRemoved(AbstractNode*)),
 				this, SLOT(nodeRemoved(AbstractNode*)));
 	}
 	myNode = node;
-
 	deactivateAction();
-	updatePosition();
 }
 
 bool OsgFrame::isNodeSet() {
 	return myNode != NULL;
 }
 
-void OsgFrame::updatePosition() {
+void OsgFrame::updateGeometry() {
 	if (!isNodeSet())
 		return;
-	osg::Vec3f v = Util::CameraHelper::byFull(myNode->getPosition());
-	v.z() = 0.0f;
-	setPosition(v);
 
-	osg::Vec3f size = myNode->getSize() / 2.0f;
-	size.z() = 0.0f;
-//	setPosition(myNode->getPosition());
-	mt->setPosition(mt->getRotation() * size);
-//	mt->setPosition(v);
-	mt2->setPosition(mt2->getRotation() * (-size));
+	float xMin, yMin, xMax, yMax;
+	myNode->getProjRect(xMin, yMin, xMax, yMax);
 
+	mt->setPosition(osg::Vec3f(xMax, yMax, 0));
+	mt2->setPosition(osg::Vec3f(xMin, yMin, 0));
 
-//	Util::CameraHelper::printVec(size);
+	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
+	coordinates->push_back(osg::Vec3(xMax, yMax, 0));
+	coordinates->push_back(osg::Vec3(xMax, yMin, 0));
+	coordinates->push_back(osg::Vec3(xMin, yMin, 0));
+	coordinates->push_back(osg::Vec3(xMin, yMax, 0));
 
-//	osg::Vec3f a = Util::CameraHelper::byView(myNode->getPosition());
-//	osg::Vec3f b = Util::CameraHelper::byView(myNode->getPosition());
-//	a += osg::Vec3f(size.x(), size.y(), size.z());
-//	b += osg::Vec3f(-size.x(), -size.y(), size.z());
-//	a = Util::CameraHelper::byWindow(Util::CameraHelper::byProjection(a));
-//	b = Util::CameraHelper::byWindow(Util::CameraHelper::byProjection(b));
-
-//	osg::ref_ptr<osg::Vec3Array> coordinates = new osg::Vec3Array;
-//	coordinates->push_back(osg::Vec3(a.x(), a.y(), 0));
-//	coordinates->push_back(osg::Vec3(a.x(), b.y(), 0));
-//	coordinates->push_back(osg::Vec3(b.x(), b.y(), 0));
-//	coordinates->push_back(osg::Vec3(b.x(), a.y(), 0));
-//	coordinates->push_back(osg::Vec3(a.x(), a.y(), 0));
-//
-//	rect->getDrawable(0)->asGeometry()->setVertexArray(coordinates);
+	rect->getDrawable(0)->asGeometry()->setVertexArray(coordinates);
 }
 
 void OsgFrame::updateProjection() {
@@ -180,7 +173,6 @@ void OsgFrame::updateProjection() {
 	if (cameraHud != NULL) {
 		cameraHud->setProjectionMatrix(Util::CameraHelper::getProjectionMatrix());
 	}
-	updatePosition();
 }
 
 void OsgFrame::activateAction(osg::Geode* button) {
@@ -246,12 +238,3 @@ void OsgFrame::nodeAdded(AbstractNode* node) {
 void OsgFrame::nodeRemoved(AbstractNode* node) {
 	node->setSelected(false);
 }
-
-void OsgFrame::myNodePosChanged(osg::Vec3f oldPos, osg::Vec3f newPos) {
-	updatePosition();
-}
-
-void OsgFrame::myNodeSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize) {
-	updatePosition();
-}
-

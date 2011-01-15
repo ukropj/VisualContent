@@ -37,7 +37,7 @@ FrameButton::FrameButton(OsgFrame* parentFrame, osg::Vec3f pos, QString imagePat
 	stateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
 	stateSet->setAttributeAndModes(new osg::BlendFunc, osg::StateAttribute::ON);
 	stateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-	stateSet->setRenderBinDetails(11, "RenderBin");
+//	stateSet->setRenderBinDetails(11, "RenderBin");
 
 	osg::ref_ptr<osg::CullFace> cull = new osg::CullFace();
 	cull->setMode(osg::CullFace::BACK);

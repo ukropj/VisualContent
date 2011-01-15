@@ -28,6 +28,7 @@ namespace Vwr {
 class SceneElements;
 class OsgNode;
 class OsgEdge;
+class OsgFrame;
 
 class SceneGraph {
 public:
@@ -69,6 +70,10 @@ public:
 	 */
 	osg::ref_ptr<osg::Group> const getRoot() {
 		return root;
+	}
+
+	OsgFrame* const getNodeFrame() {
+		return nodeFrame;
 	}
 
 	void createExperiment();
@@ -125,6 +130,7 @@ private:
 	 *  \return osg::ref_ptr skybox node
 	 */
 	osg::ref_ptr<osg::Node> createSkyBox();
+	osg::ref_ptr<osg::Node> createControlFrame();
 
 	/**
 	 *  osg::ref_ptr camera
@@ -143,6 +149,8 @@ private:
 	 *  \brief list of custom nodes
 	 */
 	QLinkedList<osg::ref_ptr<osg::Node> > customNodeList;
+
+	OsgFrame* nodeFrame;
 
 	/**
 	 *  \fn private  cleanUp

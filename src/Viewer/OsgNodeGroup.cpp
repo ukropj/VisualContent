@@ -48,8 +48,7 @@ void OsgNodeGroup::addNode(AbstractNode* node, bool removeIfPresent, bool recalc
 	}
 
 	if (recalc) {
-		updatePosition();
-		updateSize();
+		updateSizeAndPos();
 	}
 
 	if (selected && !node->isSelected()) selected = false;
@@ -82,8 +81,7 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 	}
 
 	if (recalc) {
-		updateSize();
-		updatePosition();
+		updateSizeAndPos();
 	}
 }
 
@@ -95,8 +93,7 @@ void OsgNodeGroup::removeAll() {
 		++i;
 	}
 	nodes.clear();
-	updatePosition();
-	updateSize();
+	updateSizeAndPos();
 }
 
 void OsgNodeGroup::removeFromNodes(AbstractNode* node) {
@@ -109,33 +106,15 @@ bool OsgNodeGroup::isEmpty() {
 	return nodes.isEmpty();
 }
 
-void OsgNodeGroup::updatePosition() {
-	osg::Vec3f oldPos = getPosition();
-	osg::Vec3f sum(0, 0, 0);
-	NodeSet::const_iterator i = nodes.constBegin();
-	while (i != nodes.constEnd()) {
-		sum += (*i)->getPosition();
-		++i;
-	}
-	float num = nodes.size();
-	if (num == 0)
-		num = 1;
-	massCenter.set(sum.x()/num, sum.y()/num, sum.z()/num);
-
-//	qDebug() << "Group pos updated";
-	if (oldPos != getPosition())
-		emit changedPosition(oldPos, getPosition());
-}
-
 osg::Vec3f OsgNodeGroup::getPosition() const {
 	return massCenter;
 }
 
 void OsgNodeGroup::setPosition(osg::Vec3f pos) {
-	if (pos == massCenter)
+	if (pos == getPosition())
 		return;
 	osg::Vec3f oldPos = getPosition();
-	osg::Vec3f diff = pos - massCenter;
+	osg::Vec3f diff = pos - oldPos;
 	NodeSet::const_iterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		qDebug() << "Node pos set in group";
@@ -148,20 +127,20 @@ void OsgNodeGroup::setPosition(osg::Vec3f pos) {
 }
 
 void OsgNodeGroup::resize(float factor) {
-
 	NodeSet::const_iterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->resize(factor);
 		++i;
 	}
-	updateSize();
+	updateSizeAndPos();
 }
 
 osg::Vec3f OsgNodeGroup::getSize() const {
 	return size;
 }
 
-void OsgNodeGroup::updateSize() {
+void OsgNodeGroup::updateSizeAndPos() {
+	osg::Vec3f oldPos = getPosition();
 	osg::Vec3f oldSize = getSize();
 	float xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000,
 			zMin = 10000, zMax = -10000;//TODO
@@ -178,8 +157,12 @@ void OsgNodeGroup::updateSize() {
 		++i;
 	}
 	size.set(xMax-xMin, yMax-yMin, zMax-zMin);
+	massCenter.set(xMin+size.x()/2.0f, yMin+size.y()/2.0f, zMin+size.z()/2.0f);
+	massCenter = Util::CameraHelper::byViewInv(massCenter);
 
 //	qDebug() << "Group size updated";
+	if (oldPos != getPosition())
+		emit changedPosition(oldPos, getPosition());
 	if (oldSize != getSize())
 		emit changedSize(oldSize, getSize());
 }
@@ -238,11 +221,33 @@ bool OsgNodeGroup::isExpanded() const {
 }
 
 void OsgNodeGroup::childPosChanged(osg::Vec3f oldPos, osg::Vec3f newPos) {
-	updatePosition();
-	updateSize();
+	updateSizeAndPos();
 }
 void OsgNodeGroup::childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize) {
-	updateSize();
+	updateSizeAndPos();
+}
+
+void OsgNodeGroup::getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) {
+	xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000; // TODO
+
+	NodeSet::const_iterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		osg::Vec3f pos = Util::CameraHelper::byView((*i)->getPosition());
+		osg::Vec3f size = (*i)->getSize() / 2.0f;
+		size.z() = 0;
+
+		osg::Vec3f pos1 = Util::CameraHelper::byWindow(Util::CameraHelper::byProjection(
+				pos + size));
+		xMax = qMax(xMax, pos1.x());
+		yMax = qMax(yMax, pos1.y());
+
+		osg::Vec3f pos2 = Util::CameraHelper::byWindow(Util::CameraHelper::byProjection(
+				pos - size));
+		xMin = qMin(xMin, pos2.x());
+		yMin = qMin(yMin, pos2.y());
+
+		++i;
+	}
 }
 
 AbstractNode* OsgNodeGroup::merge(AbstractNode* n1, AbstractNode* n2) {
