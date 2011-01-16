@@ -27,6 +27,10 @@ osg::ref_ptr<osg::Geometry> ImageContent::createGeometry(QString imagePath) {
 	float scale = 0.2f;	// XXX magic number
 
 	osg::Image* image = osgDB::readImageFile(imagePath.toStdString());
+	if (image == NULL) {
+		qWarning() << "No such image: " + imagePath;
+		image = osgDB::readImageFile("img/not_found.jpg"); // TODO move to util
+	}
 
 	float width = image->s()*150 / ((float)image->t());
 	float height = 150;

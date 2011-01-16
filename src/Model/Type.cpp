@@ -25,10 +25,11 @@ Type::Type(qlonglong id, QString name, Graph* graph,
 				"Viewer.Textures.DefaultNodeScale"));
 		settings->insert("textureFile", appConf->getValue(
 				"Viewer.Textures.Node"));
-		settings->insert("color.R", "1.0");
-		settings->insert("color.G", "1.0");
-		settings->insert("color.B", "1.0");
-		settings->insert("color.A", "1.0");
+		osg::Vec4f color = appConf->getColorF("Viewer.Node.Color");
+		settings->insert("color.R", QString::number(color.x()));
+		settings->insert("color.G", QString::number(color.y()));
+		settings->insert("color.B", QString::number(color.z()));
+		settings->insert("color.A", QString::number(color.w()));
 	} else
 		settings = settingsMap;
 

@@ -11,7 +11,7 @@
   <key id="width" for="node" attr.name="width" attr.type="double" />
   <key id="height" for="node" attr.name="height" attr.type="double" />
   <key id="style" for="node" attr.name="style" attr.type="int" />
-  <graph id="G" edgedefault="directed">
+  <graph id="Enslyon" edgedefault="directed">
     <node id="0">
       <data key="label">http://www.ens-lyon.fr</data>
       <data key="url">http://www.ens-lyon.fr</data>

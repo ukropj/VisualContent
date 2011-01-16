@@ -84,7 +84,7 @@ void OsgEdge::getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
 	}
 
 	osg::Vec4f defaultColor = getEdgeColor();
-	osg::Vec4f selectedColor = OsgNode::selectedColor;
+	osg::Vec4f selectedColor = Util::Config::getColorF("Viewer.Selected.Color");
 
 	if (edge->getSrcNode()->getOsgNode()->isSelected()) {
 		colors->push_back(selectedColor);

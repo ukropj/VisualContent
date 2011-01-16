@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns .\lib\graphml.xsd"><!--PROPERTIES-->
+	<key id="label" for="all" attr.name="label" attr.type="string"/>
+	<key id="relation" for="edge" attr.name="relation" attr.type="string">
+		<default>influence</default>
+	</key>
+	<key id="type" for="node" attr.name="type" attr.type="string"/> 
+	<graph id="Philosophers" edgedefault="directed" parse.nodeids="free"
+		parse.edgeids="free" parse.order="nodesfirst"><!--NODES-->
+		<node id="Anaximenes">
+			<data key="label">Anaximenes of Miletus</data>
+			<data key="type">Milesian School</data>
+		</node>
+		<node id="Diogenes">
+			<data key="label">Diogenes of Apollonia</data>
+			<data key="type">Unrelated</data>
+		</node>
+		<node id="Anaxagoras">
+			<data key="label">Anaxagoras</data>
+			<data key="type">Pluralist School</data>
+		</node>
+		<node id="Socrates">
+			<data key="label">Socrates</data>
+			<data key="type">Unrelated</data>
+		</node>
+		<node id="Thales">
+			<data key="label">Thales of Miletus</data>
+			<data key="type">Milesian School</data>
+		</node>
+		<node id="Anaximander">
+			<data key="label">Anaximander</data>
+			<data key="type">Milesian School</data>
+		</node>
+		<node id="Heraclitus">
+			<data key="label">Heraclitus</data>
+			<data key="type">Ephesian School</data>
+		</node>
+		<node id="Pythagoras">
+			<data key="label">Pythagoras</data>
+			<data key="type">Phytagorean School</data>
+		</node>
+		<node id="Pherecydes">
+			<data key="label">Phereclydes of Syros</data>
+			<data key="type">Unrelated</data>
+		</node>
+		<node id="Parmenides">
+			<data key="label">Parmenides</data>
+			<data key="type">Eleatic School</data>
+		</node>
+		<node id="Xenophanes">
+			<data key="label">Xenophanes</data>
+			<data key="type">Eleatic School</data>
+		</node>
+		<node id="Zeno">
+			<data key="label">Zeno of Elea</data>
+			<data key="type">Eleatic School</data>
+		</node>
+		<node id="Gorgias">
+			<data key="label">Gorgias</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Critas">
+			<data key="label">Critas</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Protagoras">
+			<data key="label">Protagoras</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Prodicus">
+			<data key="label">Prodicus</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Thrasymachus">
+			<data key="label">Thrasymachus</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Antiphon">
+			<data key="label">Antiphon</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Hippias">
+			<data key="label">Hippias</data>
+			<data key="type">Sophists</data>
+		</node>
+		<node id="Melissus">
+			<data key="label">Melissus of Samos</data>
+			<data key="type">Eleatic School</data>
+		</node>
+		<node id="Democritus">
+			<data key="label">Democritus</data>
+			<data key="type">Atomist School</data>
+		</node>
+		<node id="Leucippus">
+			<data key="label">Leucippus</data>
+			<data key="type">Atomist School</data>
+		</node>
+		<node id="Empedocles">
+			<data key="label">Empedocles</data>
+			<data key="type">Pluralist School</data>
+		</node>
+		<node id="Philolaus">
+			<data key="label">Philolaus</data>
+			<data key="type">Phytagorean School</data>
+		</node>
+		<node id="Alcmaeon">
+			<data key="label">Alcmaeon of Croton</data>
+			<data key="type">Phytagorean School</data>
+		</node>
+		<node id="Archytas">
+			<data key="label">Archytas</data>
+			<data key="type">Phytagorean School</data>
+		</node><!--EDGES-->
+		<edge source="Anaxagoras" target="Socrates"></edge>
+		<edge source="Thales" target="Anaximander"></edge>
+		<edge source="Anaximander" target="Anaximenes"></edge>
+		<edge source="Anaximenes" target="Diogenes"></edge>
+		<edge source="Anaxagoras" target="Diogenes"></edge>
+		<edge source="Anaximander" target="Heraclitus">
+			<data key="relation">opposition</data>
+		</edge>
+		<edge source="Thales" target="Heraclitus">
+			<data key="relation">opposition</data>
+		</edge>
+		<edge source="Thales" target="Pythagoras"></edge>
+		<edge source="Pherecydes" target="Pythagoras"></edge>
+		<edge source="Anaximander" target="Pythagoras"></edge>
+		<edge source="Pythagoras" target="Heraclitus">
+			<data key="relation">opposition</data>
+		</edge>
+		<edge source="Heraclitus" target="Parmenides">
+			<data key="relation">opposition</data>
+		</edge>
+		<edge source="Xenophanes" target="Parmenides"></edge>
+		<edge source="Xenophanes" target="Zeno"></edge>
+		<edge source="Parmenides" target="Socrates"></edge>
+		<edge source="Parmenides" target="Gorgias"></edge>
+		<edge source="Gorgias" target="Critas"></edge>
+		<edge source="Protagoras" target="Gorgias"></edge>
+		<edge source="Protagoras" target="Prodicus"></edge>
+		<edge source="Protagoras" target="Thrasymachus"></edge>
+		<edge source="Protagoras" target="Antiphon"></edge>
+		<edge source="Protagoras" target="Hippias"></edge>
+		<edge source="Heraclitus" target="Melissus"></edge>
+		<edge source="Parmenides" target="Melissus"></edge>
+		<edge source="Parmenides" target="Democritus">
+			<data key="relation">opposition</data>
+		</edge>
+		<edge source="Leucippus" target="Democritus"></edge>
+		<edge source="Pythagoras" target="Empedocles"></edge>
+		<edge source="Empedocles" target="Gorgias"></edge>
+		<edge source="Democritus" target="Philolaus"></edge>
+		<edge source="Pythagoras" target="Philolaus"></edge>
+		<edge source="Pythagoras" target="Alcmaeon"></edge>
+		<edge source="Philolaus" target="Archytas"></edge>
+		<edge source="Pythagoras" target="Archytas"></edge>
+	</graph>
+</graphml>

@@ -34,6 +34,24 @@ QString Config::getValue(QString key) {
 	return getInstance()->_map.value(key);
 }
 
+osg::Vec4s Config::getColorI(QString key) {
+	QString val = getInstance()->_map.value(key);
+	QList<QString> data = val.split(",");
+	while (data.size() < 4)
+		data.append("255");
+	osg::Vec4s color(data[0].toInt(), data[1].toInt(), data[2].toInt(), data[3].toInt());
+	return color;
+}
+
+osg::Vec4f Config::getColorF(QString key) {
+	QString val = getInstance()->_map.value(key);
+	QList<QString> data = val.split(",");
+	while (data.size() < 4)
+		data.append("255");
+	osg::Vec4f color(data[0].toFloat()/255.0f, data[1].toFloat()/255.0f, data[2].toFloat()/255.0f, data[3].toFloat()/255.0f);
+	return color;
+}
+
 Config* Config::getInstance() {
 	_mutex.lock();
 

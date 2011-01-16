@@ -8,9 +8,12 @@
 #include <iostream>
 #include <QMap>
 #include <OpenThreads/Mutex>
-#include <Qt/qstring.h>
-#include <Qt/qstringlist.h>
+#include <QString>
+#include <QStringList>
 #include <QFile>
+
+#include <osg/Vec4s>
+#include <osg/Vec4f>
 
 typedef QMap<QString, QString> MapSS;
 
@@ -77,6 +80,9 @@ namespace Util
 			 *
 			 */
 			static QString getValue(QString key);
+
+			static osg::Vec4s getColorI(QString key);
+			static osg::Vec4f getColorF(QString key);
 
 			QString getMapValue(QString key) {
 				return _map.value(key);

@@ -16,7 +16,7 @@
 	<key id="edge-color" for="edge">
 		<default>dfdfdf</default>
 	</key>
-	<graph edgedefault="undirected">
+	<graph id="j&t" edgedefault="undirected">
 		<data key="center-node-id">company_name_231533</data>
 		<node id="company_name_111808">
 			<data key="node-title">WESET s.r.o. v likvidácii</data>

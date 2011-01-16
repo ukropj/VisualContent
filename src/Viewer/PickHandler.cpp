@@ -12,6 +12,7 @@
 #include "Viewer/OsgNodeGroup.h"
 #include "Viewer/OsgFrame.h"
 #include "Util/CameraHelper.h"
+#include "Util/Config.h"
 
 #include <iostream>
 #include <QApplication>
@@ -474,8 +475,8 @@ OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x, const
 				intersections.begin(); hitr != intersections.end(); hitr++) {
 //			qDebug() << "intersection";
 			OsgNode* n = getNode(hitr->nodePath, mode == NORMAL);
-//			if (n != NULL)
-//				return n;
+			if (n != NULL)
+				return n;
 			if (mode == NORMAL && nodeFrame->isActive())
 				return NULL;
 		}
@@ -600,7 +601,9 @@ void PickHandler::createSelectionQuad() {
 	coordinates->push_back(osg::Vec3(0, 1, -1));
 	coordinates->push_back(osg::Vec3(0, 1, -1));
 
-	colors->push_back(osg::Vec4(1, 1, 1, 0.1f));
+	osg::Vec4f color = Util::Config::getColorF("Viewer.Node.Color");
+	color.w() = 0.1f;
+	colors->push_back(color);
 
 	geometry->setVertexArray(coordinates);
 	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4));

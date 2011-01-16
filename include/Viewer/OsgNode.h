@@ -88,8 +88,6 @@ public:
 		pickable = flag;
 	}
 
-	static osg::Vec4 selectedColor;
-
 	bool equals(OsgNode* other) const;
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);

@@ -14,7 +14,7 @@
   <key id="edge-color" for="edge"> 
     <default>dfdfdf</default> 
   </key> 
-  <graph edgedefault="undirected"> 
+  <graph id="foaf0" edgedefault="undirected"> 
     <data key="center-node-id">company_name_215194</data> 
         <node id="company_name_133875"> 
           <data key="node-title">REDID Invest, a.s. v likvidácii</data> 

@@ -42,8 +42,8 @@ SceneGraph::SceneGraph() {
 	root->addChild(createSkyBox());
 	root->addChild(createControlFrame());
 	backgroundPosition = 0;
-	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (), new QMap<qlonglong, Model::Edge*> (),
-			this);
+	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (),
+			new QMap<qlonglong, Model::Edge*> (), this);
 
 	updateNodes = true;
 
@@ -54,7 +54,7 @@ SceneGraph::SceneGraph() {
 
 SceneGraph::~SceneGraph() {
 	cleanUp();
-	root->removeChild(0, 2);
+	root->removeChild(0, 1);
 	delete nodeFrame;
 }
 
@@ -80,12 +80,13 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 }
 
 int SceneGraph::cleanUp() {
-	root->removeChildren(2, root->getNumChildren() - 1);
+	float n = 2;
+	root->removeChildren(n, root->getNumChildren() - 1);
 	// NOTE: first child is skybox, second is frame
 
 	delete sceneElements;
 	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
-	return 2;
+	return n;
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
@@ -95,8 +96,8 @@ osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
     hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
     hudCamera->setProjectionMatrixAsOrtho2D(0,1,0,1);
     hudCamera->setViewMatrix(osg::Matrix::identity());
-    hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
-    hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+//    hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
+//    hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
 
 	hudCamera->addChild(nodeFrame);
 	return hudCamera;
@@ -105,9 +106,8 @@ osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
 osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
 	osg::ref_ptr<osg::Texture2D> skymap = Util::TextureWrapper::createCloudTexture(
 			2048, 1024,
-			Util::Config::getValue("Viewer.Display.BackGround.R").toInt(),
-			Util::Config::getValue("Viewer.Display.BackGround.G").toInt(),
-			Util::Config::getValue("Viewer.Display.BackGround.B").toInt(), 255);
+			Util::Config::getColorI("Viewer.Display.BackGround1"),
+			Util::Config::getColorI("Viewer.Display.BackGround2"));
 
 	skymap->setDataVariance(osg::Object::DYNAMIC);
 	skymap->setFilter(osg::Texture::MIN_FILTER,

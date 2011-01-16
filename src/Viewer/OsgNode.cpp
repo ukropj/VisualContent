@@ -22,7 +22,6 @@
 using namespace Vwr;
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1> ColorIndexArray;
 
-osg::Vec4 OsgNode::selectedColor = osg::Vec4(0.0, 1.0, 0.0, 1.0);
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
 OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransform) {
@@ -78,7 +77,7 @@ osg::ref_ptr<osg::Geode> OsgNode::initFrame() {
 			v,v,v,v,v};
 
 	osg::ref_ptr<osg::Geometry> frameQuad =
-			createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(1, 1, 1, 1));
+			createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, node->getType()->getColor());
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->setStateSet(getOrCreateStateSet());
@@ -121,7 +120,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 
 
 	osg::ref_ptr<osg::Geometry> nodeQuad =
-			createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, osg::Vec4f(1, 1, 1, 1));
+			createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, node->getType()->getColor());
 
 	osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
 			osg::Vec2(1, 1), osg::Vec2(0, 1) };
@@ -206,7 +205,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 	textDrawable->setDrawMode(osgText::Text::TEXT);
 	textDrawable->setAlignment(osgText::Text::CENTER_BOTTOM_BASE_LINE);
 	textDrawable->setPosition(osg::Vec3(0, newScale, 0));
-	textDrawable->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	textDrawable->setColor(Util::Config::getColorF("Viewer.Node.Color"));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(textDrawable);
@@ -321,8 +320,8 @@ bool OsgNode::setSelected(bool flag) {
 
 	selected = flag;
 	if (selected) {
-		setDrawableColor(frameG, 0, selectedColor);
-		setDrawableColor(closedG, 0, selectedColor);
+		setDrawableColor(frameG, 0, Util::Config::getColorF("Viewer.Selected.Color"));
+		setDrawableColor(closedG, 0, Util::Config::getColorF("Viewer.Selected.Color"));
 	} else {
 		setDrawableColor(frameG, 0, color);
 		setDrawableColor(closedG, 0, color);

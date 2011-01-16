@@ -94,7 +94,7 @@ using namespace noise;
 
 //w and h speak for themselves, zoom wel zoom in and out on it, I usually  use 75. P stands for persistence, this controls the roughness of the picture, i use 1/2
 osg::ref_ptr<osg::Texture2D> TextureWrapper::createCloudTexture(int w, int h,
-		int r, int g, int b, int alpha) {
+		osg::Vec4s color1, osg::Vec4s color2) {
 	module::Perlin perlinModule;
 
 	utils::NoiseMap heightMap;
@@ -114,8 +114,10 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::createCloudTexture(int w, int h,
 	renderer.SetDestImage(image);
 
 	renderer.ClearGradient();
-	renderer.AddGradientPoint(-1.0000, utils::Color(r, g, b, alpha));
-	renderer.AddGradientPoint(1.0000, utils::Color(0, 0, 0, 255));
+	renderer.AddGradientPoint(-1.0000,
+			utils::Color(color1.x(), color1.y(), color1.z(), color1.w()));
+	renderer.AddGradientPoint(1.0000,
+			utils::Color(color2.x(), color2.y(), color2.z(), color2.w()));
 
 	renderer.Render();
 

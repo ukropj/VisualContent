@@ -46,8 +46,8 @@ void OsgFrame::createButtons() {
 	nullButton = new NullButton(this);
 
 	FrameButton* mb = new MoveButton(this, osg::Vec3f(30, -20, 2));
-	FrameButton* eb = new ExpandButton(this, osg::Vec3f(30, -70, 2));
-	FrameButton* cb = new CompactButton(this, osg::Vec3f(30, -120, 2));
+	FrameButton* eb = new ExpandButton(this, osg::Vec3f(30, -120, 2));
+	FrameButton* cb = new CompactButton(this, osg::Vec3f(30, -70, 2));
 	FrameButton* hb = new HideButton(this, osg::Vec3f(30, 30, 2));
 	FrameButton* rb = new ResizeButton(this, osg::Vec3f(-20, 30, 2));
 	FrameButton* fb = new FixButton(this, osg::Vec3f(-30, -30, 2));
@@ -85,7 +85,7 @@ void OsgFrame::createBorder() {
 	coordinates->push_back(osg::Vec3(-1, -1, 0));
 	coordinates->push_back(osg::Vec3(-1, 1, 0));
 
-	colors->push_back(osg::Vec4(1, 1, 1, 1));
+	colors->push_back(osg::Vec4(1, 1, 1, 0)); // XXX
 
 	geometry->setVertexArray(coordinates);
 	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP, 0, 4));

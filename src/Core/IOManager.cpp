@@ -44,7 +44,7 @@ Graph* IOManager::loadGraph(QString filepath,
 
 	// ak mame rootElement tak
 	if (!rootElement.isNull()) {
-		QString graphname = "Graph " + rootElement.attribute("id");
+		QString graphname = rootElement.attribute("id");
 		bool defaultDirection;
 		if (rootElement.attribute("edgedefault") == "directed") {
 			defaultDirection = true;
@@ -71,10 +71,10 @@ Graph* IOManager::loadGraph(QString filepath,
 		QMap<QString, Node* >* readNodes = new QMap<QString,
 				Node* > ();
 		// skusal som aj cez QList, ale vobec mi to neslo, tak som to spravil len takto jednoducho cez pole
-		int colors = 6;
+		int colors = 7;
 		// pole farieb FIXME prerobit cez nejaky QList alebo nieco take, oddelit farby hran od farieb uzlov
-		qint8 nodeTypeSettings[6][4] = { { 0, 1, 0, 1 }, { 0, 1, 1, 1 }, { 1,
-				0, 0, 1 }, { 1, 0, 1, 1 }, { 1, 1, 0, 1 }, { 1, 1, 1, 1 }, };
+		qint8 nodeTypeSettings[7][4] = { { 1, 0, 0, 1 }, { 0, 0, 1, 1 }, { 0, 1, 1, 1 }, { 0,
+				1, 0, 1 }, { 1, 0, 1, 1 }, { 1, 1, 0, 1 }, { 0, 0, 0, 1 }, };
 		qint8 iColor = 0;
 
 		// vypis % pri nacitavani grafu
