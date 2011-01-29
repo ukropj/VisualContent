@@ -80,7 +80,7 @@ private:
 	void writeSettings();
 	void updateRecentFileActions(QString fileName = 0);
 
-	enum { MaxRecentFiles = 6 };
+	enum { MaxRecentFiles = 10 };
 
 	QAction* loadAction;
 	QAction* quitAction;

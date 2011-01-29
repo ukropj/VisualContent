@@ -17,6 +17,7 @@
 #include <osg/Texture>
 #include <osg/MatrixTransform>
 #include <osgDB/WriteFile>
+#include <osgDB/ReadFile>
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 
@@ -39,23 +40,37 @@ SceneGraph::SceneGraph() {
 
 	root = new osg::Group();
 	root->setName("root");
-	root->addChild(createSkyBox());
-	root->addChild(createControlFrame());
-	backgroundPosition = 0;
+
+	specialNodes = new osg::Group();
+	specialNodes->setName("custom_nodes");
+	specialNodes->addChild(createSkyBox());
+	specialNodes->addChild(createControlFrame());
+	root->addChild(specialNodes);
+	specialPosition = 0;
+
 	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (),
 			new QMap<qlonglong, Model::Edge*> (), this);
+	elementsPosition = 1;
 
 	updateNodes = true;
 
 	graph == NULL;
-
-	//	customNodeList.append(osgDB::readNodeFile("img/axes.osg"));
 }
 
 SceneGraph::~SceneGraph() {
+	nodeFrame = NULL;
+	specialNodes = NULL;
 	cleanUp();
-	root->removeChild(0, 1);
-	delete nodeFrame;
+	root->removeChild(0, root->getNumChildren());
+}
+
+int SceneGraph::cleanUp() {
+	root->removeChildren(elementsPosition, root->getNumChildren() - elementsPosition);
+
+	delete sceneElements;
+	sceneElements = NULL;
+	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
+	return root->getNumChildren();
 }
 
 void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
@@ -68,7 +83,6 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 
 	elementsPosition = currentPos++;
 	root->addChild(sceneElements->getElementsGroup());
-	customNodesPosition = currentPos++;
 
 	osgUtil::Optimizer opt;
 	opt.optimize(root, osgUtil::Optimizer::CHECK_GEOMETRY);
@@ -79,16 +93,6 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	//	osgDB::writeNodeFile(*root, "graph.osg");
 }
 
-int SceneGraph::cleanUp() {
-	float n = 2;
-	root->removeChildren(n, root->getNumChildren() - 1);
-	// NOTE: first child is skybox, second is frame
-
-	delete sceneElements;
-	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
-	return n;
-}
-
 osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
 	nodeFrame = new OsgFrame;
 
@@ -96,8 +100,8 @@ osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
     hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
     hudCamera->setProjectionMatrixAsOrtho2D(0,1,0,1);
     hudCamera->setViewMatrix(osg::Matrix::identity());
-//    hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
-//    hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+    hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
+    hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
 
 	hudCamera->addChild(nodeFrame);
 	return hudCamera;
@@ -147,26 +151,15 @@ osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
 	return clearNode;
 }
 
-osg::ref_ptr<osg::Group> SceneGraph::initCustomNodes() {
-	osg::ref_ptr<osg::Group> customNodes = new osg::Group;
-
-	QLinkedList<osg::ref_ptr<osg::Node> >::const_iterator i =
-			customNodeList.constBegin();
-	while (i != customNodeList.constEnd()) {
-		customNodes->addChild(*i);
-		++i;
-	}
-	customNodes->setName("custom_nodes");
-
-	return customNodes;
+void SceneGraph::addPermanentNode(osg::ref_ptr<osg::Node> node) {
+	specialNodes->addChild(node);
 }
+
 
 void SceneGraph::update(bool forceIdeal) {
 	if (graph == NULL) {
 		return;
 	}
-	root->removeChildren(customNodesPosition, 1); // XXX why?
-
 	if (updateNodes || forceIdeal) {
 		float interpolationSpeed = Util::Config::getValue(
 				"Viewer.Display.InterpolationSpeed").toFloat();
@@ -177,17 +170,6 @@ void SceneGraph::update(bool forceIdeal) {
 
 	sceneElements->updateEdges();
 	nodeFrame->updateGeometry();
-
-	root->addChild(initCustomNodes());
-
-//	if (!customNodeList.isEmpty()) {
-//		QLinkedList<osg::ref_ptr<osg::Node> >::const_iterator i =
-//				customNodeList.constBegin();
-//		while (i != customNodeList.constEnd()) {
-//			customNodes->addChild(*i);
-//			++i;
-//		}
-//	}
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
@@ -206,6 +188,7 @@ void SceneGraph::setNodeLabelsVisible(bool visible) {
 		i.next();
 		i.value()->showLabel(visible);
 	}
+//	createExperiment();//XXX
 }
 
 void SceneGraph::toggleFixedNodes(QLinkedList<OsgNode* > nodes) {
@@ -217,16 +200,16 @@ void SceneGraph::toggleFixedNodes(QLinkedList<OsgNode* > nodes) {
 }
 
 void SceneGraph::reloadConfig() {
-	Util::TextureWrapper::reloadTextures();
-
-	root->setChild(backgroundPosition, createSkyBox());
-
-	QMapIterator<qlonglong, osg::ref_ptr<OsgNode> > i(
-			*sceneElements->getNodes());
-	while (i.hasNext()) {
-		i.next();
-		i.value()->reloadConfig();
-	}
+//	Util::TextureWrapper::reloadTextures();
+//
+//	root->setChild(backgroundPosition, createSkyBox());
+//
+//	QMapIterator<qlonglong, osg::ref_ptr<OsgNode> > i(
+//			*sceneElements->getNodes());
+//	while (i.hasNext()) {
+//		i.next();
+//		i.value()->reloadConfig();
+//	}
 }
 
 void SceneGraph::setUpdatingNodes(bool val) {
@@ -300,9 +283,10 @@ void SceneGraph::createExperiment() {
 
 	osg::Camera* camera = new osg::Camera;
 	camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+	camera->setViewMatrix(osg::Matrix::identity());
 	camera->setClearMask(GL_DEPTH_BUFFER_BIT);
 	camera->setRenderOrder(osg::Camera::POST_RENDER);
-	camera->setAllowEventFocus(false);
+//	camera->setAllowEventFocus(false);
 	camera->setProjectionMatrix(osg::Matrix::ortho2D(
 			Util::CameraHelper::windowX(), Util::CameraHelper::windowWidth(),
 			Util::CameraHelper::windowY(), Util::CameraHelper::windowHeight()));
@@ -310,14 +294,49 @@ void SceneGraph::createExperiment() {
 	osg::ref_ptr<osgText::Text> text = new osgText::Text;
 	text->setCharacterSize(50);
 	text->setAxisAlignment(osgText::TextBase::XY_PLANE);
-	text->setPosition(osg::Vec3f(100.0f, 400.0f, 0.0f));
+	text->setPosition(osg::Vec3f(200.0f, 300.0f, 0.0f));
 	text->setText("QWERTY Z");
+	text->setColor(osg::Vec4f(1,0,0,1));
 	osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
 	textGeode->addDrawable(text.release());
+	textGeode->setName("HUD");
 
-//	camera->addChild(nodeFrame);
-	camera->addChild(textGeode);
+//	osg::ref_ptr<osg::StateSet> stateSet1 = new osg::StateSet();
+//	stateSet1->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+//	stateSet1->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+//	textGeode->setStateSet(stateSet1);
+
+//	camera->addChild(textGeode);
 	camera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-	osg::ref_ptr<osg::Group> abc = new osg::Group;
-	customNodeList.append(camera);
+	camera->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+
+	osg::Geometry* nodeQuad = osg::createTexturedQuadGeometry(
+			osg::Vec3(-10, -10, 0),
+			osg::Vec3(20, 0, 0), osg::Vec3(0, 20, 0), 1, 1);
+	osg::Geode* g = new osg::Geode;
+	g->addDrawable(nodeQuad);
+	g->setName("G");
+	camera->addChild(g);
+//
+//	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
+//	stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+//	stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+//
+//	g->setStateSet(stateSet);
+
+//	osg::ref_ptr<osg::Group> group = new osg::Group;
+//	group->addChild(g);
+//	group->addChild(camera);
+
+	osg::ref_ptr<osg::Node> scene = osgDB::readNodeFile("img/cow.osg");
+
+	osg::ref_ptr<osg::Group> group = dynamic_cast<osg::Group*>(scene.get());
+	if (!group)	{
+		group = new osg::Group;
+		group->addChild(scene.get());
+	}
+
+	group->addChild(camera);
+
+	addPermanentNode(group);
 }

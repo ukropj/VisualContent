@@ -296,7 +296,7 @@ bool OsgNode::setExpanded(bool flag) {
 	expanded = flag;
 	if (expanded) {
 		if (contentG->load()) {
-			qDebug() << node->getId() << ": content loaded";
+//			qDebug() << node->getId() << ": content loaded";
 			updateFrame(frameG, contentG->getBoundingBox(), contentG->getScale().x(), 0.2f);
 		}
 		setSize(contentG->getBoundingBox());

@@ -33,9 +33,9 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 	elementsGroup->setStateSet(createStateSet());
 }
 
-SceneElements::~SceneElements(void) {
-	nodes.clear();
-	edges.clear();
+SceneElements::~SceneElements() {
+	nodes.clear();		// nodes are osg::Referenced
+	qDeleteAll(edges);	// edges are not
 }
 
 osg::ref_ptr<osg::Group> SceneElements::initNodes(

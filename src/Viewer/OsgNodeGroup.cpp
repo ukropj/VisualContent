@@ -97,6 +97,8 @@ void OsgNodeGroup::removeAll() {
 }
 
 void OsgNodeGroup::removeFromNodes(AbstractNode* node) {
+	if (node == NULL)
+		return;
 	nodes.remove(node);
 	disconnect(node, 0, this, 0);
 	emit nodeRemoved(node);
@@ -117,12 +119,12 @@ void OsgNodeGroup::setPosition(osg::Vec3f pos) {
 	osg::Vec3f diff = pos - oldPos;
 	NodeSet::const_iterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
-		qDebug() << "Node pos set in group";
+//		qDebug() << "Node pos set in group";
 		(*i)->setPosition((*i)->getPosition() + diff);
 		++i;
 	}
 	massCenter = pos;
-	qDebug() << "Group pos set";
+//	qDebug() << "Group pos set";
 	emit changedPosition(oldPos, getPosition());
 }
 

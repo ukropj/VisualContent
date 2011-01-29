@@ -48,6 +48,7 @@ public:
 	 */
 	PickHandler(Vwr::CameraManipulator * cameraManipulator,
 			Vwr::SceneGraph * sceneGraph);
+	~PickHandler();
 
 	void reset();
 
@@ -125,23 +126,16 @@ private:
 	 *  \brief picked nodes list
 	 */
 	NodeList selectedNodes;
-	AbstractNode* selectedNode;
 
-	OsgFrame* nodeFrame;
+	/**
+	 *  osg::ref_ptr<osg::Geode> selectionQuad
+	 *  \brief selection quad geode
+	 */
+	osg::ref_ptr<osg::Geode> selectionQuad;
+
+	osg::ref_ptr<OsgFrame> nodeFrame;
 
 	bool multiPickEnabled;
-
-	/**
-	 *  QLinkedList<osg::ref_ptr<OsgEdge> > pickedEdges
-	 *  \brief picked edges list
-	 */
-	//	QLinkedList<osg::ref_ptr<OsgEdge> > pickedEdges;
-
-	/**
-	 *  osg::ref_ptr projection
-	 *  \brief custom node projection
-	 */
-	osg::ref_ptr<osg::Projection> quadProjection;
 
 	/**
 	 *  bool isDrawingSelectionQuad
@@ -150,22 +144,10 @@ private:
 	bool isDrawingSelectionQuad;
 
 	/**
-	 *  bool isDragging
-	 *  \brief true, if user is dragging mouse
-	 */
-	//	bool isDragging;
-
-	/**
 	 *  bool isManipulatingNodes
 	 *  \brief true, if user is manipulating nodes
 	 */
 	bool isResizingNode;
-
-	/**
-	 *  osg::ref_ptr<osg::Geode> selectionQuad
-	 *  \brief selection quad geode
-	 */
-	osg::ref_ptr<osg::Geode> selectionQuad;
 
 	char pressedKey;
 
@@ -275,10 +257,6 @@ private:
 	QTimer * timer;
 
 public slots:
-	/**
-	 *	\fn public mouseTimerTimeout
-	 *	\brief called when user don't double click
-	 */
 	void mouseTimerTimeout(); // not used now
 	void windowResized();
 };

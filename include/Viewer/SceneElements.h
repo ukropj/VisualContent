@@ -46,17 +46,12 @@ public:
 	 *  \fn public destructor  ~NodeGroup
 	 *  \brief destructor
 	 */
-	~SceneElements(void);
+	~SceneElements();
 
 	void updateNodes(float interpolationSpeed);
 
 	void updateEdges();
 
-	/**
-	 *  \fn inline public  getGroup
-	 *  \brief Returns wrapped nodes group
-	 *  \return osg::ref_ptr nodes group
-	 */
 	osg::ref_ptr<osg::Group> getElementsGroup() {
 		return elementsGroup;
 	}
@@ -77,7 +72,7 @@ private:
 	 *  \brief wrapped nodes
 	 */
 	QMap<qlonglong, osg::ref_ptr<OsgNode> > nodes;
-	QMap<qlonglong, OsgEdge*> edges;
+	QMap<qlonglong, OsgEdge* > edges;
 
 	/**
 	 *  osg::ref_ptr group

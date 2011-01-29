@@ -7,7 +7,6 @@
 
 #include "Viewer/OsgFrame.h"
 #include "Viewer/AbstractNode.h"
-#include "Viewer/OsgNodeGroup.h"
 #include "Viewer/BasicButtons.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
@@ -37,8 +36,11 @@ OsgFrame::OsgFrame() {
 }
 
 OsgFrame::~OsgFrame() {
-	setNode(NULL);
+	if (myNode != NULL)
+		disconnect(myNode, 0 ,this, 0);
+	myNode = NULL;
 	qDeleteAll(buttons);
+	activeButton = NULL;
 	delete nullButton;
 }
 
@@ -85,7 +87,7 @@ void OsgFrame::createBorder() {
 	coordinates->push_back(osg::Vec3(-1, -1, 0));
 	coordinates->push_back(osg::Vec3(-1, 1, 0));
 
-	colors->push_back(osg::Vec4(1, 1, 1, 0)); // XXX
+	colors->push_back(osg::Vec4(1, 0, 0, 1));
 
 	geometry->setVertexArray(coordinates);
 	geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP, 0, 4));
@@ -110,12 +112,12 @@ void OsgFrame::createBorder() {
 void OsgFrame::show() {
 	if (!isNodeSet())
 		return;
-	qDebug() << "show";
+//	qDebug() << "show";
 	setNodeMask(true);
 }
 
 void OsgFrame::hide() {
-	qDebug() << "hide";
+//	qDebug() << "hide";
 	setNodeMask(false);
 	if (isActive())
 		deactivateAction();
@@ -123,10 +125,10 @@ void OsgFrame::hide() {
 
 void OsgFrame::setNode(AbstractNode* node) {
 	if (node == myNode) {
-		qDebug() << "already framed";
+//		qDebug() << "already framed";
 		return;
 	}
-	qDebug() << "set";
+//	qDebug() << "setting";
 
 	if (myNode != NULL) {
 		myNode->setSelected(false);
@@ -188,11 +190,11 @@ void OsgFrame::activateAction(osg::Geode* button) {
 		activeButton = newButton;
 		activeButton->activate();
 	}
-	qDebug() << "act:" << activeButton->getName().c_str();
+//	qDebug() << "act:" << activeButton->getName().c_str();
 }
 
 void OsgFrame::deactivateAction() {
-	qDebug() << "deact: null_button";
+	//qDebug() << "deact: null_button";
 	activeButton->deactivate();
 	activeButton = nullButton;
 }

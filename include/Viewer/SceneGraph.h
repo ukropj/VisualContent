@@ -54,15 +54,6 @@ public:
 	 */
 	void update(bool forceIdeal = false);
 
-	/**
-	 *  \fn inline public  getCustomNodeList
-	 *  \brief
-	 *  \return QLinkedList<osg::ref_ptr<osg::Node> > *
-	 */
-	QLinkedList<osg::ref_ptr<osg::Node> > * getCustomNodeList() {
-		return &customNodeList;
-	}
-
 	/*!
 	 * \brief
 	 * Metoda, ktora vracia odkaz na koren grafu.
@@ -75,6 +66,8 @@ public:
 	OsgFrame* const getNodeFrame() {
 		return nodeFrame;
 	}
+
+	void addPermanentNode(osg::ref_ptr<osg::Node> node);
 
 	void createExperiment();
 
@@ -94,87 +87,26 @@ public:
 
 	void toggleFixedNodes(QLinkedList<Vwr::OsgNode* > nodes);
 
-	/**
-	 * Freezes/unfreezes current graph
-	 */
 	void setFrozen(bool val);
 
 	void setUpdatingNodes(bool val);
 
 private:
 
-	bool updateNodes;
-
-	/**
-	 *  Vwr::NodeGroup * nodesGroup
-	 *  \brief node group
-	 */
-	Vwr::SceneElements * sceneElements;
-
-	/**
-	 *  Model::Graph * graph
-	 *  \brief current graph
-	 */
-	Model::Graph * graph;
-
-	/**
-	 *  \fn private  initCustomNodes
-	 *  \brief inits custom nodes
-	 *  \return osg::ref_ptr
-	 */
-	osg::ref_ptr<osg::Group> initCustomNodes();
-
-	/**
-	 *  \fn private  createSkyBox
-	 *  \brief creates sky
-	 *  \return osg::ref_ptr skybox node
-	 */
+	int cleanUp();
 	osg::ref_ptr<osg::Node> createSkyBox();
 	osg::ref_ptr<osg::Node> createControlFrame();
 
-	/**
-	 *  osg::ref_ptr camera
-	 *  \brief current viewing camera
-	 */
-	osg::ref_ptr<osg::Camera> camera;
-
-	/**
-	 *  osg::ref_ptr root
-	 *  \brief root node
-	 */
+	Model::Graph * graph;
+	Vwr::SceneElements * sceneElements;
 	osg::ref_ptr<osg::Group> root;
+	osg::ref_ptr<osg::Camera> camera;
+	osg::ref_ptr<OsgFrame> nodeFrame;
+	osg::ref_ptr<osg::Group> specialNodes;
 
-	/**
-	 *  QLinkedList<osg::ref_ptr<osg::Node> > customNodeList
-	 *  \brief list of custom nodes
-	 */
-	QLinkedList<osg::ref_ptr<osg::Node> > customNodeList;
-
-	OsgFrame* nodeFrame;
-
-	/**
-	 *  \fn private  cleanUp
-	 *  \brief Cleans up memory
-	 */
-	int cleanUp();
-
-	/**
-	 *  int backgroundPosition
-	 *  \brief background node position
-	 */
-	int backgroundPosition;
-
-	/**
-	 *  int nodesPosition
-	 *  \brief nodes group position
-	 */
+	bool updateNodes;
+	int specialPosition;
 	int elementsPosition;
-
-	/**
-	 *  int customNodesPosition
-	 *  \brief custom nodes group position
-	 */
-	int customNodesPosition;
 };
 }
 
