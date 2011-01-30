@@ -36,6 +36,9 @@ FRAlgorithm::FRAlgorithm() {
 	Window::CoreWindow::log(Window::CoreWindow::ALG, "NO GRAPH");
 }
 
+FRAlgorithm::~FRAlgorithm() {
+}
+
 void FRAlgorithm::setGraph(Graph *newGraph) {
 	if (newGraph == NULL)
 		return;
@@ -44,16 +47,15 @@ void FRAlgorithm::setGraph(Graph *newGraph) {
 	state = PAUSED;
 	while (isIterating) {
 		qDebug() << "s";
-		QThread::msleep(10);
+		QThread::msleep(100);
 		state = PAUSED;
 	}
-
-	notEnd = true;
-	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
 
 	if (graph != NULL)
 		delete graph; // old graph deleted
 	graph = newGraph;
+	notEnd = true;
+	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
 
 	state = origState;
 	randomize();

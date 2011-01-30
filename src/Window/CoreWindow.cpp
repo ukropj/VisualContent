@@ -13,8 +13,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// initialize moduls
 	layouter = new Model::FRAlgorithm();
-	IOManager = new AppCore::IOManager();
-	messageWindows = new Window::MessageWindows(); //TODO remove
+	ioManager = new AppCore::IOManager();
 	sceneGraph = new Vwr::SceneGraph();
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
@@ -29,7 +28,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-	loadFile("input/foaf/daco.graphml");
+	loadFile("input/data/triangle.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -181,20 +180,19 @@ void CoreWindow::loadFile(QString fileName) {
 	sceneGraph->setUpdatingNodes(false);
 	viewerWidget->setRendering(false);
 
-	Model::Graph* graph = IOManager->loadGraph(fileName, progressBar);
+	Model::Graph* graph = ioManager->loadGraph(fileName, progressBar);
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	if (graph == NULL) {
 		if (!progressBar->wasCanceled() && !fileName.isEmpty())
-			messageWindows->showMessageBox("Error",
-					"Could not load graph from file" + fileName, true);
+			showMessageBox("Error", "Could not load graph from file" + fileName, true);
 	} else {
 		setWindowFilePath(fileName);
 
 		// reload
 		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar); // deletes original scene graph
-		layouter->setGraph(graph); // deletes original graph
+		layouter->setGraph(graph); 				// deletes original graph
 		progressBar->setValue(progressBar->maximum());
 
 		//reset camera
@@ -209,6 +207,8 @@ void CoreWindow::loadFile(QString fileName) {
 	// start
 	viewerWidget->setRendering(true);
 	sceneGraph->setUpdatingNodes(true);
+	if (labelsAction->isChecked())
+		sceneGraph->setNodeLabelsVisible(true);
 	if (playAction->isChecked())
 		layouter->play();
 }
@@ -241,7 +241,7 @@ void CoreWindow::centerView() {
 }
 
 void CoreWindow::toggleFixNodes() {
-	sceneGraph->toggleFixedNodes(viewerWidget->getPickHandler()->getSelectedNodes());
+	sceneGraph->toggleFixedNodes(viewerWidget->getPickHandler()->getSelectedNodes()); // XXX
 	layouter->wakeUp();
 }
 
@@ -284,6 +284,11 @@ void CoreWindow::closeEvent(QCloseEvent *event) {
 	layouter->stop();
 	layouter->wait();
 	writeSettings();
+
+	viewerWidget->close();
+	viewerWidget->deleteLater();
+	delete ioManager;
+//	delete layouter;
 	event->accept();
 }
 
@@ -299,6 +304,18 @@ void CoreWindow::log(StatusMsgType type, QString msg) {
 		return;
 	}
 	instanceForStatusLog->showStatusMsg(type, msg);
+}
+
+void CoreWindow::showMessageBox(QString title, QString message, bool isError) {
+	QMessageBox msgBox;
+	msgBox.setText(message);
+	msgBox.setWindowTitle(title);
+	if (isError) {
+		msgBox.setIcon(QMessageBox::Warning);
+	} else {
+		msgBox.setIcon(QMessageBox::Information);
+	}
+	msgBox.exec();
 }
 
 void CoreWindow::showStatusMsg(StatusMsgType type, QString msg) {

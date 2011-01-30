@@ -34,8 +34,15 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 }
 
 SceneElements::~SceneElements() {
-	nodes.clear();		// nodes are osg::Referenced
-	qDeleteAll(edges);	// edges are not
+	qDeleteAll(edges);	// nodes are deleted automatically (osg::Referenced)
+}
+
+osg::Group* SceneElements::getElementsGroup() {
+	return elementsGroup;
+}
+
+QList<OsgNode* > SceneElements::getNodes() {
+	return nodes;
 }
 
 osg::ref_ptr<osg::Group> SceneElements::initNodes(
@@ -84,7 +91,7 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 			pd->setValue(step++);
 		i.next();
 		OsgEdge* osgEdge = new OsgEdge(i.value());
-		edges.insert(i.value()->getId(), osgEdge);
+		edges.append(osgEdge);
 		if (!osgEdge->isOriented()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
 					osg::PrimitiveSet::QUADS, index, 4));
@@ -119,7 +126,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 		Edge* parentEdge) {
 	osg::ref_ptr<osg::Group> group = NULL;
 
-	if (!nodes.contains(node->getId())) {
+	if (!nodeIds.contains(node->getId())) {
 		group = new osg::Group;
 		group->addChild(wrapNode(node));
 
@@ -145,7 +152,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 	osg::ref_ptr<osg::Group> nodeGroup = new osg::Group;
 	int index = 0;
 
-	if (nodes.contains(firstNode->getId()))
+	if (nodeIds.contains(firstNode->getId()))
 		return NULL;
 
 	nodeGroup->addChild(wrapNode(firstNode));
@@ -162,7 +169,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 			QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
 			while (edgeI != node->getEdges()->end()) {
 				Node* otherNode = (*edgeI)->getOtherNode(node);
-				if (!nodes.contains(otherNode->getId())) {
+				if (!nodeIds.contains(otherNode->getId())) {
 					if (group == NULL)
 						group = new osg::Group;
 					group->addChild(wrapNode(otherNode));
@@ -189,21 +196,21 @@ osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
 
-	osg::ref_ptr<OsgNode> osgNode = new OsgNode(node, at);
-	nodes.insert(node->getId(), osgNode);
+	OsgNode* osgNode = new OsgNode(node, at);
+
+	nodes.append(osgNode);
+	nodeIds.insert(node->getId());
 
 	at->setName("node_transform");
 	at->addChild(osgNode);
-
 	return at;
 }
 
 void SceneElements::updateNodes(float interpolationSpeed) {
-	QMap<qlonglong, osg::ref_ptr<OsgNode> >::const_iterator i =
-			nodes.constBegin();
+	QList<OsgNode* >::const_iterator i = nodes.constBegin();
 
 	while (i != nodes.constEnd()) {
-		i.value()->updatePosition(interpolationSpeed);
+		(*i)->updatePosition(interpolationSpeed);
 		++i;
 	}
 }
@@ -217,13 +224,12 @@ void SceneElements::updateEdges() {
 	osg::ref_ptr<osg::Vec2Array> texCoordsO = new osg::Vec2Array;
 	osg::ref_ptr<osg::Vec4Array> colorsO = new osg::Vec4Array;
 
-	QMap<qlonglong, OsgEdge*>::const_iterator i = edges.constBegin();
-
+	QList<OsgEdge*>::const_iterator i = edges.constBegin();
 	while (i != edges.constEnd()) {
-		if (!i.value()->isOriented())
-			i.value()->getEdgeData(coords, texCoords, colors);
+		if (!(*i)->isOriented())
+			(*i)->getEdgeData(coords, texCoords, colors);
 		else
-			i.value()->getEdgeData(coordsO, texCoordsO, colorsO);
+			(*i)->getEdgeData(coordsO, texCoordsO, colorsO);
 		i++;
 	}
 

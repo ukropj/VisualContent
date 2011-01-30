@@ -24,7 +24,7 @@ typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1> C
 
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
-OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransform) {
+OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
 	this->node = node;
 	node->setOsgNode(this);
 	setName(node->getName().toStdString());
@@ -67,7 +67,7 @@ OsgNode::OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTransfo
 
 OsgNode::~OsgNode() {
 	node->setOsgNode(NULL);
-	delete contentG;
+//	qDebug() << "OsgNode deleted";
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::initFrame() {

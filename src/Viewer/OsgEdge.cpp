@@ -31,7 +31,6 @@ OsgEdge::OsgEdge(Model::Edge* edge) {
 }
 
 OsgEdge::~OsgEdge() {
-	//	edge->setOsgEdge(NULL);
 	edge = NULL;
 }
 

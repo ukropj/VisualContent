@@ -36,8 +36,6 @@
 using namespace Vwr;
 
 SceneGraph::SceneGraph() {
-	camera = NULL;
-
 	root = new osg::Group();
 	root->setName("root");
 
@@ -58,18 +56,14 @@ SceneGraph::SceneGraph() {
 }
 
 SceneGraph::~SceneGraph() {
-	nodeFrame = NULL;
-	specialNodes = NULL;
-	cleanUp();
-	root->removeChild(0, root->getNumChildren());
+	delete sceneElements;
+//	qDebug() << "SceneGraph deleted";
 }
 
 int SceneGraph::cleanUp() {
 	root->removeChildren(elementsPosition, root->getNumChildren() - elementsPosition);
-
 	delete sceneElements;
-	sceneElements = NULL;
-	graph = NULL; // graph is not deleted here, it may be still used even is graphics is gone
+	graph = NULL; // graph is not deleted here, it may be still used even if graphics is gone
 	return root->getNumChildren();
 }
 
@@ -89,7 +83,6 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	updateNodes = true;
 
 	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
-
 	//	osgDB::writeNodeFile(*root, "graph.osg");
 }
 
@@ -146,13 +139,21 @@ osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
 	osg::ref_ptr<osg::ClearNode> clearNode = new osg::ClearNode;
 	clearNode->setRequiresClear(false);
 	clearNode->addChild(transform);
-	clearNode->setName("skybox");
+	clearNode->setName("skybox_background");
 
 	return clearNode;
 }
 
 void SceneGraph::addPermanentNode(osg::ref_ptr<osg::Node> node) {
 	specialNodes->addChild(node);
+}
+
+osg::ref_ptr<osg::Group> SceneGraph::getRoot() const {
+	return root;
+}
+
+osg::ref_ptr<OsgFrame> SceneGraph::getNodeFrame() const{
+	return nodeFrame;
 }
 
 
@@ -172,30 +173,22 @@ void SceneGraph::update(bool forceIdeal) {
 	nodeFrame->updateGeometry();
 }
 
-void SceneGraph::setEdgeLabelsVisible(bool visible) {
-	//	QMapIterator<qlonglong, osg::ref_ptr<OsgEdge> > i(
-	//			*sceneElements->getEdges());
-	//	while (i.hasNext()) {
-	//		i.next();
-	//		i.value()->showLabel(visible);
-	//	}
-}
-
 void SceneGraph::setNodeLabelsVisible(bool visible) {
-	QMapIterator<qlonglong, osg::ref_ptr<OsgNode> > i(
-			*sceneElements->getNodes());
+	QListIterator<OsgNode* > i(sceneElements->getNodes());
 	while (i.hasNext()) {
-		i.next();
-		i.value()->showLabel(visible);
+		i.next()->showLabel(visible);
 	}
-//	createExperiment();//XXX
 }
 
-void SceneGraph::toggleFixedNodes(QLinkedList<OsgNode* > nodes) {
-	QLinkedList<OsgNode* >::const_iterator i = nodes.constBegin();
-	while (i != nodes.constEnd()) {
-		(*i)->setFixed(!(*i)->isFixed());
-		++i;
+void SceneGraph::setEdgeLabelsVisible(bool visible) {
+
+}
+
+void SceneGraph::toggleFixedNodes(QList<OsgNode* > nodes) {
+	QListIterator<OsgNode* > i(nodes);
+	while (i.hasNext()) {
+		OsgNode* n = i.next();
+		n->setFixed(!n->isFixed());
 	}
 }
 

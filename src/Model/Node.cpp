@@ -11,7 +11,7 @@
 #include "Model/Graph.h"
 #include "Util/Config.h"
 
-#include <qDebug>
+#include <QDebug>
 
 typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
@@ -48,7 +48,9 @@ Node::~Node(void) {
 	graph = NULL;
 	qDeleteAll(edges);
 	// NOTE: node deletes edges, not vice versa, edge will in turn call Node::removeEdge()
-	osgNode = NULL;
+	if (osgNode != NULL) {
+		osgNode = NULL;
+	}
 }
 
 void Node::addEdge(Edge* edge) {
@@ -65,6 +67,10 @@ Edge* Node::getEdgeTo(Node* otherNode) {
 			return edge;
 	}
 	return NULL;
+}
+
+void Node::setOsgNode(Vwr::OsgNode* osgNode) {
+	this->osgNode = osgNode;
 }
 
 bool Node::equals(Node* node) const {

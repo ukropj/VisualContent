@@ -9,6 +9,7 @@
 #include "Viewer/OsgFrame.h"
 #include "Util/TextureWrapper.h"
 
+#include <QDebug>
 #include <osg/CullFace>
 #include <osg/BlendFunc>
 
@@ -17,6 +18,7 @@ using namespace Vwr;
 FrameButton::FrameButton(OsgFrame* parentFrame) {
 	frame = parentFrame;
 }
+
 FrameButton::FrameButton(OsgFrame* parentFrame, osg::Vec3f pos, QString imagePath) {
 	frame = parentFrame;
 

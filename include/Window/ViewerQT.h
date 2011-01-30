@@ -35,20 +35,13 @@ namespace Window {
  */
 class ViewerQT: public osgViewer::Viewer, public AdapterWidget {
 public:
-	/*!
-	 * \param parent Rodic widgetu.
-	 * \param name Meno widgetu.
-	 * \param shareWidget Zdielanie widgetu.
-	 * \param f Znacky pre vytvaranie okna.
-	 * \param cg CoreGraf, ktory sa bude vykreslovat.
-	 * Vytvori widget, ktory dokaze zobrazit OSG grafy.
-	 */
+
 	ViewerQT(Vwr::SceneGraph* sceneGraph, QWidget * parent = 0,
 			const char * name = 0, const QGLWidget * shareWidget = 0,
 			WindowFlags f = 0) :
 		AdapterWidget(parent, name, shareWidget, f) {
 		Util::CameraHelper::setCamera(getCamera());
-		this->sceneGr = sceneGraph;
+		this->sceneGraph = sceneGraph;
 
 		osg::DisplaySettings::instance()->setStereo(Util::Config::getValue(
 				"Viewer.Display.Stereoscopic").toInt());
@@ -64,7 +57,7 @@ public:
 				osg::CullSettings::DO_NOT_COMPUTE_NEAR_FAR);
 
 		manipulator = new Vwr::CameraManipulator();
-		pickHandler = new Vwr::PickHandler(manipulator, sceneGr);
+		pickHandler = new Vwr::PickHandler(this->sceneGraph);
 
 		addEventHandler(new osgViewer::StatsHandler);
 		addEventHandler(pickHandler);
@@ -73,41 +66,30 @@ public:
 		getCamera()->setClearColor(osg::Vec4(0, 0, 0, 1));
 		getCamera()->setViewMatrixAsLookAt(osg::Vec3d(-10, 0, 0), osg::Vec3d(0,
 				0, 0), osg::Vec3d(0, 1, 0));
+		setSceneData(this->sceneGraph->getRoot());
 
 		setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
 
 		connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-
 		_timer.start(10);
-		setSceneData(sceneGr->getRoot());
 	}
 
 	~ViewerQT() {
 		_timer.stop();
+
+		removeEventHandler(pickHandler);
+		pickHandler = NULL;
+		delete sceneGraph;
+		qDebug() << "ViewerQT deleted";
 	}
 
-	/**
-	 *  \fn inline public constant  getPickHandler
-	 *  \brief Returns pick handler
-	 *  \return Vwr::PickHandler * pick handler
-	 */
-	Vwr::PickHandler * getPickHandler() const {
+	Vwr::PickHandler* getPickHandler() const {
 		return pickHandler;
 	}
-
-	/**
-	 *  \fn inline public constant  getCameraManipulator
-	 *  \brief Returns camera manipulator
-	 *  \return Vwr::CameraManipulator * camera manipulator
-	 */
-	Vwr::CameraManipulator * getCameraManipulator() const {
+	Vwr::CameraManipulator* getCameraManipulator() const {
 		return manipulator;
 	}
 
-	/**
-	 *  \fn inline public  reloadConfig
-	 *  \brief Reloads configuration
-	 */
 	void reloadConfig() {
 		manipulator->setMaxSpeed(Util::Config::getValue(
 				"Viewer.CameraManipulator.MaxSpeed").toFloat());
@@ -128,42 +110,17 @@ public:
 	}
 
 protected:
-
-	/**
-	 *  QTimer _timer
-	 *  \brief
-	 */
 	QTimer _timer;
+	Vwr::SceneGraph* sceneGraph;
 
-	/**
-	 *  Vwr::CoreGraph * cg
-	 *  \brief core graph
-	 */
-	Vwr::SceneGraph* sceneGr;
-
-	/**
-	 *  \fn inline protected virtual  paintGL
-	 *  \brief Paints new frame
-	 */
 	virtual void paintGL() {
 		frame();
-		sceneGr->update();
+		sceneGraph->update();
 	}
 
 private:
-
-	/**
-	 *  Vwr::CameraManipulator * manipulator
-	 *  \brief camera manipulator
-	 */
 	Vwr::CameraManipulator* manipulator;
-
-	/**
-	 *  Vwr::PickHandler * pickHandler
-	 *  \brief pick handler
-	 */
 	Vwr::PickHandler* pickHandler;
-
 };
 }
 

@@ -10,8 +10,7 @@
 #include <QString>
 #include <QtXml/QDomElement>
 #include <QFile>
-
-#include "Window/MessageWindows.h"
+#include <QProgressDialog>
 
 namespace Model {
 class Graph;

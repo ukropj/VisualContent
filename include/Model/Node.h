@@ -244,11 +244,9 @@ public:
 		return labelText;
 	}
 
-	void setOsgNode(osg::ref_ptr<Vwr::OsgNode> osgNode) {
-		this->osgNode = osgNode;
-	}
+	void setOsgNode(Vwr::OsgNode* osgNode);
 
-	osg::ref_ptr<Vwr::OsgNode> getOsgNode() {
+	Vwr::OsgNode* getOsgNode() {
 		return osgNode;
 	}
 
@@ -261,7 +259,7 @@ public:
 
 private:
 
-	osg::ref_ptr<Vwr::OsgNode> osgNode;
+	Vwr::OsgNode* osgNode;
 	/**
 	 *	qlonglong id
 	 *	\brief ID of the Node

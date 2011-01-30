@@ -34,67 +34,33 @@ class OsgNode;
 class SceneElements {
 public:
 
-	/**
-	 *  \fn public constructor  NodeGroup(QMap<qlonglong, Model::Node* > *nodes)
-	 *  \brief Creates node group
-	 *  \param  nodes    nodes to wrap
-	 */
 	SceneElements(QMap<qlonglong, Model::Node* > *nodes, QMap<qlonglong, Model::Edge* > *edges,
 			SceneGraph* sceneGraph, QProgressDialog* progressBar = 0);
-
-	/**
-	 *  \fn public destructor  ~NodeGroup
-	 *  \brief destructor
-	 */
 	~SceneElements();
 
 	void updateNodes(float interpolationSpeed);
-
 	void updateEdges();
 
-	osg::ref_ptr<osg::Group> getElementsGroup() {
-		return elementsGroup;
-	}
-
-	QMap<qlonglong, osg::ref_ptr<OsgNode> >* getNodes() {
-		return &nodes;
-	}
-
-//	QMap<qlonglong, osg::ref_ptr<OsgEdge> >* getEdges() {
-//		return &edges;
-//	}
+	osg::Group* getElementsGroup();
+	QList<OsgNode* > getNodes();
 
 private:
 	SceneGraph* sceneGraph;
 
-	/**
-	 *  QMap<qlonglong,osg::ref_ptr<OsgNode> > nodes
-	 *  \brief wrapped nodes
-	 */
-	QMap<qlonglong, osg::ref_ptr<OsgNode> > nodes;
-	QMap<qlonglong, OsgEdge* > edges;
+	QSet<qlonglong> nodeIds;
+	QList<OsgNode* > nodes;
+	QList<OsgEdge* > edges;
 
-	/**
-	 *  osg::ref_ptr group
-	 *  \brief nodes group
-	 */
 	osg::ref_ptr<osg::Group> elementsGroup;
 
-	/**
-	 *  \fn private  initNodes
-	 *  \brief inits nodes
-	 */
 	osg::ref_ptr<osg::Group> initNodes(QMap<qlonglong, Model::Node* > *nodes);
 	osg::ref_ptr<osg::Group> initEdges(QMap<qlonglong, Model::Edge* > *edges);
 
-
 	osg::ref_ptr<osg::AutoTransform> wrapNode(Model::Node* node);
-
 	osg::ref_ptr<osg::Group> wrapEdge(Model::Edge* edge);
 
 	osg::ref_ptr<osg::Group> getNodeGroup1(Model::Node* node,
 			Model::Edge* parentEdge);
-
 	osg::ref_ptr<osg::Group> getNodeGroup2(Model::Node* firstNode);
 
 	osg::ref_ptr<osg::StateSet> createStateSet() const;

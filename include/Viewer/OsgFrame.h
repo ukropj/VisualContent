@@ -34,13 +34,11 @@ public:
 	void show();
 	void hide();
 	void setNode(AbstractNode* node);
-	AbstractNode* getNode() {
-		return myNode;
-	}
-	bool isNodeSet();
-	bool isActive() {
-		return activeButton != nullButton;
-	}
+	AbstractNode* getNode() const;
+
+	bool isNodeSet() const;
+	bool isActive() const;
+
 	void updateGeometry();
 	void updateProjection();
 	void activateAction(osg::Geode* button);
@@ -54,19 +52,19 @@ public:
 	bool handleKeyDown(const osgGA::GUIEventAdapter& event);
 	bool handleKeyUp(const osgGA::GUIEventAdapter& event);
 
-	osg::Vec2f getPushPos() {
+	osg::Vec2f getPushPos() const {
 		return originPos;
 	}
-	osg::Vec2f getCurrentPos() {
+	osg::Vec2f getCurrentPos() const {
 		return currentPos;
 	}
-	osg::Vec2f getLastDragPos() {
+	osg::Vec2f getLastDragPos() const {
 		return lastDragPos;
 	}
 private:
 	void createButtons();
 	void createBorder();
-	void insertButton(FrameButton* button, osg::Transform* transform);
+	void insertButton(osg::ref_ptr<FrameButton> button, osg::Transform* transform);
 
 	osg::Vec2f originPos;
 	osg::Vec2f currentPos;
@@ -74,9 +72,9 @@ private:
 
 	AbstractNode* myNode;
 
-	QMap<std::string, FrameButton*> buttons;
-	FrameButton* activeButton;
-	FrameButton* nullButton;
+	QMap<std::string, osg::ref_ptr<FrameButton> > buttons;
+	osg::ref_ptr<FrameButton> activeButton;
+	osg::ref_ptr<FrameButton> nullButton;
 
 	osg::ref_ptr<osg::AutoTransform> mt;
 	osg::ref_ptr<osg::AutoTransform> mt2;

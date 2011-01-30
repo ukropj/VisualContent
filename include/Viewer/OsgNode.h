@@ -35,7 +35,7 @@ class OsgContent;
 class OsgNode: public osg::Switch, public AbstractNode {
 public:
 
-	OsgNode(Model::Node* node, osg::ref_ptr<osg::AutoTransform> nodeTansform);
+	OsgNode(Model::Node* node, osg::AutoTransform* nodeTansform);
 
 	~OsgNode();
 
@@ -126,7 +126,7 @@ private:
 
 	osg::Vec4 color;
 
-	osg::ref_ptr<osg::AutoTransform> nodeTransform;
+	osg::AutoTransform* nodeTransform;
 
 	osg::ref_ptr<osg::Geode> frameG;
 
@@ -134,7 +134,7 @@ private:
 	static osg::ref_ptr<osg::Geode> fixedG;
 
 	osg::ref_ptr<osg::Geode> closedG;
-	OsgContent* contentG;
+	osg::ref_ptr<OsgContent> contentG;
 
 	// constants
 

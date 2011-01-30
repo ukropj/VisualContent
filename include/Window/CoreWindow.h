@@ -74,6 +74,8 @@ public slots:
 
 	void toggleDebug();
 
+	void showMessageBox(QString title, QString message, bool isError);
+
 private:
 	void loadFile(QString fileName);
 	void readSettings();
@@ -104,8 +106,7 @@ private:
 	ViewerQT* viewerWidget;
 	Model::FRAlgorithm* layouter;
 	Vwr::SceneGraph* sceneGraph;
-	AppCore::IOManager *IOManager;
-	MessageWindows *messageWindows;
+	AppCore::IOManager *ioManager;
 
 	void createActions();
 	void createMenus();

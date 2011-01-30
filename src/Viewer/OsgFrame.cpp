@@ -38,21 +38,18 @@ OsgFrame::OsgFrame() {
 OsgFrame::~OsgFrame() {
 	if (myNode != NULL)
 		disconnect(myNode, 0 ,this, 0);
-	myNode = NULL;
-	qDeleteAll(buttons);
-	activeButton = NULL;
-	delete nullButton;
+	qDebug() << "Frame deleted";
 }
 
 void OsgFrame::createButtons() {
 	nullButton = new NullButton(this);
 
-	FrameButton* mb = new MoveButton(this, osg::Vec3f(30, -20, 2));
-	FrameButton* eb = new ExpandButton(this, osg::Vec3f(30, -120, 2));
-	FrameButton* cb = new CompactButton(this, osg::Vec3f(30, -70, 2));
-	FrameButton* hb = new HideButton(this, osg::Vec3f(30, 30, 2));
-	FrameButton* rb = new ResizeButton(this, osg::Vec3f(-20, 30, 2));
-	FrameButton* fb = new FixButton(this, osg::Vec3f(-30, -30, 2));
+	osg::ref_ptr<FrameButton> mb = new MoveButton(this, osg::Vec3f(30, -20, 2));
+	osg::ref_ptr<FrameButton> eb = new ExpandButton(this, osg::Vec3f(30, -120, 2));
+	osg::ref_ptr<FrameButton> cb = new CompactButton(this, osg::Vec3f(30, -70, 2));
+	osg::ref_ptr<FrameButton> hb = new HideButton(this, osg::Vec3f(30, 30, 2));
+	osg::ref_ptr<FrameButton> rb = new ResizeButton(this, osg::Vec3f(-20, 30, 2));
+	osg::ref_ptr<FrameButton> fb = new FixButton(this, osg::Vec3f(-30, -30, 2));
 
 	mt = new osg::AutoTransform();
 	mt2 = new osg::AutoTransform();
@@ -72,7 +69,7 @@ void OsgFrame::createButtons() {
 	addChild(mt2);
 }
 
-void OsgFrame::insertButton(FrameButton* button, osg::Transform* tf) {
+void OsgFrame::insertButton(osg::ref_ptr<FrameButton> button, osg::Transform* tf) {
 	buttons.insert(button->getName(), button);
 	tf->addChild(button);
 }
@@ -123,6 +120,10 @@ void OsgFrame::hide() {
 		deactivateAction();
 }
 
+AbstractNode* OsgFrame::getNode() const {
+	return myNode;
+}
+
 void OsgFrame::setNode(AbstractNode* node) {
 	if (node == myNode) {
 //		qDebug() << "already framed";
@@ -147,8 +148,12 @@ void OsgFrame::setNode(AbstractNode* node) {
 	deactivateAction();
 }
 
-bool OsgFrame::isNodeSet() {
+bool OsgFrame::isNodeSet() const {
 	return myNode != NULL;
+}
+
+bool OsgFrame::isActive() const {
+	return activeButton != nullButton;
 }
 
 void OsgFrame::updateGeometry() {

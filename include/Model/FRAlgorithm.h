@@ -36,6 +36,7 @@ class FRAlgorithm: public QThread {
 
 public:
 	FRAlgorithm();
+	~FRAlgorithm();
 
 	void setGraph(Graph *newGraph);
 

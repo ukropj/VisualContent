@@ -6,7 +6,6 @@
 
 #include "Viewer/PickHandler.h"
 #include "Viewer/SceneGraph.h"
-#include "Viewer/CameraManipulator.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/AbstractNode.h"
 #include "Viewer/OsgNodeGroup.h"
@@ -21,9 +20,9 @@
 #include <osg/Projection>
 
 using namespace Vwr;
+typedef QList<OsgNode* >::const_iterator NodeIterator;
 
-PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
-		Vwr::SceneGraph * sceneGraph) {
+PickHandler::PickHandler(SceneGraph * sceneGraph) {
 	//vytvorenie timera a vynulovanie premennych
 	//	timer = new QTimer();
 	//	connect(timer, SIGNAL(timeout()), this, SLOT(mouseTimerTimeout()));
@@ -32,7 +31,6 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 	//	releaseEvent = NULL;
 	//	releaseAction = NULL;
 
-	this->cameraManipulator = cameraManipulator; // XXX why do we need this?
 	this->sceneGraph = sceneGraph;
 
 	originPos = osg::Vec2f(0.0, 0.0);
@@ -49,8 +47,7 @@ PickHandler::PickHandler(Vwr::CameraManipulator * cameraManipulator,
 }
 
 PickHandler::~PickHandler() {
-	nodeFrame = NULL;
-	selectionQuad = NULL;
+//	qDebug() << "PickHandler deleted";
 }
 
 void PickHandler::reset() {
@@ -159,8 +156,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 		if (isAlt(event)) { // toggle nodes
 			OsgNode* node  = pickOne(getViewer(action), event);
 			if (selectedNodes.contains(node)) {
-				NodeList::const_iterator i;
-				i = selectedNodes.constBegin();
+				NodeIterator i = selectedNodes.constBegin();
 				while (i != selectedNodes.constEnd()) {
 					(*i)->setExpanded(!(*i)->isExpanded());
 					++i;
@@ -188,7 +184,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 			bool ret = select(pickOne(getViewer(action), event));
 
-			NodeList::const_iterator i = selectedNodes.constBegin();
+			NodeIterator i = selectedNodes.constBegin();
 			while (i != selectedNodes.constEnd()) {
 				(*i)->setFrozen(true);
 				++i;
@@ -239,12 +235,12 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 
 			if (!multiPickEnabled)
 				deselectAll();
-			QSet<OsgNode*> nodes = pickMore(getViewer(action), event);
-			QSet<OsgNode*>::const_iterator ni = nodes.constBegin();
 			multiPickEnabled = true; // temporary to select form quad
-			while (ni != nodes.constEnd()) {
-				select(*ni); // select node found in quad
-				++ni;
+			QList<OsgNode*> nodes = pickMore(getViewer(action), event);
+			NodeIterator i = nodes.constBegin();
+			while (i != nodes.constEnd()) {
+				select(*i); // select node found in quad
+				++i;
 			}
 			multiPickEnabled = false; // not important even if was true before
 		}
@@ -252,7 +248,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 			isResizingNode = false;
 			QApplication::restoreOverrideCursor();
 		}
-		NodeList::const_iterator i = selectedNodes.constBegin();
+		NodeIterator i = selectedNodes.constBegin();
 		while (i != selectedNodes.constEnd()) {
 			(*i)->setFrozen(false);
 			++i;
@@ -264,8 +260,8 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 			isDrawingSelectionQuad = false;
 			selectionQuad->setNodeMask(0);
 
-			QSet<OsgNode*> nodes = pickMore(getViewer(action), event);
-			QSet<OsgNode*>::const_iterator i = nodes.constBegin();
+			QList<OsgNode*> nodes = pickMore(getViewer(action), event);
+			NodeIterator i = nodes.constBegin();
 			if (!nodes.isEmpty()) {
 				OsgNodeGroup* group = new OsgNodeGroup();
 				while (i != nodes.constEnd()) {
@@ -327,7 +323,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 		if (!selectedNodes.isEmpty() && !multiPickEnabled
 				&& !isDrawingSelectionQuad) {
 			if (isResizingNode) {	// resize node (s)
-				NodeList::const_iterator i = selectedNodes.constBegin();
+				NodeIterator i = selectedNodes.constBegin();
 				osg::Vec2f nodePos = Util::CameraHelper::worldToScreen((*i)->getPosition());
 				osg::Vec2f newVect = thisPos - nodePos;
 				osg::Vec2f oldVect = lastPos - nodePos;
@@ -335,7 +331,7 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 				(*i)->resize(newVect.length() / oldVect.length());
 				lastPos.set(thisPos.x(), thisPos.y());
 			} else { 				// drag node(s)
-				NodeList::const_iterator i = selectedNodes.constBegin();
+				NodeIterator i = selectedNodes.constBegin();
 				osg::Vec2f dragVect = thisPos - lastPos;
 
 				while (i != selectedNodes.constEnd()) {
@@ -437,9 +433,9 @@ OsgNode* PickHandler::pickOne(osgViewer::Viewer* viewer,
 	return pickedNode;
 }
 
-QSet<OsgNode*> PickHandler::pickMore(osgViewer::Viewer* viewer,
+QList<OsgNode* > PickHandler::pickMore(osgViewer::Viewer* viewer,
 		const osgGA::GUIEventAdapter& event) {
-	QSet<OsgNode*> pickedNodes;
+	QList<OsgNode* > pickedNodes;
 	if (viewer == NULL)
 		return pickedNodes;
 
@@ -471,6 +467,7 @@ QSet<OsgNode*> PickHandler::pickMore(osgViewer::Viewer* viewer,
 	return pickedNodes;
 }
 
+
 OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x, const double y) {
 	osgUtil::LineSegmentIntersector::Intersections intersections;
 
@@ -493,11 +490,10 @@ OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x, const
 	return NULL;
 }
 
-QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
+QList<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 		const double xMin, const double yMin, const double xMax,
 		const double yMax) {
-	QSet<OsgNode*> nodes;
-
+	QList<OsgNode*> nodes;
 	osg::ref_ptr<osgUtil::PolytopeIntersector> picker = new osgUtil::PolytopeIntersector(
 			osgUtil::Intersector::WINDOW, xMin, yMin, xMax, yMax);
 	osgUtil::IntersectionVisitor iv(picker.get());
@@ -512,12 +508,13 @@ QSet<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 				continue;
 
 			OsgNode* n = getNode(hitr->nodePath, false);
-			if (n != NULL)
-				nodes.insert(n);
+			if (n != NULL && !nodes.contains(n))
+				nodes.append(n);
 		}
 	}
 	return nodes;
 }
+
 
 OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
 	osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
@@ -529,7 +526,7 @@ OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
 		osg::NodePath::const_iterator i = nodePath.end() - 1;
 		while (n == NULL && i != nodePath.begin()) {
 //				qDebug() << ((*i)->getName().c_str());
-			n = dynamic_cast<OsgNode *> (*i);
+			n = dynamic_cast<OsgNode* > (*i);
 			i--;
 		}
 		if (n != NULL && n->isPickable(g))
@@ -580,13 +577,12 @@ bool PickHandler::select(OsgNode* node, bool singleOnly) {
 }
 
 void PickHandler::deselectAll() {
-	NodeList::const_iterator i = selectedNodes.constBegin();
+	NodeIterator i = selectedNodes.constBegin();
 	while (i != selectedNodes.constEnd()) {
 		(*i)->setSelected(false);
 		(*i)->setFrozen(false);
 		++i;
 	}
-
 	selectedNodes.clear();
 }
 
@@ -654,14 +650,17 @@ void PickHandler::drawSelectionQuad() {
 	selectionQuad->getDrawable(0)->asGeometry()->setVertexArray(coordinates);
 }
 
-osg::Vec3 PickHandler::getSelectionCenter() {
+QList<OsgNode* > PickHandler::getSelectedNodes() const {
+	return selectedNodes;
+}
 
-	NodeList::const_iterator ni = selectedNodes.constBegin();
+osg::Vec3 PickHandler::getSelectionCenter() const {
 	osg::Vec3f sum(0, 0, 0);
 
-	while (ni != selectedNodes.constEnd()) {
-		sum += (*ni)->getPosition();
-		++ni;
+	NodeIterator i = selectedNodes.constBegin();
+	while (i != selectedNodes.constEnd()) {
+		sum += (*i)->getPosition();
+		++i;
 	}
 	int num = selectedNodes.size();
 	if (num == 0)
