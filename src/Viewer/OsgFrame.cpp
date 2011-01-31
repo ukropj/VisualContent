@@ -135,7 +135,6 @@ void OsgFrame::setNode(AbstractNode* node) {
 		myNode->setSelected(false);
 		disconnect(myNode, 0 ,this, 0);
 	}
-
 	if (node != NULL) {
 		node->setSelected(true);
 		node->setExpanded(true);
@@ -182,7 +181,7 @@ void OsgFrame::updateProjection() {
 	}
 }
 
-void OsgFrame::activateAction(osg::Geode* button) {
+bool OsgFrame::activateAction(osg::Geode* button) {
 	FrameButton* newButton;
 	if (!isNodeSet() || button == NULL) {
 		newButton = nullButton;
@@ -196,6 +195,7 @@ void OsgFrame::activateAction(osg::Geode* button) {
 		activeButton->activate();
 	}
 //	qDebug() << "act:" << activeButton->getName().c_str();
+	return isActive();
 }
 
 void OsgFrame::deactivateAction() {

@@ -68,7 +68,7 @@ private:
 	QList<OsgNode*> getNodesInQuad(osgViewer::Viewer* viewer,
 			const double xMin, const double yMin, const double xMax,
 			const double yMax);
-	OsgNode* getNode(osg::NodePath nodePath, bool pickActions = true);
+	OsgNode* getNode(osg::NodePath nodePath);
 
 	void createControlHUD();
 	void createSelectionQuad();

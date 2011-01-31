@@ -41,7 +41,7 @@ public:
 
 	void updateGeometry();
 	void updateProjection();
-	void activateAction(osg::Geode* button);
+	bool activateAction(osg::Geode* button);
 	void deactivateAction();
 
 	bool handlePush(const osgGA::GUIEventAdapter& event);

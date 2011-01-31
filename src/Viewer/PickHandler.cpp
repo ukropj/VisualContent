@@ -145,7 +145,6 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 
 	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
 		sceneGraph->setFrozen(true);
-		//		nodeFrame->hide();
 		return false;
 	}
 
@@ -223,7 +222,6 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 
 	if (event.getButton() != osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) {
 		sceneGraph->setFrozen(false);
-		//		nodeFrame->show();
 		return false;
 	}
 	//	qDebug() << " release handled\n";
@@ -269,7 +267,6 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 					++i;
 				}
 				group->updateSizeAndPos();
-//				group->updatePosition();
 				if (multiPickEnabled) {
 					nodeFrame->setNode(Vwr::OsgNodeGroup::merge(nodeFrame->getNode(), group));
 				} else {
@@ -470,24 +467,25 @@ QList<OsgNode* > PickHandler::pickMore(osgViewer::Viewer* viewer,
 
 OsgNode* PickHandler::getNodeAt(osgViewer::Viewer* viewer, const double x, const double y) {
 	osgUtil::LineSegmentIntersector::Intersections intersections;
-
-    if (viewer->computeIntersections(x,y,intersections)) {
+	OsgNode* pickedNode = NULL;
+	if (viewer->computeIntersections(x, y, intersections)) {
+		int i = 0;
 		for (osgUtil::LineSegmentIntersector::Intersections::iterator hitr =
-				intersections.begin(); hitr != intersections.end(); hitr++) {
-//			qDebug() << "intersection";
+				intersections.begin(); hitr != intersections.end(); hitr++, i++) {
 			if (hitr->nodePath.size() <= 2)
 				continue;
-
-			OsgNode* n = getNode(hitr->nodePath, mode == NORMAL);
-			if (n != NULL)
-				return n;
-			if (mode == NORMAL && nodeFrame->isActive())
-				return NULL;
+			if (pickedNode == NULL)
+				pickedNode = getNode(hitr->nodePath);
+			if (i == intersections.size() - 1 && mode == NORMAL) {
+				osg::Geode* g = dynamic_cast<osg::Geode *> (hitr->nodePath.back());
+				if (nodeFrame->activateAction(g))
+					return NULL;
+			}
 		}
 	} else {
 //		qDebug() << "no intersections";
 	}
-	return NULL;
+	return pickedNode;
 }
 
 QList<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
@@ -507,7 +505,7 @@ QList<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 			if (hitr->nodePath.size() <= 2)
 				continue;
 
-			OsgNode* n = getNode(hitr->nodePath, false);
+			OsgNode* n = getNode(hitr->nodePath);
 			if (n != NULL && !nodes.contains(n))
 				nodes.append(n);
 		}
@@ -516,25 +514,23 @@ QList<OsgNode*> PickHandler::getNodesInQuad(osgViewer::Viewer* viewer,
 }
 
 
-OsgNode* PickHandler::getNode(osg::NodePath nodePath, bool pickActions) {
+OsgNode* PickHandler::getNode(osg::NodePath nodePath) {
 	osg::Geode* g = dynamic_cast<osg::Geode *> (nodePath.back());
 	if (g != NULL) {
-//				qDebug() << "Picked geode: " << g->getName().c_str();
-		OsgNode* n = NULL;
+//		qDebug() << "Picked geode: " << g->getName().c_str();
+		OsgNode* node = NULL;
 		osg::Group* parent = g->getParent(0);
 
 		osg::NodePath::const_iterator i = nodePath.end() - 1;
-		while (n == NULL && i != nodePath.begin()) {
+		while (node == NULL && i != nodePath.begin()) {
 //				qDebug() << ((*i)->getName().c_str());
-			n = dynamic_cast<OsgNode* > (*i);
+			node = dynamic_cast<OsgNode* > (*i);
 			i--;
 		}
-		if (n != NULL && n->isPickable(g))
-			return n;
-		if (pickActions)
-			nodeFrame->activateAction(g);
+		if (node != NULL && node->isPickable(g))
+			return node;
 	} else {
-//				qDebug() << "Picked geode: " << "null";
+//		qDebug() << "Picked geode: " << "null";
 	}
 	return NULL;
 }

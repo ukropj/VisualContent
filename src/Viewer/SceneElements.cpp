@@ -72,8 +72,8 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
 	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
-	allEdges->setName("all_edges");
 	osg::ref_ptr<osg::Geode> edgeGeode = new osg::Geode();
+	edgeGeode->setName("edges");
 	allEdges->addChild(edgeGeode);
 	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
 
