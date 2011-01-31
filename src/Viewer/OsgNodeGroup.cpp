@@ -9,6 +9,7 @@
 #include "Util/CameraHelper.h"
 
 using namespace Vwr;
+typedef QSet<AbstractNode* >::const_iterator NodeIterator;
 
 OsgNodeGroup::OsgNodeGroup() {
 	selected = false;
@@ -23,6 +24,7 @@ OsgNodeGroup::OsgNodeGroup() {
 
 OsgNodeGroup::~OsgNodeGroup() {
 	removeAll();
+	qDebug() << "NodeGroup deleted";
 }
 
 void OsgNodeGroup::addNode(AbstractNode* node, bool removeIfPresent, bool recalc) {
@@ -30,7 +32,7 @@ void OsgNodeGroup::addNode(AbstractNode* node, bool removeIfPresent, bool recalc
 		return;
 	OsgNodeGroup* group = dynamic_cast<OsgNodeGroup*>(node);
 	if (group != NULL) {
-		NodeSet::const_iterator i = group->nodes.constBegin();
+		NodeIterator i = group->nodes.constBegin();
 		while (i != group->nodes.constEnd()) {
 			if (removeIfPresent && nodes.contains(*i)) {
 				removeNode(*i, false);
@@ -71,7 +73,7 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 		return;
 	OsgNodeGroup* group = dynamic_cast<OsgNodeGroup*>(node);
 	if (group != NULL) {
-		NodeSet::const_iterator i = group->nodes.constBegin();
+		NodeIterator i = group->nodes.constBegin();
 		while (i != group->nodes.constEnd()) {
 			removeFromNodes(*i);
 			++i;
@@ -86,7 +88,7 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 }
 
 void OsgNodeGroup::removeAll() {
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		disconnect(*i, 0, this, 0);// TODO removeFromNodes
 		emit nodeRemoved(*i);
@@ -117,7 +119,7 @@ void OsgNodeGroup::setPosition(osg::Vec3f pos) {
 		return;
 	osg::Vec3f oldPos = getPosition();
 	osg::Vec3f diff = pos - oldPos;
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 //		qDebug() << "Node pos set in group";
 		(*i)->setPosition((*i)->getPosition() + diff);
@@ -129,7 +131,7 @@ void OsgNodeGroup::setPosition(osg::Vec3f pos) {
 }
 
 void OsgNodeGroup::resize(float factor) {
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->resize(factor);
 		++i;
@@ -146,7 +148,7 @@ void OsgNodeGroup::updateSizeAndPos() {
 	osg::Vec3f oldSize = getSize();
 	float xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000,
 			zMin = 10000, zMax = -10000;//TODO
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		osg::Vec3f pos = Util::CameraHelper::byView((*i)->getPosition());
 		osg::Vec3f size = (*i)->getSize() / 2.0f;
@@ -170,7 +172,7 @@ void OsgNodeGroup::updateSizeAndPos() {
 }
 
 bool OsgNodeGroup::setFixed(bool flag) {
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->setFixed(flag);
 		++i;
@@ -183,7 +185,7 @@ bool OsgNodeGroup::isFixed() const {
 }
 
 void OsgNodeGroup::setFrozen(bool flag) {
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 //	qDebug() << "Composite frozen: " << flag;
 	while (i != nodes.constEnd()) {
 		(*i)->setFrozen(flag);
@@ -197,7 +199,7 @@ bool OsgNodeGroup::isFrozen() const {
 }
 
 bool OsgNodeGroup::setSelected(bool flag) {
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->setSelected(flag);
 		++i;
@@ -210,7 +212,7 @@ bool OsgNodeGroup::isSelected() const {
 }
 
 bool OsgNodeGroup::setExpanded(bool flag) {
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->setExpanded(flag);
 		++i;
@@ -232,7 +234,7 @@ void OsgNodeGroup::childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize) {
 void OsgNodeGroup::getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) {
 	xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000; // TODO
 
-	NodeSet::const_iterator i = nodes.constBegin();
+	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		osg::Vec3f pos = Util::CameraHelper::byView((*i)->getPosition());
 		osg::Vec3f size = (*i)->getSize() / 2.0f;

@@ -103,7 +103,7 @@ private:
 	QMenu* editMenu;
 	QToolBar* toolBar;
 
-	ViewerQT* viewerWidget;
+	Window::ViewerQT* viewerWidget;
 	Model::FRAlgorithm* layouter;
 	Vwr::SceneGraph* sceneGraph;
 	AppCore::IOManager *ioManager;

@@ -38,7 +38,7 @@ OsgFrame::OsgFrame() {
 OsgFrame::~OsgFrame() {
 	if (myNode != NULL)
 		disconnect(myNode, 0 ,this, 0);
-	qDebug() << "Frame deleted";
+//	qDebug() << "Frame deleted";
 }
 
 void OsgFrame::createButtons() {

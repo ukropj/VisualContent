@@ -58,7 +58,7 @@ private:
 	void removeFromNodes(AbstractNode* node);
 
 
-	NodeSet nodes;
+	QSet<AbstractNode* > nodes;
 	osg::Vec3f massCenter;
 	osg::Vec3f size;
 

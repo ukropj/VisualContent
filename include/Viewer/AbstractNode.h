@@ -19,7 +19,6 @@ signals:
 	void changedPosition(osg::Vec3f oldPos, osg::Vec3f newPos);
 	void changedSize(osg::Vec3f oldSize, osg::Vec3f newSize);
 public:
-	typedef QSet<AbstractNode* > NodeSet;
 
 	AbstractNode() {}
 	~AbstractNode() {}
