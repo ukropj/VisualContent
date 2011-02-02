@@ -8,6 +8,7 @@
 #include "Viewer/BasicButtons.h"
 #include "Viewer/OsgFrame.h"
 #include "Viewer/AbstractNode.h"
+#include "Viewer/Visitors.h"
 #include "Util/CameraHelper.h"
 #include <QApplication>
 
@@ -91,7 +92,9 @@ ExpandButton::ExpandButton(OsgFrame* parentFrame, osg::Vec3f pos)
 }
 
 void ExpandButton::handlePush() {
-	frame->getNode()->setExpanded(true);
+	AbstractVisitor* v = new ExpanderVisitor(true);
+	frame->getNode()->acceptVisitor(v);
+	delete v;
 }
 
 
@@ -101,5 +104,7 @@ CompactButton::CompactButton(OsgFrame* parentFrame, osg::Vec3f pos)
 }
 
 void CompactButton::handlePush() {
-	frame->getNode()->setExpanded(false);
+	AbstractVisitor* v = new ExpanderVisitor(false);
+	frame->getNode()->acceptVisitor(v);
+	delete v;
 }

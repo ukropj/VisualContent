@@ -317,8 +317,9 @@ float FRAlgorithm::getMinProjDistance(Node* u, Node* v, osg::Vec3f pv) {
 	Vwr::OsgNode* ou = u->getOsgNode();
 	Vwr::OsgNode* ov = v->getOsgNode();
 	double angle = acos(Util::CameraHelper::getUp() * pv);
-	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
-			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
+	float ideal = ou->getRadius() + ov->getRadius() + M;
+//	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
+//			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
 	return ideal;
 }
 

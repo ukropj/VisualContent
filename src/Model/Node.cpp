@@ -40,7 +40,6 @@ Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
 	ignore = false;
 	frozen = false;
 	osgNode = NULL;
-	radius = 0;
 	edges.clear();
 }
 
@@ -67,6 +66,14 @@ Edge* Node::getEdgeTo(Node* otherNode) {
 			return edge;
 	}
 	return NULL;
+}
+
+QSet<Node*> Node::getIncidentNodes() {
+	QSet<Node*> nodes;
+	foreach (Edge* edge, edges) {
+		nodes.insert(edge->getOtherNode(this));
+	}
+	return nodes;
 }
 
 void Node::setOsgNode(Vwr::OsgNode* osgNode) {

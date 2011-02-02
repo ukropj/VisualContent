@@ -31,6 +31,7 @@ class Node;
 
 namespace Vwr {
 class OsgContent;
+class AbstractVisitor;
 
 class OsgNode: public osg::Switch, public AbstractNode {
 public:
@@ -39,13 +40,15 @@ public:
 
 	~OsgNode();
 
+	QSet<AbstractNode*> getIncidentNodes();
+
 	osg::Vec3f getPosition() const;
 	void updatePosition(float interpolationSpeed = 1);
 	void setPosition(osg::Vec3f pos);
 
 	void resize(float factor);
-	float getRadius() const;
 	osg::Vec3f getSize() const;
+	float getRadius() const;
 
 	bool setFixed(bool flag);
 	bool isFixed() const;
@@ -58,6 +61,8 @@ public:
 
 	bool isPickable(osg::Geode* geode) const;
 	bool isResizable(osg::Geode* geode) const;
+
+	void acceptVisitor(AbstractVisitor* visitor);
 
 	QString toString() const;
 

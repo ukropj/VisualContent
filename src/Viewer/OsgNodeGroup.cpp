@@ -6,6 +6,7 @@
  */
 
 #include "Viewer/OsgNodeGroup.h"
+#include "Viewer/AbstractVisitor.h"
 #include "Util/CameraHelper.h"
 
 using namespace Vwr;
@@ -65,6 +66,14 @@ void OsgNodeGroup::addToNodes(AbstractNode* node) {
 			this, SLOT(childPosChanged(osg::Vec3f, osg::Vec3f)));
 	connect(node, SIGNAL(changedSize(osg::Vec3f, osg::Vec3f)),
 			this, SLOT(childSizeChanged(osg::Vec3f, osg::Vec3f)));
+	if (nodes.size() == 1) {
+		selected = node->isSelected();
+		expanded = node->isExpanded();
+		frozen = node->isFrozen();
+		fixed = node->isFixed();
+	}
+
+
 	emit nodeAdded(node);
 }
 
@@ -108,6 +117,16 @@ void OsgNodeGroup::removeFromNodes(AbstractNode* node) {
 
 bool OsgNodeGroup::isEmpty() {
 	return nodes.isEmpty();
+}
+
+QSet<AbstractNode*> OsgNodeGroup::getIncidentNodes() {
+	QSet<AbstractNode*> nghbrs;
+	NodeIterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		nghbrs.unite((*i)->getIncidentNodes());
+		++i;
+	}
+	return nghbrs;
 }
 
 osg::Vec3f OsgNodeGroup::getPosition() const {
@@ -221,7 +240,7 @@ bool OsgNodeGroup::setExpanded(bool flag) {
 }
 
 bool OsgNodeGroup::isExpanded() const {
-	return fixed;
+	return expanded;
 }
 
 void OsgNodeGroup::childPosChanged(osg::Vec3f oldPos, osg::Vec3f newPos) {
@@ -273,6 +292,10 @@ AbstractNode* OsgNodeGroup::merge(AbstractNode* n1, AbstractNode* n2) {
 		group->addNode(n2, true);
 		return group;
 	}
+}
+
+void OsgNodeGroup::acceptVisitor(AbstractVisitor* visitor) {
+	visitor->visitNode(this);
 }
 
 

@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <QMap>
+#include <QSet>
 #include <QString>
 #include <QTextStream>
 
@@ -31,147 +32,69 @@ public:
 	Node(qlonglong id, QString name, Type* type, Graph* graph);
 	~Node(void);
 
-	/**
-	 *  \fn inline public constant  getId
-	 *  \brief Returns ID of the Node
-	 *  \return qlonglong ID of the Node
-	 */
+	void addEdge(Edge* edge);
+	void removeEdge(Edge* edge);
+	Edge* getEdgeTo(Node* otherNode);
+	QSet<Node*> getIncidentNodes();
+
 	qlonglong getId() const {
 		return id;
 	}
 
-	/**
-	 *  \fn inline public  getGraph
-	 *  \brief Returns Graph to which the Nodes belongs
-	 *  \return Graph * Graph
-	 */
 	Graph* getGraph() const {
 		return graph;
 	}
 
-	/**
-	 *  \fn inline public constant  getName
-	 *  \brief Returns name of the Node
-	 *  \return QString name of the Node
-	 */
 	QString getName() const {
 		return name;
 	}
 
-	/**
-	 *  \fn inline public  setName(QString val)
-	 *  \brief Sets new name to the Node
-	 *  \param   val    new name
-	 */
 	void setName(QString val) {
 		name = val;
 	}
 
-	/**
-	 *  \fn inline public constant  getType
-	 *  \brief Returns Type of the Node
-	 *  \return Type * Type of the Node
-	 */
 	Type* getType() const {
 		return type;
 	}
 
-	/**
-	 *  \fn inline public  setType(Type* val)
-	 *  \brief Sets new Type of the Node
-	 *  \param   val  new Type
-	 */
 	void setType(Type* val) {
 		type = val;
 	}
 
-	/**
-	 *  \fn inline public constant  getTargetPosition
-	 *  \brief Returns node target position in space
-	 *  \return osg::Vec3f node position
-	 */
 	osg::Vec3f getPosition() const {
 		return osg::Vec3f(position);
 	}
 
-	/**
-	 *  \fn inline public  setTargetPosition(osg::Vec3f val)
-	 *  \brief Sets node target position in space
-	 *  \param      val   new position
-	 */
 	void setPosition(osg::Vec3f pos) {
 		position.set(pos);
 	}
 
-	/**
-	 *  \fn inline public constant  getEdges
-	 *  \brief Returns all Edges connected to the Node
-	 *  \return QMap<qlonglong,Edge* > * Edges connected to the Node
-	 */
 	QMap<qlonglong, Edge*>* getEdges() {
 		return &edges;
 	}
 
-	/**
-	 *  \fn public  addEdge(Edge* edge)
-	 *  \brief Adds new Edge to the Node
-	 *  \param    edge   new Edge
-	 */
-	void addEdge(Edge* edge);
-	void removeEdge(Edge* edge);
-	Edge* getEdgeTo(Node* otherNode);
-
-	/**
-	 *  \fn inline public  setForce(osg::Vec3f v)
-	 *  \brief Sets force of node
-	 *  \param      v  Force vector
-	 */
 	void setForce(osg::Vec3f v) {
 		force = v;
 	}
 
-	/**
-	 *  \fn inline public constant  getForce
-	 *  \brief Gets force of node
-	 *  \return osg::Vec3f Force vector
-	 */
 	osg::Vec3f getForce() const {
 		return force;
 	}
 
-	/**
-	 *  \fn inline public  addForce(bool fixed)
-	 *  \brief Adds force V to node force
-	 *  \param       v  Force V
-	 */
 	void addForce(osg::Vec3f v) {
 		force += v;
 	}
 
-	/**
-	 *  \fn inline public  resetForce
-	 *  \brief Sets nodes force to zero value.
-	 */
 	void resetForce() {
 		force = osg::Vec3f(0, 0, 0);
 	}
 
-	/**
-	 *  \fn inline public  setFixed(bool fixed)
-	 *  \brief Sets node fixed state
-	 *  \param     fixed     fixed state
-	 */
 	bool setFixed(bool flag) {
 		if (flag == isFixed())
 			return false;
 		fixed = flag;
 	}
 
-	/**
-	 *  \fn inline public constant  isFixed
-	 *  \brief Returns if the Node is fixed
-	 *  \return bool true, if the Node is fixed
-	 */
 	bool isFixed() const {
 		return fixed;
 	}
@@ -180,29 +103,14 @@ public:
 		frozen = flag;
 	}
 
-	/**
-	 *  \fn inline public constant  isFixed
-	 *  \brief Returns if the Node is fixed
-	 *  \return bool true, if the Node is fixed
-	 */
 	bool isFrozen() const {
 		return frozen;
 	}
 
-	/**
-	 *  \fn inline public  setIgnored(bool b)
-	 *  \brief Sets ignoring by layout algorithm.
-	 *  \param       b  True, if node is ignored.
-	 */
 	void setIgnored(bool b) {
 		ignore = b;
 	}
 
-	/**
-	 *  \fn inline public constant  isIgnored
-	 *  \brief Return if the Node is ignored
-	 *  \return bool true, if the Node is ignored
-	 */
 	bool isIgnored() const {
 		return ignore;
 	}
@@ -227,11 +135,6 @@ public:
 	 */
 	bool equals(Node* node) const;
 
-	/**
-	 *  \fn inline public constant  toString
-	 *  \brief Returns human-readable string representing the Node
-	 *  \return QString
-	 */
 	QString toString() const {
 		QString str;
 		QTextStream(&str) << "N" << id << " " << name << "[" << position.x()
@@ -248,13 +151,6 @@ public:
 
 	Vwr::OsgNode* getOsgNode() {
 		return osgNode;
-	}
-
-	void setRadius(float r) {
-		radius = r;
-	}
-	float getRadius() const {
-		return radius;
 	}
 
 private:
@@ -309,8 +205,6 @@ private:
 	 *  \brief Size of node force in previous iteration
 	 */
 	osg::Vec3f velocity;
-
-	float radius;
 
 	/**
 	 *  bool fixed

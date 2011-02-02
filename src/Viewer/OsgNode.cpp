@@ -7,6 +7,7 @@
 
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgContent.h"
+#include "Viewer/AbstractVisitor.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
@@ -239,11 +240,14 @@ void OsgNode::setSize(osg::BoundingBox box) {
 
 void OsgNode::setSize(float width, float height, float depth) {
 	size = osg::Vec3f(width, height, depth);
-	node->setRadius(getSize().length()/2.0f);
 }
 
 osg::Vec3f OsgNode::getSize() const {
-	return size * contentG->getScale().x();
+	return size * (expanded ? contentG->getScale().x() : 1);
+}
+
+float OsgNode::getRadius() const {
+	return getSize().length()/2.0f;
 }
 
 void OsgNode::getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) {
@@ -357,10 +361,6 @@ bool OsgNode::setFixed(bool flag) {
 	setChildValue(fixedG, flag);
 }
 
-float OsgNode::getRadius() const {
-	return node->getRadius();
-}
-
 void OsgNode::reloadConfig() {
 	// TODO if needed at all
 }
@@ -412,6 +412,19 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 void OsgNode::setPosition(osg::Vec3f pos) {
 	node->setPosition(pos);
 	updatePosition();
+}
+
+QSet<AbstractNode*> OsgNode::getIncidentNodes() {
+	QSet<Model::Node*>nodes = node->getIncidentNodes();
+	QSet<AbstractNode*> nghbrs;
+	QSet<Model::Node*>::const_iterator i = nodes.begin();
+	while (i != nodes.end()) {
+		OsgNode* n;
+		if ((n = (*i)->getOsgNode()) != NULL)
+			nghbrs.insert(n);
+		i++;
+	}
+	return nghbrs;
 }
 
 bool OsgNode::isOnScreen() const {
@@ -477,4 +490,9 @@ bool OsgNode::equals(OsgNode* other) const {
 		return false;
 	}
 	return true;
+}
+
+void OsgNode::acceptVisitor(AbstractVisitor* visitor) {
+	qDebug() << "accepted";
+	visitor->visitNode(this);
 }

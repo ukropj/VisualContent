@@ -13,6 +13,7 @@
 #include <osg/Vec3f>
 
 namespace Vwr {
+class AbstractVisitor;
 
 class OsgNodeGroup : public AbstractNode {
 	Q_OBJECT
@@ -26,6 +27,8 @@ public slots:
 public:
 	OsgNodeGroup();
 	~OsgNodeGroup();
+
+	QSet<AbstractNode*> getIncidentNodes();
 
 	void addNode(AbstractNode* node, bool removeIfPresent = false, bool recalc = true);
 	void removeNode(AbstractNode* node, bool recalc = true);
@@ -50,6 +53,8 @@ public:
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
 //	bool isResizable(osg::Geode* geode) const;
+
+	void acceptVisitor(AbstractVisitor* visitor);
 
 	static AbstractNode* merge(AbstractNode* n1, AbstractNode* n2);
 
