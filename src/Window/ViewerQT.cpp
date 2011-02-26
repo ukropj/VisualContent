@@ -43,7 +43,7 @@ ViewerQT::ViewerQT(Vwr::SceneGraph* sceneGraph, QWidget* parent,
 	setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
 
 	connect(&_timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-	_timer.start(10);
+	_timer.setInterval(20);
 }
 
 ViewerQT::~ViewerQT() {

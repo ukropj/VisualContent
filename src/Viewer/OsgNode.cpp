@@ -26,10 +26,19 @@ typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1> C
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
 OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
+	if (node == NULL) qWarning() << "NULL reference to Node in OsgNode!";
 	this->node = node;
 	node->setOsgNode(this);
-	setName(node->getName().toStdString());
+	setName("node" + node->getId());
 	this->nodeTransform = nodeTransform;
+
+/*	position = osg::Vec3f(0,0,0);
+	nodeCoords = new osg::Vec3Array(4);
+	nodeTexCoords = new osg::Vec2Array(4);
+	(*nodeTexCoords)[0].set(0, 0);
+	(*nodeTexCoords)[1].set(1, 0);
+	(*nodeTexCoords)[2].set(1, 1);
+	(*nodeTexCoords)[3].set(0, 1);*/
 
 	selected = false;
 	expanded = false;
@@ -44,7 +53,7 @@ OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
 	size = osg::Vec3f(0, 0, 0);
 
 	frameG = initFrame();
-	label = createLabel(node->getLabel(), scale);
+	label = createLabel(node->data(Model::Type::LABEL), scale);
 	if (fixedG == NULL)
 		fixedG = createFixed();
 
@@ -397,6 +406,10 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 	osg::Vec3f currentPos = getPosition();
 	osg::Vec3f targetPos = node->getPosition();
 
+	float eps = 5;
+	if ((currentPos - targetPos).length() < eps)
+		return;
+
 	if (!usingInterpolation || interpolationSpeed == 1) {
 		nodeTransform->setPosition(targetPos);
 	} else {
@@ -405,8 +418,7 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 		nodeTransform->setPosition(currentPos + directionVector);
 	}
 
-	if (currentPos != getPosition())
-		emit changedPosition(currentPos, getPosition());
+	emit changedPosition(currentPos, getPosition());
 }
 
 void OsgNode::setPosition(osg::Vec3f pos) {
@@ -473,7 +485,7 @@ float OsgNode::getDistanceToEdge(double angle) const {
 QString OsgNode::toString() const {
 	QString str;
 	osg::Vec3f pos = getPosition();
-	QTextStream(&str) << "N" << node->getId() << " " << node->getName() << "["
+	QTextStream(&str) << "N" << node->getId() << " " << "["
 			<< pos.x() << "," << pos.y() << "," << pos.z() << "]"
 			<< (isFixed() ? "fixed" : "");
 	return str;
@@ -493,6 +505,42 @@ bool OsgNode::equals(OsgNode* other) const {
 }
 
 void OsgNode::acceptVisitor(AbstractVisitor* visitor) {
-	qDebug() << "accepted";
 	visitor->visitNode(this);
 }
+
+/*void OsgNode::updateGeometry() {
+	float h = node->getType()->getScale()*2;
+	float w = node->getType()->getScale()*2;
+
+//	osg::Vec3f wv(w/2, 0, 0);
+//	osg::Vec3f hv(0, h/2, 0);
+
+	osg::Vec3f viewVec = Util::CameraHelper::getEye() - position;
+	osg::Vec3f up = Util::CameraHelper::getUp();
+	osg::Vec3f right = up ^ viewVec;
+	right.normalize();
+	up*= h/2;
+	right *= w/2;
+
+	(*nodeCoords)[0].set(position - right - up);
+	(*nodeCoords)[1].set(position + right - up);
+	(*nodeCoords)[2].set(position + right + up);
+	(*nodeCoords)[3].set(position - right + up);
+
+	Util::CameraHelper::printVec(position, "Position: ");
+}
+
+void OsgNode::getNodeData(float interpolationSpeed, osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
+		osg::Vec2Array> texCoords, osg::ref_ptr<osg::Vec4Array> colors) {
+qDebug() << "getData";
+	updatePosition(interpolationSpeed);
+	updateGeometry();
+
+	osg::Vec4f xColor = isSelected() ? Util::Config::getColorF("Viewer.Selected.Color") : color;
+
+	for (int i = 0; i < 4; i++) {
+		coords->push_back((*nodeCoords)[i]);
+		texCoords->push_back((*nodeTexCoords)[i]);
+		colors->push_back(xColor);
+	}
+}*/

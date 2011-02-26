@@ -31,7 +31,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-	loadFile("input/data/triangle.graphml");
+	loadFile("input/data/grid3.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -176,26 +176,38 @@ void CoreWindow::openRecentFile() {
     }
 }
 
-void CoreWindow::loadFile(QString fileName) {
-	updateRecentFileActions(fileName);
+void CoreWindow::loadFile(QString filePath) {
+	if (filePath.isEmpty())
+		return;
+	QFile file(filePath);
+	updateRecentFileActions(filePath);
+	if (!file.open(QFile::ReadOnly | QFile::Text)) {
+		QMessageBox::warning(NULL, "Error",
+				QString("Cannot read file %1:\n%2.")
+				.arg(filePath)
+				.arg(file.errorString()));
+		return;
+	}
 
 	layouter->pause();
 	sceneGraph->setUpdatingNodes(false);
 	viewerWidget->setRendering(false);
 
-	Model::Graph* graph = ioManager->loadGraph(fileName, progressBar);
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	Model::Graph* graph = ioManager->loadGraph(&file, progressBar);
+	file.close();
 
 	if (graph == NULL) {
-		if (!progressBar->wasCanceled() && !fileName.isEmpty())
-			showMessageBox("Error", "Could not load graph from file" + fileName, true);
+		if (!progressBar->wasCanceled())
+			showMessageBox("Error", "Could not load graph from file" + filePath, true);
 	} else {
-		setWindowFilePath(fileName);
+		qDebug() << "GraphML parsed successfully.";
+		setWindowFilePath(filePath);
 
 		// reload
 		viewerWidget->getPickHandler()->reset();
-		sceneGraph->reload(graph, progressBar); // deletes original scene graph
-		layouter->setGraph(graph); 				// deletes original graph
+		sceneGraph->reload(graph, progressBar);	// deletes original scene graph
+		layouter->setGraph(graph); 			// deletes original graph
 		progressBar->setValue(progressBar->maximum());
 
 		//reset camera
@@ -204,7 +216,6 @@ void CoreWindow::loadFile(QString fileName) {
 
 		log(NORMAL, "Graph loaded: " + graph->toString());
 	}
-	progressBar->reset();
 	QApplication::restoreOverrideCursor();
 
 	// start

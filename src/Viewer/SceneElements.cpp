@@ -4,6 +4,7 @@
 #include "Model/Node.h"
 #include "Model/Edge.h"
 #include "Util/Config.h"
+#include "Util/TextureWrapper.h"
 
 #include <QDebug>
 #include <iostream>
@@ -19,7 +20,9 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 	pd = progressBar;
 	if (pd != NULL) {
 		pd->setLabelText("Drawing graph...");
-		step = pd->value();
+		pd->setValue(0);
+		pd->setMaximum(nodes->size() + edges->size());
+		step = 0;
 	}
 
 	elementsGroup = new osg::Group();
@@ -68,6 +71,45 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 	}
 	return nodeGroup;
 }
+
+/*osg::ref_ptr<osg::Group> SceneElements::initNodes(QMap<qlonglong, Node*>* inNodes) {
+	osg::ref_ptr<osg::Group> allNodes = new osg::Group;
+	osg::ref_ptr<osg::Geode> nodeGeode = new osg::Geode();
+	nodeGeode->setName("nodes");
+	allNodes->addChild(nodeGeode);
+	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
+
+	nodesGeometry = new osg::Geometry();
+	osg::Vec4Array* colors = new osg::Vec4Array;
+
+	QMapIterator<qlonglong, Node*> i(*inNodes);
+	int index = 0;
+	while (i.hasNext()) {
+		if (pd != NULL)
+			pd->setValue(step++);
+		i.next();
+		OsgNode* osgNode = new OsgNode(i.value(), NULL);
+		nodes.append(osgNode);
+		nodesGeometry->addPrimitiveSet(new osg::DrawArrays(
+				osg::PrimitiveSet::QUADS, index, 4));
+		for (int i = 0; i < 4; i++)
+			colors->push_back(osg::Vec4f(0,0,0,1));
+		index += 4;
+	}
+
+	// TODO move to static method OsgNode::createStateSet();
+	osg::StateSet* ss = nodesGeometry->getOrCreateStateSet();
+	ss->setTextureAttributeAndModes(0,
+			Util::TextureWrapper::readTextureFromFile(Util::Config::getValue(
+			"Viewer.Textures.Node")), osg::StateAttribute::ON);
+//	nodesGeometry->setStateSet(ss);
+	nodesGeometry->setColorArray(colors);
+	// important: set color binding only after setting color arrays!
+	nodesGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+	nodeGeode->addDrawable(nodesGeometry);
+	return allNodes;
+}*/
 
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
@@ -214,6 +256,22 @@ void SceneElements::updateNodes(float interpolationSpeed) {
 		++i;
 	}
 }
+
+/*void SceneElements::updateNodes(float interpolationSpeed) {
+	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
+	osg::ref_ptr<osg::Vec2Array> texCoords = new osg::Vec2Array;
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+
+	QList<OsgNode*>::const_iterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		(*i)->getNodeData(interpolationSpeed, coords, texCoords, colors);
+		i++;
+	}
+
+	nodesGeometry->setVertexArray(coords);
+	nodesGeometry->setTexCoordArray(0, texCoords);
+	nodesGeometry->setColorArray(colors);
+}*/
 
 void SceneElements::updateEdges() {
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;

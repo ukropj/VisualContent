@@ -11,18 +11,20 @@
 
 using namespace Model;
 
-Edge::Edge(qlonglong id, QString name, Graph* graph, Node* srcNode,
-		Node* dstNode, Type* type, bool isOriented) {
+Edge::Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
+		Data* data, Graph* graph) {
+	Q_ASSERT(graph != NULL);
+	Q_ASSERT(srcNode != NULL && dstNode != NULL);
+	Q_ASSERT(type != NULL);
 
 	this->id = id;
-	this->name = name;
 	this->graph = graph;
+	this->type = type;
 	this->srcNode = srcNode;
 	this->dstNode = dstNode;
 	dstNode->addEdge(this);
 	srcNode->addEdge(this);
-	this->type = type;
-	this->oriented = isOriented;
+	this->edgeData = data ? data : new Data();
 }
 
 Edge::~Edge(void) {
@@ -44,6 +46,10 @@ Node* Edge::getOtherNode(Model::Node* node) const {
 		return dstNode;
 	else
 		return srcNode; // returns source node even if node is not a node of this edge
+}
+
+QString Edge::data(Type::DataType key) const {
+	return edgeData->value(type->getMapping(key));
 }
 
 PseudoEdge::PseudoEdge(Node* srcNode, Node* dstNode) {

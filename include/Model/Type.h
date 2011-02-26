@@ -9,6 +9,7 @@
 #include <string>
 #include <QString>
 #include <QTextStream>
+#include <QSet>
 #include <QMap>
 #include <osg/ref_ptr>
 #include <osg/Texture2D>
@@ -24,154 +25,91 @@ class Graph;
  */
 class Type {
 public:
+	enum DataType {
+		COLOR, LABEL, TEXT, IMAGE, OSG, IS_ORIENTED,
+	};
 
-	/**
-	 *  \fn inline public constructor  Type(qlonglong id, QString name, Graph* graph, QMap<QString, QString> * settings = 0)
-	 *  \brief Creates new Type object
-	 *  \param  id     ID of the Type
-	 *  \param  name   name of the Type
-	 *  \param  settings    settings of the Type
-	 */
 	Type(qlonglong id, QString name, Graph* graph,
-			QMap<QString, QString> * settings = 0);
-
-	/**
-	 *  \fn public destructor  ~MetaType
-	 *  \brief Destroys Type object
-	 */
+			QMap<QString, QString>* settings = 0);
 	~Type();
-
-	/**
-	 *  \fn inline public  getName
-	 *  \brief Returns the name of the Type
-	 *  \return QString name of the Type
-	 */
 	QString getName() const {
 		return name;
 	}
-
-	/**
-	 *  \fn inline public  setName
-	 *  \brief Sets new name
-	 *  \param [in]       name QString    new Name for the Type
-	 *  \return QString resultant name of the Type
-	 */
-	void setName(QString val) {
-		name = val;
-	}
-
-	/**
-	 *  \fn inline public  getId
-	 *  \brief Returns ID of the Type
-	 *  \return qlonglong ID of the Type
-	 */
 	qlonglong getId() const {
 		return id;
 	}
-
-	/**
-	 *  \fn inline public constant  toString
-	 *  \brief Returns human-readable string representing the Type
-	 *  \return QString
-	 */
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "type id:" << id << " name:" << name;
+//		QTextStream(&str) << "type id:" << id << " name:" << name;
+		foreach(QString key, dataKeys.keys()) {
+			QTextStream(&str) << key << "=" << dataKeys.value(key) <<", ";
+		}
 		return str;
 	}
-
-	/**
-	 *  \fn inline public constant  getSettings
-	 *  \brief Returns settings of the Type
-	 *  \return QMap<QString,QString> * settings
-	 */
 	QString getValue(QString key) const {
 		return settings->value(key);
 	}
-
-	/**
-	 *  \fn inline public  setSettings(QMap<QString, QString> * val)
-	 *  \brief Sets settings of the Type to val
-	 *
-	 *	Overrides all previous settings
-	 *
-	 *  \param  val   new settings
-	 */
 	void setValue(QString key, QString value) {
 		settings->insert(key, value);
 	}
-
-	/**
-	 *  \fn inline public constant  getTypeTexture
-	 *  \brief Returns type texture
-	 *  \return osg::ref_ptr<osg::Texture2D> type texture
-	 */
 	osg::ref_ptr<osg::Texture2D> getTexture() const {
 		return texture;
 	}
-
-	/**
-	 *  \fn inline public constant  getScale
-	 *  \brief Returns type scale
-	 *  \return float type scale
-	 */
 	float getScale() const {
 		return scale;
 	}
-
-	/**
-	 *  \fn inline public  getGraph
-	 *  \brief Returns Graph to which is the Type assigned
-	 *  \return Graph *
-	 */
 	Graph* getGraph() const {
 		return graph;
 	}
-
 	osg::Vec4f getColor() const;
-protected:
 
-	/**
-	 *  bool meta
-	 *  \brief Flag if the Type is an MetaType or not
-	 */
-	bool meta;
+	void addKey(QString key, QString defaultValue="") {
+		dataKeys.insert(key, defaultValue);
+	}
 
-	/**
-	 *  Graph * graph
-	 *  \brief Graph object to which the Type belongs
-	 */
+	QList<QString> getKeys() const {
+		return dataKeys.keys();
+	}
+
+	QString getDefaultValue(QString key) const {
+		return dataKeys.value(key, "");
+	}
+
+	void insertMapping(DataType key, QString value) {
+		mapping.insert(key, value);
+	}
+	QString getMapping(DataType key) const {
+		return mapping.value(key, "");
+	}
+	bool hasMapping(DataType key) const {
+		return !mapping.value(key, "").isEmpty();
+	}
+
+private:
 	Graph* graph;
-
-	/**
-	 *  qlonglong id
-	 *  \brief ID of the Type
-	 */
 	qlonglong id;
-
-	/**
-	 *  QString name
-	 *  \brief Name of the Type
-	 */
 	QString name;
-
-	/**
-	 *  QMap<QString,QString> * settings
-	 *  \brief Settings of the Type
-	 */
-	QMap<QString, QString> * settings;
-
-	/**
-	 *  osg::ref_ptr typeTexture
-	 *  \brief Type texture
-	 */
+	QMap<QString, QString> dataKeys;
+	QMap<QString, QString>* settings;
 	osg::ref_ptr<osg::Texture2D> texture;
-
-	/**
-	 *  float scale
-	 *  \brief Type scale
-	 */
 	float scale;
+
+	QMap<DataType, QString> mapping;
 };
+
+class Data {
+public:
+	Data(){};
+	~Data(){};
+	void insert(QString key, QString value) {
+		data.insert(key, value);
+	}
+	QString value(QString key) const {
+		return data.value(key, "");
+	}
+private:
+	QMap<QString, QString> data;
+};
+
 }
 #endif

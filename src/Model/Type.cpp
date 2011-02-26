@@ -10,11 +10,10 @@
 using namespace Model;
 
 Type::Type(qlonglong id, QString name, Graph* graph,
-		QMap<QString, QString> * settingsMap) {
+		QMap<QString, QString>* settingsMap) {
 	this->id = id;
 	this->name = name;
 	this->graph = graph;
-	meta = false;
 
 	Util::Config * appConf = Util::Config::getInstance();
 
@@ -30,8 +29,9 @@ Type::Type(qlonglong id, QString name, Graph* graph,
 		settings->insert("color.G", QString::number(color.y()));
 		settings->insert("color.B", QString::number(color.z()));
 		settings->insert("color.A", QString::number(color.w()));
-	} else
+	} else {
 		settings = settingsMap;
+	}
 
 	texture = Util::TextureWrapper::readTextureFromFile(settings->value(
 			"textureFile"));

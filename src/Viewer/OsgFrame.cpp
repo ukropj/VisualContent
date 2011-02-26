@@ -189,7 +189,9 @@ bool OsgFrame::activateAction(osg::Geode* button) {
 		newButton = buttons.value(button->getName(), nullButton);
 	}
 
-	if (newButton != activeButton) {
+	if (newButton == nullButton) {
+		deactivateAction();
+	} else if (newButton != activeButton) {
 		activeButton->deactivate();
 		activeButton = newButton;
 		activeButton->activate();

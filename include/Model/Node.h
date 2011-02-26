@@ -13,10 +13,14 @@
 #include <QString>
 #include <QTextStream>
 
-#include "Viewer/OsgNode.h"
+#include "Model/Type.h"
+
+namespace Vwr {
+class OsgNode;
+}
 
 namespace Model {
-class Type;
+class Data;
 class Edge;
 class Graph;
 
@@ -29,7 +33,7 @@ class Graph;
 class Node {
 public:
 
-	Node(qlonglong id, QString name, Type* type, Graph* graph);
+	Node(qlonglong id, Type* type, Data* data, Graph* graph);
 	~Node(void);
 
 	void addEdge(Edge* edge);
@@ -45,21 +49,11 @@ public:
 		return graph;
 	}
 
-	QString getName() const {
-		return name;
-	}
-
-	void setName(QString val) {
-		name = val;
-	}
-
 	Type* getType() const {
 		return type;
 	}
 
-	void setType(Type* val) {
-		type = val;
-	}
+	QString data(Type::DataType key) const;
 
 	osg::Vec3f getPosition() const {
 		return osg::Vec3f(position);
@@ -137,14 +131,10 @@ public:
 
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "N" << id << " " << name << "[" << position.x()
+		QTextStream(&str) << "N" << id << " " << getId() << "[" << position.x()
 				<< "," << position.y() << "," << position.z() << "]"
 				<< (isFixed() ? "fixed" : "");
 		return str;
-	}
-
-	QString getLabel() const {
-		return labelText;
 	}
 
 	void setOsgNode(Vwr::OsgNode* osgNode);
@@ -155,75 +145,19 @@ public:
 
 private:
 
-	Vwr::OsgNode* osgNode;
-	/**
-	 *	qlonglong id
-	 *	\brief ID of the Node
-	 */
 	qlonglong id;
-
-	/**
-	 *  QString name
-	 *  \brief Name of the Node
-	 */
-	QString name;
-	QString labelText;
-
-	/**
-	 *  Type * type
-	 *  \brief Type of the Node
-	 */
+	Data* nodeData;
 	Type* type;
-
-	/**
-	 *  Graph * graph
-	 *  \brief Graph object to which the Node belongs
-	 */
 	Graph* graph;
-
-	/**
-	 *  osg::Vec3f targetPosition
-	 *  \brief node target position
-	 */
 	osg::Vec3f position;
-
-	/**
-	 *  QMap<qlonglong, Edge* > * edges
-	 *  \brief Edges connected to the Node
-	 */
 	QMap<qlonglong, Edge*> edges;
-
-	/**
-	 *  osg::Vec3f force
-	 *  \brief Node force
-	 */
+	Vwr::OsgNode* osgNode;
 
 	osg::Vec3f force;
-
-	/**
-	 *  osg::Vec3f velocity
-	 *  \brief Size of node force in previous iteration
-	 */
 	osg::Vec3f velocity;
 
-	/**
-	 *  bool fixed
-	 *  \brief node fixed state - fixed node is not moved by algorithm, toggled by used
-	 */
 	bool fixed;
-
-	/**
-	 *  bool frozen
-	 *  \brief node frozen state - frozen node is not moved by algorithm still affects other nodes,
-	 *  toggled automatically when moving a node, node movements are not interpolated
-	 */
 	bool frozen;
-
-	/**
-	 *  bool ignore
-	 *  \brief node ignoring flag - node is ignored by algorithm, that means it does not
-	 *  move and does not affect other nodes
-	 */
 	bool ignore;
 
 };

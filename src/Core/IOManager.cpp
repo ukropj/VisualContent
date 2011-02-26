@@ -5,43 +5,50 @@
 
 #include "Core/IOManager.h"
 #include "Model/Graph.h"
+#include "Model/Node.h"
+#include "Model/Type.h"
+#include "Model/Edge.h"
 #include "Util/Config.h"
+
+#include <QDebug>
+#include <QFile>
+#include <QMessageBox>
+#include <QProgressDialog>
 
 using namespace AppCore;
 using namespace Model;
 
 IOManager::IOManager() {
-	//runTestCase(1);
+	graph = NULL;
+	progress = NULL;
+	defaultDirection = false;
 }
 
 IOManager::~IOManager() {
 }
 
-Graph* IOManager::loadGraph(QString filepath,
-		QProgressDialog* progressBar) {
-	// TODO presunut do samostatneho modulu pre spracovanie GraphML
+// Obsolete
+Graph* IOManager::loadGraphOld(QIODevice* device, QProgressDialog* progressBar) {
+	QTime t;
+	t.start();
 
 	// ziskame graph element
 	QDomElement rootElement;
 	QDomNode graphElement;
-	QFile graphMLDocument(filepath);
-	if (graphMLDocument.open(QIODevice::ReadOnly)) {
-		QDomDocument doc("graphMLDocument");
-		if (doc.setContent(&graphMLDocument)) {
-			QDomElement docElem = doc.documentElement();
-			if (!docElem.isNull() && docElem.nodeName() == "graphml") {
-				QDomNodeList graphNodes = docElem.elementsByTagName("graph");
-				if (graphNodes.length() > 0) {
-					graphElement = graphNodes.item(0);
-					if (!graphElement.isNull() && graphElement.parentNode()
-							== docElem && graphElement.isElement()) {
-						rootElement = graphElement.toElement();
-					}
+	QDomDocument doc("graphMLDocument");
+	if (doc.setContent(device)) {
+		QDomElement docElem = doc.documentElement();
+		if (!docElem.isNull() && docElem.nodeName() == "graphml") {
+			QDomNodeList graphNodes = docElem.elementsByTagName("graph");
+			if (graphNodes.length() > 0) {
+				graphElement = graphNodes.item(0);
+				if (!graphElement.isNull() && graphElement.parentNode()
+						== docElem && graphElement.isElement()) {
+					rootElement = graphElement.toElement();
 				}
 			}
 		}
 	}
-
 	// ak mame rootElement tak
 	if (!rootElement.isNull()) {
 		QString graphname = rootElement.attribute("id");
@@ -53,8 +60,9 @@ Graph* IOManager::loadGraph(QString filepath,
 		}
 		QDomNodeList nodes = rootElement.elementsByTagName("node");
 		QDomNodeList edges = rootElement.elementsByTagName("edge");
+		qDebug() << "Old load element count" << " " << t.elapsed();
 
-		Graph *newGraph = this->createGraph(graphname);
+		Graph *newGraph = new Graph(graphname, 0);
 		if (newGraph == NULL)
 			return NULL;
 
@@ -82,12 +90,13 @@ Graph* IOManager::loadGraph(QString filepath,
 		progressBar->setLabelText("Loading file...");
 		progressBar->setMaximum((nodes.count() + edges.count()) * 2);
 		int step = 0;
-
 		// prechadzame uzlami
 		for (unsigned int i = 0; i < nodes.length(); i++) {
 			progressBar->setValue(step++);
-			if (progressBar->wasCanceled())
+			if (progressBar->wasCanceled()) {
+				qDebug() << "cancelled";
 				return NULL;
+			}
 
 			QDomNode nodeNode = nodes.item(i);
 			if (!nodeNode.isNull() && nodeNode.isElement()) {
@@ -171,21 +180,22 @@ Graph* IOManager::loadGraph(QString filepath,
 					// ak nebol najdeny ziaden typ, tak pouzijeme defaultny typ
 					Node* node;
 					if (newNodeType == NULL)
-						node = newGraph->addNode(name, nodeType);
+						node = newGraph->addNode(nodeType);
 					else
-						node = newGraph->addNode(name, newNodeType);
+						node = newGraph->addNode(newNodeType);
 					readNodes->insert(nameId, node);
 				}
 			}
 		}
-
 		iColor = 0;
 
 		// prechadzame hranami
 		for (uint i = 0; i < edges.length(); i++) {
 			progressBar->setValue(step++);
-			if (progressBar->wasCanceled())
+			if (progressBar->wasCanceled()) {
+				qDebug() << "cancelled";
 				return NULL;
+			}
 
 			QDomNode edgeNode = edges.item(i);
 
@@ -194,7 +204,6 @@ Graph* IOManager::loadGraph(QString filepath,
 				if (edgeElement.parentNode() == rootElement) {
 					QString sourceId = edgeElement.attribute("source");
 					QString targetId = edgeElement.attribute("target");
-
 					QString direction = NULL;
 					bool directed = false;
 					direction = edgeElement.attribute("directed");
@@ -295,38 +304,168 @@ Graph* IOManager::loadGraph(QString filepath,
 					// ak nebol najdeny typ, tak pouzijeme defaulty
 					if (newEdgeType == NULL)
 						newEdgeType = edgeType;
-
-					newGraph->addEdge(sourceId + targetId, readNodes->value(
-							sourceId), readNodes->value(targetId), newEdgeType,
-							directed);
+					newGraph->addEdge(readNodes->value(sourceId),
+							readNodes->value(targetId), newEdgeType);
 				}
 			}
 		}
+		qDebug() << "Old load " << newGraph->getName() << " " << t.elapsed();
 		return newGraph;
 	}
 	return NULL;
 }
 
-void IOManager::exportGraph(Graph* graph, QString filepath) {
-	// TODO export to GraphML
+
+Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
+	graph = NULL;
+	QDomDocument doc("graphMLDocument");
+	doc.setContent(device);
+	int elementCount = 0;
+	elementCount += doc.elementsByTagName("node").size();
+	elementCount += doc.elementsByTagName("edge").size();
+	device->reset();
+
+	progress = progressBar;
+	progress->reset();
+	progress->setLabelText("Loading file...");
+	progress->setMaximum(elementCount + 1);
+
+	QTime t;
+	t.start();
+	xml.setDevice(device);
+	if (xml.readNextStartElement()) {
+		if (xml.name() == "graphml") {
+			readGraphML();
+		}
+	}
+	qDebug() << "New load "<<graph->getName() << " " << t.elapsed();
+	if (progress->wasCanceled())
+		return NULL;
+	return graph;
 }
 
-Graph* IOManager::createGraph(QString graphname) {
-	return new Graph(graphname, 0);
+void IOManager::readGraphML() {
+	Q_ASSERT(xml.isStartElement() && xml.name() == "graphml");
+
+	graph = new Graph("", 0);
+	nodeType = graph->addType("node");
+	nodeType->insertMapping(Type::LABEL, "id");
+	edgeType = graph->addType("edge");
+	edgeType->insertMapping(Type::LABEL, "id");
+	edgeType->insertMapping(Type::IS_ORIENTED, "oriented");
+
+	while (xml.readNextStartElement()) {
+		if (xml.name() == "key") {
+			readKey();
+		} else if (xml.name() == "graph") {
+			readGraph();
+		} else {
+			qWarning() << "Element skipped: " << xml.name();
+			xml.skipCurrentElement();
+		}
+	}
 }
 
-Graph* IOManager::simpleGraph() {
-	Graph *newGraph = new Graph("simple", 0);
-	Type *type = newGraph->addType("default");
-	Type *type2 = newGraph->addType("default2");
+void IOManager::readKey() {
+	Q_ASSERT(xml.isStartElement() && xml.name() == "key");
+	QString name = xml.attributes().value("id").toString();
+	QString target = xml.attributes().value("for").toString();
 
-	Node *u1 = newGraph->addNode("u1", type);
-	Node *u2 = newGraph->addNode("u2", type);
-	Node *u3 = newGraph->addNode("u3", type);
+	QString defaultVal = "";
+	while (xml.readNextStartElement()) {
+		if (xml.name() == "default") {
+			defaultVal = xml.readElementText();
+		} else {
+			qWarning() << "Element skipped: " << xml.name();
+			xml.skipCurrentElement();
+		}
+	}
 
-	newGraph->addEdge("e1", u1, u2, type2, false);
-	newGraph->addEdge("e2", u1, u3, type2, false);
-	newGraph->addEdge("e3", u2, u3, type2, false);
+	QStringList targets = target.split(QRegExp("[, ]+"));
+	foreach(QString t, targets) {
+		if (t == "edge") {
+			edgeType->addKey(name, defaultVal);
+		} else if (t == "node") {
+			nodeType->addKey(name, defaultVal);
+		} else if (t == "all") {
+			nodeType->addKey(name, defaultVal);
+			edgeType->addKey(name, defaultVal);
+		}
+	}
+}
 
-	return newGraph;
+void IOManager::readGraph() {
+	Q_ASSERT(xml.isStartElement() && xml.name() == "graph");
+
+	QString name = xml.attributes().value("id").toString();
+	graph->setName(name);
+	readNodes.clear();
+
+	defaultDirection = xml.attributes().value("edgedefault") == "directed";
+
+	int step = 0;
+
+	while (xml.readNextStartElement()) {
+		if (progress->wasCanceled())
+			return;
+		if (xml.name() == "node") {
+			progress->setValue(step++);
+			readNode();
+		} else if (xml.name() == "edge") {
+			progress->setValue(step++);
+			readEdge();
+		} else {
+			qWarning() << "Element skipped: " << xml.name();
+			xml.skipCurrentElement();
+		}
+	}
+}
+
+void IOManager::readNode() {
+	Q_ASSERT(xml.isStartElement() && xml.name() == "node");
+
+	QString id = xml.attributes().value("id").toString();
+	Data* data = readData(nodeType);
+	data->insert("id", id);
+	Node* node = graph->addNode(nodeType, data);
+	readNodes.insert(id, node->getId());
+//	qDebug() << "n "<< id;
+}
+
+
+void IOManager::readEdge() {
+	Q_ASSERT(xml.isStartElement() && xml.name() == "edge");
+
+	QString directed = xml.attributes().value("directed").toString();
+	QString sourceId = xml.attributes().value("source").toString();
+	QString targetId = xml.attributes().value("target").toString();
+	Data* data = readData(edgeType);
+	data->insert("id", sourceId + targetId);
+	data->insert("oriented", directed == "true" || defaultDirection ? "true" : "false");
+	Edge* edge = graph->addEdge(readNodes.value(sourceId), readNodes.value(targetId),
+			edgeType, data);
+//	qDebug() << data->value("id");
+}
+
+Data* IOManager::readData(Type* type) {
+	Q_ASSERT(xml.isStartElement() && (xml.name() == "node" || xml.name() == "edge"));
+	Data* data = new Data();
+	foreach (QString key, type->getKeys()) {
+		QString defaultVal = type->getDefaultValue(key);
+		if (!defaultVal.isEmpty()) {
+			data->insert(key, defaultVal);
+		}
+	}
+
+	while (xml.readNextStartElement()) {
+		if (xml.name() == "data") {
+			QString key = xml.attributes().value("key").toString();
+			QString value = xml.readElementText();
+			data->insert(key, value);
+		} else {
+			qWarning() << "Element skipped: " << xml.name();
+			xml.skipCurrentElement();
+		}
+	}
+	return data;
 }

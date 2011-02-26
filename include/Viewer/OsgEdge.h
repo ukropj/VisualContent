@@ -67,6 +67,7 @@ private:
 	Model::Edge* edge;
 
 	bool selected;
+	bool oriented;
 
 	osg::ref_ptr<osgText::FadeText> label;
 	osg::Vec4 edgeColor;

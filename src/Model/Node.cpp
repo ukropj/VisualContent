@@ -17,21 +17,17 @@ typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
 		ColorIndexArray;
 using namespace Model;
 
-Node::Node(qlonglong id, QString name, Type* nodeType, Graph* graph) {
+Node::Node(qlonglong id, Type* type, Data* data, Graph* graph) {
+	Q_ASSERT(graph != NULL);
+	Q_ASSERT(type != NULL);
+
 	this->id = id;
-	this->name = name;
-	this->type = nodeType;
 	this->graph = graph;
+	this->type = type;
+	this->nodeData = data ? data : new Data();
 
 	int pos = 0;
 	int cnt = 0;
-
-	labelText = this->name;
-
-	while ((pos = labelText.indexOf(QString(" "), pos + 1)) != -1) {
-		if (++cnt % 3 == 0)
-			labelText = labelText.replace(pos, 1, "\n");
-	}
 
 	position = osg::Vec3f(0, 0, 0);
 	force = osg::Vec3f();
@@ -78,6 +74,10 @@ QSet<Node*> Node::getIncidentNodes() {
 
 void Node::setOsgNode(Vwr::OsgNode* osgNode) {
 	this->osgNode = osgNode;
+}
+
+QString Node::data(Type::DataType key) const {
+	return nodeData->value(type->getMapping(key));
 }
 
 bool Node::equals(Node* node) const {

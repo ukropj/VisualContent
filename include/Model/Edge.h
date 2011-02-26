@@ -10,9 +10,12 @@
 #include <QTextStream>
 #include <QtCore/QMap>
 
+#include "Model/Type.h"
+
 namespace Model {
 class Type;
 class Node;
+class Data;
 class Graph;
 
 /**
@@ -24,73 +27,31 @@ class Graph;
 class Edge {
 public:
 
-	Edge(qlonglong id, QString name, Graph* graph,
-			Node* srcNode, Node* dstNode, Type* type,
-			bool isOriented);
+	Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
+			Data* data, Graph* graph);
 
 	~Edge(void);
 
-	/**
-	 *  \fn inline public  getId
-	 *  \brief Returns ID of the Edge
-	 *  \return qlonglong ID of the Edge
-	 */
 	qlonglong getId() const {
 		return id;
 	}
 
-	/**
-	 *  \fn inline public  getName
-	 *  \brief Returns the name of the Edge
-	 *  \return QString name of the Edge
-	 */
-	QString getName() const {
-		return name;
-	}
+	QString data(Type::DataType key) const;
 
-	/**
-	 *  \fn inline public  setName(QString val)
-	 *  \brief Sets new name
-	 *  \param   name   new Name for the Edge
-	 *  \return QString resultant name of the Edge
-	 */
-	void setName(QString val) {
-		name = val;
-	}
-
-	/**
-	 * \fn inline public constant getSrcModel::Node
-	 * \brief  Returns the starting Model::Node of the Edge
-	 * \return osg::ref_ptr<Model::Model::Node> starting Model::Node of the Edge
-	 */
 	Node* getSrcNode() const {
 		return srcNode;
 	}
 
-	/**
-	 * \fn inline public constant getDstModel::Node
-	 * \brief  Returns ending Model::Node of the Edge
-	 * \return osg::ref_ptr<Model::Model::Node> ending Model::Node of the Edge
-	 */
 	Node* getDstNode() const {
 		return dstNode;
 	}
 
-	/**
-	 * Retruns the other node of this edge.
-	 */
 	Node* getOtherNode(Node* node) const;
 
-	/**
-	 * \fn inline public constant getType
-	 * \brief  Returns the Type of the Edge
-	 * \return Type * Type of the Edge
-	 */
 	Type* getType() const {
 		return type;
 	}
 
-	bool real;
 	void setReal(bool flag) {
 		real = flag;
 	}
@@ -98,89 +59,26 @@ public:
 		return real;
 	}
 
-	/**
-	 * \fn inline public constant isOriented
-	 * \brief Returns if the Edge is oriented or not
-	 * \return bool true, if the Edge is oriented
-	 */
-	bool isOriented() const {
-		return oriented;
-	}
-
-	/**
-	 * \fn inline public constant toString
-	 * \brief  Returns human-readable string representation of the Edge
-	 * \return QString
-	 */
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "edge id:" << id << " name:" << name;
+		QTextStream(&str) << "edge id:" << id;
 		return str;
 	}
 
-	/**
-	 *  \fn inline public  getGraph
-	 *  \brief Returns the Graph to which is the Edge assigned
-	 *  \return Graph * Edge's Graph
-	 */
-	Graph* getGraph() {
+	Graph* getGraph() const {
 		return graph;
 	}
 
 private:
-	/**
-	 *  Graph * graph
-	 *  \brief Graph to which the Edge belongs
-	 */
 	Graph* graph;
-
-	/**
-	 *  qlonglong id
-	 *  \brief ID of the Edge
-	 */
 	qlonglong id;
 
-	//! Meno hrany.
-	/**
-	 *  QString name
-	 *  \brief Name of the Edge
-	 */
-	QString name;
-
-	/**
-	 *  osg::ref_ptr<Model::Model::Node> srcModel::Node
-	 *  \brief Starting Model::Node of the Edge
-	 */
+	bool real;
 	Node* srcNode;
-
-	/**
-	 *  osg::ref_ptr<Model::Model::Node> dstModel::Node
-	 *  \brief Ending Model::Node of the Edge
-	 */
 	Node* dstNode;
 
-	/**
-	 *  Type * type
-	 *  \brief Type of the Edge
-	 */
 	Type* type;
-
-	/**
-	 *  bool oriented
-	 *  \brief True, if the Edge is oriented
-	 */
-	bool oriented;
-
-	/**
-	 *  float length
-	 *  \brief Length of the Edge
-	 */
-	float length;
-
-	/**
-	 *  bool selected
-	 *  \brief True, if edge is picked
-	 */
+	Data* edgeData;
 };
 
 class PseudoEdge {

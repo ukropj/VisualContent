@@ -19,10 +19,11 @@
 #define METASTRENGTH 1
 
 namespace Model  {
-class Type;
 class Node;
 class Edge;
 class PseudoEdge;
+class Type;
+class Data;
 
 /**
  *  \class Graph
@@ -98,7 +99,7 @@ public:
 	 *  \param   position     position of the Node
 	 *  \return osg::ref_ptr the added Node
 	 */
-	Node* addNode(QString name, Type* type);
+	Node* addNode(Type* type, Data* data = 0);
 
 	/**
 	 *  \fn public  addEdge(QString name, Node* srcNode, Node* dstNode, Type* type, bool isOriented)
@@ -110,8 +111,8 @@ public:
 	 *  \param   isOriented   true, if the Edge is oriented
 	 *  \return osg::ref_ptr the added Edge
 	 */
-	Edge* addEdge(QString name, Node* srcNode,
-			Node* dstNode, Type* type, bool isOriented);
+	Edge* addEdge(Node* srcNode, Node* dstNode, Type* type, Data* data = 0);
+	Edge* addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, Data* data = 0);
 
 	/**
 	 *  \fn public  addType(QString name, QMap <QString, QString> *settings = 0)

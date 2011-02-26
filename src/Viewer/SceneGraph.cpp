@@ -8,6 +8,7 @@
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
 #include "Model/Graph.h"
+#include "Model/Type.h"
 #include "Viewer/WidgetContent.h"
 
 #include <osg/Geode>
@@ -73,6 +74,7 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
+	createDataMapping(graph);
 	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this, progressBar);
 
 	elementsPosition = currentPos++;
@@ -82,7 +84,7 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	opt.optimize(root, osgUtil::Optimizer::CHECK_GEOMETRY);
 	updateNodes = true;
 
-	qDebug() << "Scene graph loaded (" << graph->getName() << ")";
+	qDebug() << "Scene graph loaded: " << graph->toString();
 	//	osgDB::writeNodeFile(*root, "graph.osg");
 }
 
@@ -211,12 +213,27 @@ void SceneGraph::setUpdatingNodes(bool val) {
 
 void SceneGraph::setFrozen(bool val) {
 	if (graph == NULL) {
-		qWarning("No graph set in SceneGraph");
+		qWarning("No graph set in SceneGraph::setFrozen()");
 		return;
 	}
 	graph->setFrozen(val);
 }
 
+void SceneGraph::createDataMapping(Model::Graph* graph) {
+	// TODO let user specify data mappings
+	Model::Type::DataType availableData[6];
+	availableData[0] = Model::Type::LABEL;
+	availableData[1] = Model::Type::IS_ORIENTED;
+
+	QList<Model::Type*> types = this->graph->getTypes()->values();
+
+	if (types.size() > 0) {
+	Model::Type* nt = types.at(0);
+	if (nt->getKeys().contains("label")) {
+		nt->insertMapping(availableData[0], "label");
+	}
+	}
+}
 
 void SceneGraph::createExperiment() {
 /*

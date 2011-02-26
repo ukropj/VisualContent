@@ -36,8 +36,7 @@ class AbstractVisitor;
 class OsgNode: public osg::Switch, public AbstractNode {
 public:
 
-	OsgNode(Model::Node* node, osg::AutoTransform* nodeTansform);
-
+	OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform);
 	~OsgNode();
 
 	QSet<AbstractNode*> getIncidentNodes();

@@ -10,6 +10,7 @@
 using namespace Model;
 
 Graph::Graph(QString name, qlonglong ele_id_counter) {
+	qDebug() << "Graph created " << name;
 	this->name = name;
 	this->ele_id_counter = ele_id_counter;
 	frozen = false;
@@ -32,8 +33,10 @@ QString Graph::setName(QString newName) {
 	return name;
 }
 
-Node* Graph::addNode(QString name, Type* type) {
-	Node* node = new Node(incEleIdCounter(), name, type, this);
+Node* Graph::addNode(Type* type, Data* data) {
+	if (type == NULL)
+		type = addType("new_type_" + incEleIdCounter());
+	Node* node = new Node(incEleIdCounter(), type, data, this);
 
 	for (QMap<qlonglong, Node*>::const_iterator i = nodes.constBegin(); i != nodes.constEnd(); i++) {
 		PseudoEdge* pe = new PseudoEdge(node, i.value());
@@ -42,19 +45,22 @@ Node* Graph::addNode(QString name, Type* type) {
 
 	nodes.insert(node->getId(), node);
 	nodesByType.insert(type->getId(), node);
-
 	return node;
 }
 
-Edge* Graph::addEdge(QString name, Node* srcNode, Node* dstNode, Type* type,
-		bool isOriented) {
-	if (srcNode == NULL || dstNode == NULL)
+Edge* Graph::addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, Data* data) {
+	return addEdge(nodes.value(srcNodeId), nodes.value(dstNodeId), type, data);
+}
+
+Edge* Graph::addEdge(Node* srcNode, Node* dstNode, Type* type, Data* data) {
+	if (srcNode == NULL || dstNode == NULL) {
+		qWarning() << "Trying to add edge to NULL node!";
 		return NULL;
+	}
 	if (srcNode->equals(dstNode)) {
 		qWarning() << "Trying to add edge to self on node: " << srcNode->toString();
 		return NULL;
 	}
-
 	uint pseudoId = PseudoEdge::computeId(srcNode, dstNode);
 	if (pseudoEdges.contains(pseudoId)) {
 		PseudoEdge* pe = pseudoEdges.value(pseudoId);
@@ -68,9 +74,9 @@ Edge* Graph::addEdge(QString name, Node* srcNode, Node* dstNode, Type* type,
 		qWarning() << "[addEdge] Inconsistent pseudoedge ID!"
 				<< srcNode->getId() << ", " << dstNode->getId();
 	}
-
-	Edge* edge = new Edge(incEleIdCounter(), name, this, srcNode,
-			dstNode, type, isOriented);
+	if (type == NULL)
+		type = addType("new_type_" + incEleIdCounter());
+	Edge* edge = new Edge(incEleIdCounter(), srcNode, dstNode, type, data, this);
 
 	edges.insert(edge->getId(), edge);
 	edgesByType.insert(type->getId(), edge);
@@ -79,10 +85,8 @@ Edge* Graph::addEdge(QString name, Node* srcNode, Node* dstNode, Type* type,
 
 Type* Graph::addType(QString name, QMap<QString, QString> *settings) {
 	Type* type = new Type(incEleIdCounter(), name, this, settings);
-
 	types.insert(type->getId(), type);
 	typesByName.insert(type->getName(), type);
-
 	return type;
 }
 
@@ -119,7 +123,7 @@ qlonglong Graph::getMaxEleIdFromElements() {
 QString Graph::toString() const {
 	QString str;
 	QTextStream(&str) << name << " (" << nodes.size() << " nodes, "
-			<< edges.size() << " edges)";
+			<< edges.size() << " edges, " << types.size() << " types)";
 	return str;
 }
 
@@ -188,4 +192,5 @@ void Graph::removeType(Type* type) {
 		//vymazeme vsetky uzly daneho typu
 		removeAllNodesOfType(type);
 	}
+	qDebug() << "Type removed";
 }

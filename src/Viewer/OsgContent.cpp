@@ -10,6 +10,7 @@
 #include "Viewer/ImageContent.h"
 #include "Viewer/GeodeContent.h"
 #include "Model/Node.h"
+#include "Model/Type.h"
 #include "Model/Graph.h"
 #include <osgDB/ReadFile>
 #include <QDebug>
@@ -41,10 +42,10 @@ const osg::BoundingBox& OsgContent::getBoundingBox() const {
 // XXX temporary method (until content info is read from file)
 OsgContent* ContentFactory::createContent(Model::Node* node) {
 	if (node->getGraph()->getName() == "Philosophers") {
-		QString label = node->getLabel();
+		QString label = node->data(Model::Type::LABEL);
 		int i = label.indexOf(':') + 1;
 		label = label.mid(i, -1);
-		qDebug() << label;
+//		qDebug() << label;
 		QString path = QString("input/philosophers/%1.jpg").arg(label);
 		return new ImageContent(path);
 	}

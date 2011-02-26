@@ -18,14 +18,16 @@ using namespace Vwr;
 
 OsgEdge::OsgEdge(Model::Edge* edge) {
 
+	if (edge == NULL) qWarning() << "NULL reference to Edge in OsgEdge!";
 	this->edge = edge;
 
 	edgeCoords = new osg::Vec3Array(4);
 	edgeTexCoords = new osg::Vec2Array(4);
 //	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
+	oriented = edge->data(Model::Type::IS_ORIENTED) == "true";
 
-	label = createLabel(edge->getName());
+	label = createLabel(edge->data(Model::Type::LABEL));
 
 	setColor(edge->getType()->getColor());
 }
@@ -59,7 +61,7 @@ void OsgEdge::updateGeometry() {
 	(*edgeCoords)[3].set(y + up);
 
 	int repeatCnt = edgeDir.length() / (2 * scale);
-	if (!edge->isOriented())
+	if (!oriented)
 			repeatCnt = 1;
 
 	(*edgeTexCoords)[0].set(0.0f, 1.0f);
@@ -68,8 +70,6 @@ void OsgEdge::updateGeometry() {
 	(*edgeTexCoords)[3].set(repeatCnt, 1.0f);
 
 	label->setPosition((x + y) / 2);
-
-	return;
 }
 
 void OsgEdge::getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
@@ -155,12 +155,11 @@ void OsgEdge::showLabel(bool visible) { // FIXME not working
 }
 
 bool OsgEdge::isOriented() {
-	return edge->isOriented();
+	return oriented;
 }
 
 QString OsgEdge::toString() const {
 	QString str;
-	QTextStream(&str) << "edge id:" << edge->getId() << " name:"
-			<< edge->getName();
+	QTextStream(&str) << "OggEdge " << edge->toString();
 	return str;
 }
