@@ -6,22 +6,14 @@
 #define Window_CORE_WINDOW 1
 
 #include <QMainWindow>
-#include <QToolBar>
-#include <QApplication>
-#include <QIcon>
-#include <QAction>
-#include <QMenu>
-#include <QMenuBar>
-#include <QStatusBar>
-#include <QTextEdit>
 #include <QtGui>
 #include <QDebug>
-#include <QStringList>
 
 namespace AppCore {
 class IOManager;
 }
 namespace Model {
+class Graph;
 class FRAlgorithm;
 }
 namespace Vwr {
@@ -42,23 +34,19 @@ class CoreWindow: public QMainWindow {
 Q_OBJECT
 
 public:
-
 	enum StatusMsgType {
 		ALG, PICK, KEYS, MAIN, NORMAL, TEMP
 	};
-
 	CoreWindow(QWidget* parent = 0);
-
 	Model::FRAlgorithm * getLayoutThread() const {
 		return layouter;
 	}
-
 	static void log(StatusMsgType type, QString msg);
 signals:
 	void windowResized();
-public slots:
-
+private slots:
 	void openFile();
+	void reloadFile();
 	void openRecentFile();
 	void showOptions();
 	void closeEvent(QCloseEvent *event);
@@ -73,11 +61,10 @@ public slots:
 	void sliderValueChanged(int value);
 
 	void toggleDebug();
-
 	void showMessageBox(QString title, QString message, bool isError);
-
 private:
 	void loadFile(QString fileName);
+	void createDataMapping(Model::Graph* graph);
 	void readSettings();
 	void writeSettings();
 	void updateRecentFileActions(QString fileName = 0);
@@ -85,6 +72,7 @@ private:
 	enum { MaxRecentFiles = 10 };
 
 	QAction* loadAction;
+	QAction* reloadAction;
 	QAction* quitAction;
 	QAction* optionsAction;
 	QAction* separatorAction;
@@ -107,6 +95,7 @@ private:
 	Model::FRAlgorithm* layouter;
 	Vwr::SceneGraph* sceneGraph;
 	AppCore::IOManager *ioManager;
+	QString currentFile;
 
 	void createActions();
 	void createMenus();
@@ -123,6 +112,7 @@ private:
 
 	QProgressDialog* progressBar;
 };
+
 }
 
 #endif

@@ -97,6 +97,7 @@ SET(SOURCES_H
 	./include/Window/CoreWindow.h
 	./include/Window/OptionsWindow.h
 	./include/Window/CheckBoxList.h
+	./include/Window/DataMappingDialog.h	
 	./include/Viewer/PickHandler.h
 	./include/Viewer/AbstractNode.h
 	./include/Viewer/OsgNodeGroup.h

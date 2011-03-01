@@ -76,6 +76,9 @@ void Node::setOsgNode(Vwr::OsgNode* osgNode) {
 	this->osgNode = osgNode;
 }
 
+bool Node::containsData(Type::DataType key) const {
+	return type->hasMapping(key);
+}
 QString Node::data(Type::DataType key) const {
 	return nodeData->value(type->getMapping(key));
 }

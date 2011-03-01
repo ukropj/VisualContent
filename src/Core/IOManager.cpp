@@ -347,7 +347,7 @@ Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
 void IOManager::readGraphML() {
 	Q_ASSERT(xml.isStartElement() && xml.name() == "graphml");
 
-	graph = new Graph("", 0);
+	graph = new Graph();
 	nodeType = graph->addType("node");
 	nodeType->insertMapping(Type::LABEL, "id");
 	edgeType = graph->addType("edge");

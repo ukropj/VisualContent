@@ -11,6 +11,7 @@
 #include <QTextStream>
 #include <QSet>
 #include <QMap>
+#include <QColor>
 #include <osg/ref_ptr>
 #include <osg/Texture2D>
 
@@ -25,10 +26,6 @@ class Graph;
  */
 class Type {
 public:
-	enum DataType {
-		COLOR, LABEL, TEXT, IMAGE, OSG, IS_ORIENTED,
-	};
-
 	Type(qlonglong id, QString name, Graph* graph,
 			QMap<QString, QString>* settings = 0);
 	~Type();
@@ -40,10 +37,10 @@ public:
 	}
 	QString toString() const {
 		QString str;
-//		QTextStream(&str) << "type id:" << id << " name:" << name;
-		foreach(QString key, dataKeys.keys()) {
-			QTextStream(&str) << key << "=" << dataKeys.value(key) <<", ";
-		}
+		QTextStream(&str) << "type id:" << id << " name:" << name;
+//		foreach(QString key, dataKeys.keys()) {
+//			QTextStream(&str) << key << "=" << dataKeys.value(key) <<", ";
+//		}
 		return str;
 	}
 	QString getValue(QString key) const {
@@ -61,7 +58,7 @@ public:
 	Graph* getGraph() const {
 		return graph;
 	}
-	osg::Vec4f getColor() const;
+	osg::Vec4f getColor(QString key = "");
 
 	void addKey(QString key, QString defaultValue="") {
 		dataKeys.insert(key, defaultValue);
@@ -75,8 +72,15 @@ public:
 		return dataKeys.value(key, "");
 	}
 
+	enum DataType {
+		COLOR, LABEL, TEXT, IMAGE, OSG, IS_ORIENTED,
+	};
+
 	void insertMapping(DataType key, QString value) {
-		mapping.insert(key, value);
+		if (!value.isEmpty())
+			mapping.insert(key, value);
+		else
+			mapping.remove(key);
 	}
 	QString getMapping(DataType key) const {
 		return mapping.value(key, "");
@@ -84,6 +88,18 @@ public:
 	bool hasMapping(DataType key) const {
 		return !mapping.value(key, "").isEmpty();
 	}
+
+	static QString dataTypeToString(DataType dt) {
+		switch (dt) {
+		case COLOR : return "Color";
+		case LABEL : return "Label";
+		case TEXT : return "Text";
+		case IMAGE : return "Image";
+		case OSG : return "3D Object";
+		case IS_ORIENTED : return "Orientation";
+		default : return QString("%1").arg((int)dt);
+		}
+	};
 
 private:
 	Graph* graph;
@@ -94,7 +110,10 @@ private:
 	osg::ref_ptr<osg::Texture2D> texture;
 	float scale;
 
+	QMap<QString, osg::Vec4f> colors;
 	QMap<DataType, QString> mapping;
+
+	static QColor qColors[];
 };
 
 class Data {

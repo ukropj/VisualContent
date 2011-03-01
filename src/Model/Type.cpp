@@ -9,6 +9,8 @@
 
 using namespace Model;
 
+QColor Type::qColors[] = {Qt::white, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::magenta, Qt::cyan, Qt::darkGray};
+
 Type::Type(qlonglong id, QString name, Graph* graph,
 		QMap<QString, QString>* settingsMap) {
 	this->id = id;
@@ -43,10 +45,18 @@ Type::~Type() {
 //	qDeleteAll(*settings);
 }
 
-osg::Vec4f Type::getColor() const {
-	float r = getValue("color.R").toFloat();
-	float g = getValue("color.G").toFloat();
-	float b = getValue("color.B").toFloat();
-	float a = getValue("color.A").toFloat();
-	return osg::Vec4(r, g, b, a);
+osg::Vec4f Type::getColor(QString key) {
+	if (key.isEmpty()) {
+		float r = getValue("color.R").toFloat();
+		float g = getValue("color.G").toFloat();
+		float b = getValue("color.B").toFloat();
+		float a = getValue("color.A").toFloat();
+		return osg::Vec4(r, g, b, a);
+	} else {
+		if (!colors.contains(key)) {
+			QColor c = qColors[colors.size() % 7];
+			colors.insert(key, osg::Vec4f((float)c.red(), (float)c.green(), (float)c.blue(), (float)c.alpha()));
+		}
+		return colors.value(key);
+	}
 }

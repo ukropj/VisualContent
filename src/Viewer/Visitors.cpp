@@ -23,6 +23,7 @@ void ExpanderVisitor::visitNode(AbstractNode* node) {
 	if (node->isExpanded() != isExpanding) {
 		node->setExpanded(isExpanding);
 	} else {
+		node->setExpanded(isExpanding);
 		QSet<AbstractNode*> nghbrs = node->getIncidentNodes();
 		QSet<AbstractNode*>::const_iterator i = nghbrs.begin();
 		while (i != nghbrs.end()) {

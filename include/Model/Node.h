@@ -53,6 +53,8 @@ public:
 		return type;
 	}
 
+	bool containsData(Type::DataType key) const;
+
 	QString data(Type::DataType key) const;
 
 	osg::Vec3f getPosition() const {

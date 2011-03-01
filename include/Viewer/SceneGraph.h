@@ -57,7 +57,6 @@ private:
 	int cleanUp();
 	osg::ref_ptr<osg::Node> createSkyBox();
 	osg::ref_ptr<osg::Node> createControlFrame();
-	void createDataMapping(Model::Graph* graph);
 
 	Model::Graph* graph;
 	Vwr::SceneElements* sceneElements;

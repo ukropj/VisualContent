@@ -4,12 +4,11 @@
 #include "Viewer/OsgEdge.h"
 #include "Viewer/OsgFrame.h"
 #include "Viewer/SkyTransform.h"
+#include "Viewer/WidgetContent.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
 #include "Model/Graph.h"
-#include "Model/Type.h"
-#include "Viewer/WidgetContent.h"
 
 #include <osg/Geode>
 #include <osg/Node>
@@ -23,15 +22,8 @@
 #include <osgViewer/ViewerEventHandlers>
 
 #include <QDebug>
-#include <QtGui/QWidget>
-#include <QtGui/QLabel>
-#include <QtGui/QPushButton>
-#include <QtGui/QVBoxLayout>
-#include <QtGui/QWidget>
-#include <QtGui/QTextEdit>
-#include <QtGui/QPalette>
-#include <QtGui/QGraphicsScene>
-#include <QtGui/QGraphicsView>
+#include <QtGui>
+
 #include "OsgQtBrowser/QWidgetImage.h"
 
 using namespace Vwr;
@@ -52,8 +44,7 @@ SceneGraph::SceneGraph() {
 	elementsPosition = 1;
 
 	updateNodes = true;
-
-	graph == NULL;
+	graph = NULL;
 }
 
 SceneGraph::~SceneGraph() {
@@ -74,7 +65,6 @@ void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
-	createDataMapping(graph);
 	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this, progressBar);
 
 	elementsPosition = currentPos++;
@@ -170,7 +160,6 @@ void SceneGraph::update(bool forceIdeal) {
 			interpolationSpeed = 1;
 		sceneElements->updateNodes(interpolationSpeed);
 	}
-
 	sceneElements->updateEdges();
 	nodeFrame->updateGeometry();
 }
@@ -217,22 +206,6 @@ void SceneGraph::setFrozen(bool val) {
 		return;
 	}
 	graph->setFrozen(val);
-}
-
-void SceneGraph::createDataMapping(Model::Graph* graph) {
-	// TODO let user specify data mappings
-	Model::Type::DataType availableData[6];
-	availableData[0] = Model::Type::LABEL;
-	availableData[1] = Model::Type::IS_ORIENTED;
-
-	QList<Model::Type*> types = this->graph->getTypes()->values();
-
-	if (types.size() > 0) {
-	Model::Type* nt = types.at(0);
-	if (nt->getKeys().contains("label")) {
-		nt->insertMapping(availableData[0], "label");
-	}
-	}
 }
 
 void SceneGraph::createExperiment() {

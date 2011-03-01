@@ -29,7 +29,7 @@ OsgEdge::OsgEdge(Model::Edge* edge) {
 
 	label = createLabel(edge->data(Model::Type::LABEL));
 
-	setColor(edge->getType()->getColor());
+	setColor(edge->getType()->getColor(edge->data(Model::Type::COLOR)));
 }
 
 OsgEdge::~OsgEdge() {

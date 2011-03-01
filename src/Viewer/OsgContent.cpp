@@ -39,22 +39,18 @@ const osg::BoundingBox& OsgContent::getBoundingBox() const {
 		return (new osg::Geode)->getBoundingBox();
 }
 
-// XXX temporary method (until content info is read from file)
 OsgContent* ContentFactory::createContent(Model::Node* node) {
-	if (node->getGraph()->getName() == "Philosophers") {
-		QString label = node->data(Model::Type::LABEL);
-		int i = label.indexOf(':') + 1;
-		label = label.mid(i, -1);
-//		qDebug() << label;
-		QString path = QString("input/philosophers/%1.jpg").arg(label);
-		return new ImageContent(path);
-	}
-
-	int i = node->getId() % 11;
-	if (i == 0) {
-		QString text("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce ut eros id augue ullamcorper fringilla at id est. Donec egestas congue pretium. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. ");
+	if (node->containsData(Model::Type::IMAGE)) {
+		QString imgPath = node->data(Model::Type::IMAGE);
+		return new ImageContent(imgPath);
+	} else if (node->containsData(Model::Type::TEXT)) {
+		QString text = node->data(Model::Type::TEXT);
 		return new TextContent(text);
 	}
+	// TODO other content, validation ?
+
+	// generate random content
+	int i = (node->getId() % 11) + 1;
 //	if (i == 1) {
 //		osg::Group* g = dynamic_cast<osg::Group*> (osgDB::readNodeFile("img/cow.osg"));
 //		qDebug() << (g == NULL);

@@ -3,115 +3,142 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns .\lib\graphml.xsd"><!--PROPERTIES-->
 	<key id="label" for="all" attr.name="label" attr.type="string"/>
+	<key id="img" for="node" attr.name="img" attr.type="string"/>
+	<key id="school" for="node" attr.name="school" attr.type="string"/> 
 	<key id="relation" for="edge" attr.name="relation" attr.type="string">
 		<default>influence</default>
 	</key>
-	<key id="type" for="node" attr.name="type" attr.type="string"/> 
 	<graph id="Philosophers" edgedefault="directed" parse.nodeids="free"
 		parse.edgeids="free" parse.order="nodesfirst"><!--NODES-->
 		<node id="Anaximenes">
 			<data key="label">Anaximenes of Miletus</data>
-			<data key="type">Milesian School</data>
+			<data key="school">Milesian School</data>
+			<data key="img">input/philosophers/Anaximenes of Miletus.jpg</data>
 		</node>
 		<node id="Diogenes">
 			<data key="label">Diogenes of Apollonia</data>
-			<data key="type">Unrelated</data>
+			<data key="school">Unrelated</data>
+			<data key="img">input/philosophers/Diogenes of Apollonia.jpg</data>
 		</node>
 		<node id="Anaxagoras">
 			<data key="label">Anaxagoras</data>
-			<data key="type">Pluralist School</data>
+			<data key="school">Pluralist School</data>
+			<data key="img">input/philosophers/Anaxagoras.jpg</data>
 		</node>
 		<node id="Socrates">
 			<data key="label">Socrates</data>
-			<data key="type">Unrelated</data>
+			<data key="school">Unrelated</data>
+			<data key="img">input/philosophers/Socrates.jpg</data>
 		</node>
 		<node id="Thales">
 			<data key="label">Thales of Miletus</data>
-			<data key="type">Milesian School</data>
+			<data key="school">Milesian School</data>
+			<data key="img">input/philosophers/Thales of Miletus.jpg</data>
 		</node>
 		<node id="Anaximander">
 			<data key="label">Anaximander</data>
-			<data key="type">Milesian School</data>
+			<data key="school">Milesian School</data>
+			<data key="img">input/philosophers/Anaximander.jpg</data>
 		</node>
 		<node id="Heraclitus">
 			<data key="label">Heraclitus</data>
-			<data key="type">Ephesian School</data>
+			<data key="school">Ephesian School</data>
+			<data key="img">input/philosophers/Heraclitus.jpg</data>
 		</node>
 		<node id="Pythagoras">
 			<data key="label">Pythagoras</data>
-			<data key="type">Phytagorean School</data>
+			<data key="school">Phytagorean School</data>
+			<data key="img">input/philosophers/Pythagoras.jpg</data>
 		</node>
 		<node id="Pherecydes">
 			<data key="label">Phereclydes of Syros</data>
-			<data key="type">Unrelated</data>
+			<data key="school">Unrelated</data>
+			<data key="img">input/philosophers/Phereclydes of Syros.jpg</data>
 		</node>
 		<node id="Parmenides">
 			<data key="label">Parmenides</data>
-			<data key="type">Eleatic School</data>
+			<data key="school">Eleatic School</data>
+			<data key="img">input/philosophers/Parmenides.jpg</data>
 		</node>
 		<node id="Xenophanes">
 			<data key="label">Xenophanes</data>
-			<data key="type">Eleatic School</data>
+			<data key="school">Eleatic School</data>
+			<data key="img">input/philosophers/Xenophanes.jpg</data>
 		</node>
 		<node id="Zeno">
 			<data key="label">Zeno of Elea</data>
-			<data key="type">Eleatic School</data>
+			<data key="school">Eleatic School</data>
+			<data key="img">input/philosophers/Zeno of Elea.jpg</data>
 		</node>
 		<node id="Gorgias">
 			<data key="label">Gorgias</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Gorgias.jpg</data>
 		</node>
 		<node id="Critas">
 			<data key="label">Critas</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Critas.jpg</data>
 		</node>
 		<node id="Protagoras">
 			<data key="label">Protagoras</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Protagoras.jpg</data>
 		</node>
 		<node id="Prodicus">
 			<data key="label">Prodicus</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Prodicus.jpg</data>
 		</node>
 		<node id="Thrasymachus">
 			<data key="label">Thrasymachus</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Thrasymachus.jpg</data>
 		</node>
 		<node id="Antiphon">
 			<data key="label">Antiphon</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Antiphon.jpg</data>
 		</node>
 		<node id="Hippias">
 			<data key="label">Hippias</data>
-			<data key="type">Sophists</data>
+			<data key="school">Sophists</data>
+			<data key="img">input/philosophers/Hippias.jpg</data>
 		</node>
 		<node id="Melissus">
 			<data key="label">Melissus of Samos</data>
-			<data key="type">Eleatic School</data>
+			<data key="school">Eleatic School</data>
+			<data key="img">input/philosophers/Melissus of Samos.jpg</data>
 		</node>
 		<node id="Democritus">
 			<data key="label">Democritus</data>
-			<data key="type">Atomist School</data>
+			<data key="school">Atomist School</data>
+			<data key="img">input/philosophers/Democritus.jpg</data>
 		</node>
 		<node id="Leucippus">
 			<data key="label">Leucippus</data>
-			<data key="type">Atomist School</data>
+			<data key="school">Atomist School</data>
+			<data key="img">input/philosophers/Leucippus.jpg</data>
 		</node>
 		<node id="Empedocles">
 			<data key="label">Empedocles</data>
-			<data key="type">Pluralist School</data>
+			<data key="school">Pluralist School</data>
+			<data key="img">input/philosophers/Empedocles.jpg</data>
 		</node>
 		<node id="Philolaus">
 			<data key="label">Philolaus</data>
-			<data key="type">Phytagorean School</data>
+			<data key="school">Phytagorean School</data>
+			<data key="img">input/philosophers/Philolaus.jpg</data>
 		</node>
 		<node id="Alcmaeon">
 			<data key="label">Alcmaeon of Croton</data>
-			<data key="type">Phytagorean School</data>
+			<data key="school">Phytagorean School</data>
+			<data key="img">input/philosophers/Alcmaeon of Croton.jpg</data>
 		</node>
 		<node id="Archytas">
 			<data key="label">Archytas</data>
-			<data key="type">Phytagorean School</data>
+			<data key="school">Phytagorean School</data>
+			<data key="img">input/philosophers/Archytas.jpg</data>
 		</node><!--EDGES-->
 		<edge source="Anaxagoras" target="Socrates"></edge>
 		<edge source="Thales" target="Anaximander"></edge>

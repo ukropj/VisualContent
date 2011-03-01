@@ -72,7 +72,7 @@ OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
 	setChildValue(closedG, true);
 
 	setSize(closedG->getBoundingBox());
-	setColor(node->getType()->getColor());
+	setColor(node->getType()->getColor(node->data(Model::Type::COLOR)));
 }
 
 OsgNode::~OsgNode() {
@@ -87,7 +87,7 @@ osg::ref_ptr<osg::Geode> OsgNode::initFrame() {
 			v,v,v,v,v};
 
 	osg::ref_ptr<osg::Geometry> frameQuad =
-			createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, node->getType()->getColor());
+			createCustomGeometry(coords, 10, osg::PrimitiveSet::QUAD_STRIP, osg::Vec4f(0,0,0,1));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->setStateSet(getOrCreateStateSet());
@@ -406,7 +406,7 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 	osg::Vec3f currentPos = getPosition();
 	osg::Vec3f targetPos = node->getPosition();
 
-	float eps = 5;
+	float eps = 1;
 	if ((currentPos - targetPos).length() < eps)
 		return;
 

@@ -1,7 +1,9 @@
 #include "Window/CoreWindow.h"
+#include "Window/DataMappingDialog.h"
 #include "Window/ViewerQT.h"
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
+#include "Model/Type.h"
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/PickHandler.h"
@@ -18,6 +20,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	layouter = new Model::FRAlgorithm();
 	ioManager = new AppCore::IOManager();
 	sceneGraph = new Vwr::SceneGraph();
+//	sceneGraph->reload(new Model::Graph("empty"));
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
 	connect(this, SIGNAL(windowResized()), viewerWidget->getPickHandler(), SLOT(windowResized()));
@@ -29,6 +32,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 
 	readSettings();
 	updateRecentFileActions();
+	currentFile = "";
 
 	qDebug("App initialized");
 	loadFile("input/data/grid3.graphml");
@@ -40,6 +44,12 @@ void CoreWindow::createActions() {
 	loadAction->setShortcut(tr("CTRL+L"));
 	loadAction->setToolTip(tr("Load graph from file"));
 	connect(loadAction, SIGNAL(triggered()), this, SLOT(openFile()));
+
+	reloadAction = new QAction(tr("&Reload"), this);
+	reloadAction->setShortcut(tr("CTRL+R"));
+	reloadAction->setToolTip(tr("Reload current graph"));
+	connect(reloadAction, SIGNAL(triggered()), this, SLOT(reloadFile()));
+	reloadAction->setEnabled(false);
 
 	optionsAction = new QAction("&Options", this);
 	connect(optionsAction, SIGNAL(triggered()), this, SLOT(showOptions()));
@@ -81,8 +91,8 @@ void CoreWindow::createActions() {
 	connect(labelsAction, SIGNAL(triggered(bool)), this, SLOT(toggleLabels(bool)));
 
 	QIcon randIcon("img/icons/randomize.png");
-	randomizeAction = new QAction(randIcon, tr("&Radomize"), this);
-	randomizeAction->setShortcut(tr("CTRL+R"));
+	randomizeAction = new QAction(randIcon, tr("Radomi&ze"), this);
+	randomizeAction->setShortcut(tr("CTRL+Z"));
 	randomizeAction->setToolTip(tr("Randomize graph layout"));
 	connect(randomizeAction, SIGNAL(triggered()), this, SLOT(randomize()));
 
@@ -119,6 +129,7 @@ void CoreWindow::createActions() {
 void CoreWindow::createMenus() {
 	fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(loadAction);
+	fileMenu->addAction(reloadAction);
 
     separatorAction = fileMenu->addSeparator();
     for (int i = 0; i < MaxRecentFiles; ++i)
@@ -176,6 +187,10 @@ void CoreWindow::openRecentFile() {
     }
 }
 
+void CoreWindow::reloadFile() {
+	loadFile(currentFile);
+}
+
 void CoreWindow::loadFile(QString filePath) {
 	if (filePath.isEmpty())
 		return;
@@ -201,8 +216,15 @@ void CoreWindow::loadFile(QString filePath) {
 		if (!progressBar->wasCanceled())
 			showMessageBox("Error", "Could not load graph from file" + filePath, true);
 	} else {
+		progressBar->setValue(progressBar->maximum());
 		qDebug() << "GraphML parsed successfully.";
 		setWindowFilePath(filePath);
+		reloadAction->setEnabled(true);
+		currentFile = filePath;
+
+		QApplication::restoreOverrideCursor();
+		createDataMapping(graph);
+		QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 		// reload
 		viewerWidget->getPickHandler()->reset();
@@ -225,6 +247,23 @@ void CoreWindow::loadFile(QString filePath) {
 		sceneGraph->setNodeLabelsVisible(true);
 	if (playAction->isChecked())
 		layouter->play();
+}
+
+void CoreWindow::createDataMapping(Model::Graph* graph) {
+	// TODO let user specify data mappings
+	QList<Model::Type::DataType> availableData;
+	availableData.append(Model::Type::LABEL);
+	availableData.append(Model::Type::COLOR);
+	availableData.append(Model::Type::IMAGE);
+	availableData.append(Model::Type::TEXT);
+
+	QList<Model::Type*> types = graph->getTypes()->values();
+	if (types.size() > 0) {
+		Window::DataMappingDialog* dialog =
+				new Window::DataMappingDialog(availableData, types, this);
+		dialog->exec();
+		delete dialog;
+	}
 }
 
 void CoreWindow::showOptions() {

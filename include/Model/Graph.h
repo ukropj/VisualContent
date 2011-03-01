@@ -48,7 +48,7 @@ public:
 	 *  \param   ele_id_counter     current maximum element (Node, Type, Edge) ID (for empty graph use 1)
 	 *  \param   conn     connection to DB
 	 */
-	Graph(QString name, qlonglong ele_id_counter);
+	Graph(QString name = "graph", qlonglong ele_id_counter = 0);
 
 	/**
 	 *  \fn public destructor  ~Graph
