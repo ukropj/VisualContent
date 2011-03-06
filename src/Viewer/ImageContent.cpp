@@ -26,8 +26,9 @@ ImageContent::~ImageContent() {
 osg::ref_ptr<osg::Geometry> ImageContent::createGeometry(QString imagePath) {
 	float scale = 0.2f;	// XXX magic number
 
-	osg::Image* image = osgDB::readImageFile(imagePath.toStdString());
-	if (image == NULL) {
+	osg::Image* image;
+	if (imagePath.isEmpty() ||
+			(image = osgDB::readImageFile(imagePath.toStdString())) == NULL) {
 		qWarning() << "No such image: " + imagePath;
 		image = osgDB::readImageFile("img/not_found.jpg"); // TODO move to util
 	}

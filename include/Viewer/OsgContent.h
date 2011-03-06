@@ -16,6 +16,7 @@
 #include <osg/PositionAttitudeTransform>
 #include <QString>
 #include <QDebug>
+#include "Viewer/OsgProperty.h"
 
 namespace Model {
 	class Node;
@@ -38,7 +39,7 @@ protected:
 
 class ContentFactory {
 public:
-	static OsgContent* createContent(Model::Node* node);
+	static OsgContent* createContent(OsgProperty::ContentType type, QString data);
 private:
 };
 }

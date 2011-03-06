@@ -13,18 +13,16 @@
 
 #include <QDebug>
 
-typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1>
-		ColorIndexArray;
 using namespace Model;
 
-Node::Node(qlonglong id, Type* type, Data* data, Graph* graph) {
+Node::Node(qlonglong id, Type* type, QMap<QString, QString>* data, Graph* graph) {
 	Q_ASSERT(graph != NULL);
 	Q_ASSERT(type != NULL);
 
 	this->id = id;
 	this->graph = graph;
 	this->type = type;
-	this->nodeData = data ? data : new Data();
+	this->nodeData = data ? data : new QMap<QString, QString>();
 
 	int pos = 0;
 	int cnt = 0;
@@ -76,11 +74,8 @@ void Node::setOsgNode(Vwr::OsgNode* osgNode) {
 	this->osgNode = osgNode;
 }
 
-bool Node::containsData(Type::DataType key) const {
-	return type->hasMapping(key);
-}
-QString Node::data(Type::DataType key) const {
-	return nodeData->value(type->getMapping(key));
+QString Node::data(QString key) const {
+	return nodeData->value(key);
 }
 
 bool Node::equals(Node* node) const {

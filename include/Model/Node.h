@@ -13,15 +13,13 @@
 #include <QString>
 #include <QTextStream>
 
-#include "Model/Type.h"
-
 namespace Vwr {
 class OsgNode;
 }
 
 namespace Model {
-class Data;
 class Edge;
+class Type;
 class Graph;
 
 /**
@@ -33,7 +31,7 @@ class Graph;
 class Node {
 public:
 
-	Node(qlonglong id, Type* type, Data* data, Graph* graph);
+	Node(qlonglong id, Type* type, QMap<QString, QString>* data, Graph* graph);
 	~Node(void);
 
 	void addEdge(Edge* edge);
@@ -53,9 +51,7 @@ public:
 		return type;
 	}
 
-	bool containsData(Type::DataType key) const;
-
-	QString data(Type::DataType key) const;
+	QString data(QString key) const;
 
 	osg::Vec3f getPosition() const {
 		return osg::Vec3f(position);
@@ -148,7 +144,7 @@ public:
 private:
 
 	qlonglong id;
-	Data* nodeData;
+	QMap<QString, QString>* nodeData;
 	Type* type;
 	Graph* graph;
 	osg::Vec3f position;

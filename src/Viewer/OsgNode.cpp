@@ -25,20 +25,14 @@ typedef osg::TemplateIndexArray<unsigned int, osg::Array::UIntArrayType, 4, 1> C
 
 osg::ref_ptr<osg::Geode> OsgNode::fixedG = NULL;
 
-OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
+OsgNode::OsgNode(Model::Node* node, OsgProperty* property, osg::AutoTransform* nodeTransform) {
 	if (node == NULL) qWarning() << "NULL reference to Node in OsgNode!";
 	this->node = node;
 	node->setOsgNode(this);
 	setName("node" + node->getId());
 	this->nodeTransform = nodeTransform;
 
-/*	position = osg::Vec3f(0,0,0);
-	nodeCoords = new osg::Vec3Array(4);
-	nodeTexCoords = new osg::Vec2Array(4);
-	(*nodeTexCoords)[0].set(0, 0);
-	(*nodeTexCoords)[1].set(1, 0);
-	(*nodeTexCoords)[2].set(1, 1);
-	(*nodeTexCoords)[3].set(0, 1);*/
+	this->property = property;
 
 	selected = false;
 	expanded = false;
@@ -47,13 +41,14 @@ OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
 	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	float scale = node->getType()->getScale();
 
-	closedG = createTextureNode(node->getType()->getTexture(), 2*scale, 2*scale);
-	contentG = ContentFactory::createContent(node);
+	closedG = createTextureNode(Util::TextureWrapper::getNodeTexture(),
+			2*scale, 2*scale); // TODO scale :((
+	contentG = ContentFactory::createContent(property->getContentType(), getPropertyValue(OsgProperty::CONTENT));
 
 	size = osg::Vec3f(0, 0, 0);
 
 	frameG = initFrame();
-	label = createLabel(node->data(Model::Type::LABEL), scale);
+	label = createLabel(getPropertyValue(OsgProperty::LABEL), scale);
 	if (fixedG == NULL)
 		fixedG = createFixed();
 
@@ -72,12 +67,16 @@ OsgNode::OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform) {
 	setChildValue(closedG, true);
 
 	setSize(closedG->getBoundingBox());
-	setColor(node->getType()->getColor(node->data(Model::Type::COLOR)));
+	setColor(property->getColor(getPropertyValue(OsgProperty::COLOR)));
 }
 
 OsgNode::~OsgNode() {
 	node->setOsgNode(NULL);
 //	qDebug() << "OsgNode deleted";
+}
+
+QString OsgNode::getPropertyValue(OsgProperty::ValueType prop) {
+	return node->data(property->getMapping(prop));
 }
 
 osg::ref_ptr<osg::Geode> OsgNode::initFrame() {
@@ -130,7 +129,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createTextureNode(
 
 
 	osg::ref_ptr<osg::Geometry> nodeQuad =
-			createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, node->getType()->getColor());
+			createCustomGeometry(coords, 4, osg::PrimitiveSet::QUADS, property->getColor(getPropertyValue(OsgProperty::COLOR)));
 
 	osg::Vec2 texCoords[] = { osg::Vec2(0, 0), osg::Vec2(1, 0),
 			osg::Vec2(1, 1), osg::Vec2(0, 1) };
@@ -199,8 +198,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 	osg::ref_ptr<osgText::FadeText> textDrawable = new osgText::FadeText();
 	textDrawable->setFadeSpeed(0.04);
 
-	QString fontPath = Util::Config::getInstance()->getValue(
-			"Viewer.Labels.Font");
+	QString fontPath = Util::Config::getInstance()->getValue("Viewer.Labels.Font");
 
 	// experimental value
 	float newScale = 1.375f * scale;
@@ -215,7 +213,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 	textDrawable->setDrawMode(osgText::Text::TEXT);
 	textDrawable->setAlignment(osgText::Text::CENTER_BOTTOM_BASE_LINE);
 	textDrawable->setPosition(osg::Vec3(0, newScale, 0));
-	textDrawable->setColor(Util::Config::getColorF("Viewer.Node.Color"));
+	textDrawable->setColor(OsgProperty::getDefaultColor(OsgProperty::NODE));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
 	geode->addDrawable(textDrawable);

@@ -18,7 +18,6 @@ namespace Model {
 class Graph;
 class Node;
 class Type;
-class Data;
 }
 
 namespace AppCore {
@@ -29,7 +28,6 @@ public:
 	~IOManager();
 
 	Model::Graph* loadGraph(QIODevice* device, QProgressDialog* progressBar);
-	Model::Graph* loadGraphOld(QIODevice* device, QProgressDialog* progressBar);
 
 private:
 	void readGraphML();
@@ -37,7 +35,7 @@ private:
 	void readGraph();
 	void readNode();
 	void readEdge();
-	Model::Data* readData(Model::Type* type);
+	QMap<QString, QString>* readData(Model::Type* type);
 
 	QXmlStreamReader xml;
 	QProgressDialog* progress;

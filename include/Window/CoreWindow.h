@@ -22,7 +22,6 @@ class SceneGraph;
 
 namespace Window {
 class ViewerQT;
-class MessageWindows;
 
 /**
  *  \class CoreWindow
@@ -64,7 +63,6 @@ private slots:
 	void showMessageBox(QString title, QString message, bool isError);
 private:
 	void loadFile(QString fileName);
-	void createDataMapping(Model::Graph* graph);
 	void readSettings();
 	void writeSettings();
 	void updateRecentFileActions(QString fileName = 0);

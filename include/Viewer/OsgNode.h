@@ -9,6 +9,7 @@
 #define OSGNODE_H_
 
 #include "Viewer/AbstractNode.h"
+#include "Viewer/OsgProperty.h"
 
 #include <QMap>
 #include <QString>
@@ -36,9 +37,10 @@ class AbstractVisitor;
 class OsgNode: public osg::Switch, public AbstractNode {
 public:
 
-	OsgNode(Model::Node* node, osg::AutoTransform* nodeTransform);
+	OsgNode(Model::Node* node, OsgProperty* property, osg::AutoTransform* nodeTransform);
 	~OsgNode();
 
+	QString getPropertyValue(OsgProperty::ValueType prop);
 	QSet<AbstractNode*> getIncidentNodes();
 
 	osg::Vec3f getPosition() const;
@@ -139,6 +141,8 @@ private:
 
 	osg::ref_ptr<osg::Geode> closedG;
 	osg::ref_ptr<OsgContent> contentG;
+
+	OsgProperty* property;
 
 	// constants
 

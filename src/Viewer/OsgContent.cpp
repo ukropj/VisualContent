@@ -39,25 +39,18 @@ const osg::BoundingBox& OsgContent::getBoundingBox() const {
 		return (new osg::Geode)->getBoundingBox();
 }
 
-OsgContent* ContentFactory::createContent(Model::Node* node) {
-	if (node->containsData(Model::Type::IMAGE)) {
-		QString imgPath = node->data(Model::Type::IMAGE);
-		return new ImageContent(imgPath);
-	} else if (node->containsData(Model::Type::TEXT)) {
-		QString text = node->data(Model::Type::TEXT);
-		return new TextContent(text);
+OsgContent* ContentFactory::createContent(OsgProperty::ContentType type, QString data) {
+	switch (type) {
+	case OsgProperty::IMAGE :
+		return new ImageContent(data);
+	case OsgProperty::TEXT :
+		return new TextContent(data);
+		// TODO other content, validation ?
+	case OsgProperty::RANDOM :
+	case OsgProperty::NO_CONTENT :
+	default :
+		// generate random content
+		QString path = QString("img/pic%1.jpg").arg((qrand() % 11) + 1);
+		return new ImageContent(path);
 	}
-	// TODO other content, validation ?
-
-	// generate random content
-	int i = (node->getId() % 11) + 1;
-//	if (i == 1) {
-//		osg::Group* g = dynamic_cast<osg::Group*> (osgDB::readNodeFile("img/cow.osg"));
-//		qDebug() << (g == NULL);
-//		osg::Geode* ge = dynamic_cast<osg::Geode*> (g->getChild(0));
-//		qDebug() << (ge == NULL);
-//		return new GeodeContent(ge);
-//	}
-	QString path = QString("img/pic%1.jpg").arg(i);
-	return new ImageContent(path);
 }

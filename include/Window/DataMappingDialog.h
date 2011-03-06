@@ -10,7 +10,12 @@
 
 #include <QDialog>
 #include <QtGui>
-#include "Model/Type.h"
+
+#include "Viewer/OsgProperty.h"
+
+namespace Model {
+class Type;
+}
 
 namespace Window {
 
@@ -18,18 +23,22 @@ class DataMappingDialog : public QDialog {
 	Q_OBJECT
 private slots:
 	void keySelected(int index);
+	void typeSelected(int index);
 public:
-	DataMappingDialog(QList<Model::Type::DataType> availableData,
-			QList<Model::Type*> keys, QWidget* parent = 0);
+	DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, Vwr::OsgProperty*>* propertyMap, QWidget* parent = 0);
 private:
 	void createControls();
+	QString getTypeName(QObject* sender);
 
-	QList<QLabel*> labels;
+	QMap<qlonglong, Vwr::OsgProperty*>* propertyMap;
+
 	QList<QComboBox*> keySelectors;
+	QList<QComboBox*> typeSelectors;
 	QPushButton* submitButton;
 
 	QList<Model::Type*> types;
-	QList<Model::Type::DataType> dataTypes;
+	QList<Vwr::OsgProperty::ContentType> contentTypes;
+	QList<Vwr::OsgProperty::ValueType> propertyTypes;
 };
 }
 

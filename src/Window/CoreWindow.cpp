@@ -1,9 +1,7 @@
 #include "Window/CoreWindow.h"
-#include "Window/DataMappingDialog.h"
 #include "Window/ViewerQT.h"
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
-#include "Model/Type.h"
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/PickHandler.h"
@@ -222,10 +220,6 @@ void CoreWindow::loadFile(QString filePath) {
 		reloadAction->setEnabled(true);
 		currentFile = filePath;
 
-		QApplication::restoreOverrideCursor();
-		createDataMapping(graph);
-		QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-
 		// reload
 		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar);	// deletes original scene graph
@@ -247,23 +241,6 @@ void CoreWindow::loadFile(QString filePath) {
 		sceneGraph->setNodeLabelsVisible(true);
 	if (playAction->isChecked())
 		layouter->play();
-}
-
-void CoreWindow::createDataMapping(Model::Graph* graph) {
-	// TODO let user specify data mappings
-	QList<Model::Type::DataType> availableData;
-	availableData.append(Model::Type::LABEL);
-	availableData.append(Model::Type::COLOR);
-	availableData.append(Model::Type::IMAGE);
-	availableData.append(Model::Type::TEXT);
-
-	QList<Model::Type*> types = graph->getTypes()->values();
-	if (types.size() > 0) {
-		Window::DataMappingDialog* dialog =
-				new Window::DataMappingDialog(availableData, types, this);
-		dialog->exec();
-		delete dialog;
-	}
 }
 
 void CoreWindow::showOptions() {

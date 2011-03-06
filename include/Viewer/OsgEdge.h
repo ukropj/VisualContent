@@ -16,6 +16,8 @@
 #include <osgText/Text>
 #include <osgText/FadeText>
 
+#include "Viewer/OsgProperty.h"
+
 namespace Model {
 class Edge;
 }
@@ -31,9 +33,10 @@ public:
 		ORIENTED, UNORIENTED, ENDPOINT
 	};
 
-	OsgEdge(Model::Edge* edge);
+	OsgEdge(Model::Edge* edge, OsgProperty* property);
 	~OsgEdge();
 
+	QString getPropertyValue(OsgProperty::ValueType prop);
 	void updateGeometry();
 	void getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
 			osg::Vec2Array> textureCoords, osg::ref_ptr<
@@ -65,6 +68,7 @@ public:
 private:
 
 	Model::Edge* edge;
+	OsgProperty* property;
 
 	bool selected;
 	bool oriented;

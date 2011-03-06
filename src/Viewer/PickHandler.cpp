@@ -7,11 +7,11 @@
 #include "Viewer/PickHandler.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/OsgNode.h"
+#include "Viewer/OsgProperty.h"
 #include "Viewer/AbstractNode.h"
 #include "Viewer/OsgNodeGroup.h"
 #include "Viewer/OsgFrame.h"
 #include "Util/CameraHelper.h"
-#include "Util/Config.h"
 
 #include <iostream>
 #include <QApplication>
@@ -600,7 +600,7 @@ void PickHandler::createSelectionQuad() {
 	coordinates->push_back(osg::Vec3(0, 1, -1));
 	coordinates->push_back(osg::Vec3(0, 1, -1));
 
-	osg::Vec4f color = Util::Config::getColorF("Viewer.Node.Color");
+	osg::Vec4f color = OsgProperty::getDefaultColor(OsgProperty::NODE);
 	color.w() = 0.1f;
 	colors->push_back(color);
 

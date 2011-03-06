@@ -1,12 +1,16 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
+#include "Viewer/OsgProperty.h"
 #include "Model/Node.h"
 #include "Model/Edge.h"
+#include "Model/Type.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
+#include "Window/DataMappingDialog.h"
 
 #include <QDebug>
+#include <QApplication>
 #include <iostream>
 #include <osgManipulator/TabBoxDragger>
 
@@ -14,16 +18,17 @@ using namespace Vwr;
 using namespace Model;
 
 SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
-		Edge*>* edges, SceneGraph* sceneGraph, QProgressDialog* progressBar) {
-	this->sceneGraph = sceneGraph;
+		Edge*>* edges, QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar) {
 
 	pd = progressBar;
-	if (pd != NULL) {
-		pd->setLabelText("Drawing graph...");
-		pd->setValue(0);
-		pd->setMaximum(nodes->size() + edges->size());
-		step = 0;
-	}
+	pd = NULL; // XXX
+	if (pd != NULL)
+		pd->hide();
+
+	properties.clear();
+	QApplication::restoreOverrideCursor();
+	createDataMapping(types->values());
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	elementsGroup = new osg::Group();
 	elementsGroup->setName("scene_elements");
@@ -125,14 +130,14 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	osg::Vec4Array* colors = new osg::Vec4Array;
 	osg::Vec4Array* colorsO = new osg::Vec4Array;
 
-	QMapIterator<qlonglong, Edge*> i(*inEdges);
+	QListIterator<Edge*> i(inEdges->values());
 	int index = 0;
 	int indexO = 0;
 	while (i.hasNext()) {
 		if (pd != NULL)
 			pd->setValue(step++);
-		i.next();
-		OsgEdge* osgEdge = new OsgEdge(i.value());
+		Model::Edge* edge = i.next();
+		OsgEdge* osgEdge = new OsgEdge(edge, properties.value(edge->getType()->getId()));
 		edges.append(osgEdge);
 		if (!osgEdge->isOriented()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
@@ -237,8 +242,7 @@ osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
 	}
 	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
 	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-
-	OsgNode* osgNode = new OsgNode(node, at);
+	OsgNode* osgNode = new OsgNode(node, properties.value(node->getType()->getId()), at);
 
 	nodes.append(osgNode);
 	nodeIds.insert(node->getId());
@@ -317,4 +321,19 @@ osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {
 	stateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
 	return stateSet;
+}
+
+void SceneElements::createDataMapping(QList<Model::Type*> types) {
+	if (types.size() > 0) {
+		QListIterator<Model::Type*> ti(types);
+		while (ti.hasNext()) {
+			Model::Type* type = ti.next();
+			properties.insert(type->getId(), new OsgProperty());
+		}
+
+		Window::DataMappingDialog* dialog =
+				new Window::DataMappingDialog(types, &properties, QApplication::activeWindow());
+		dialog->exec();
+		delete dialog;
+	}
 }

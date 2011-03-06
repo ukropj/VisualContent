@@ -37,35 +37,36 @@ SceneGraph::SceneGraph() {
 	specialNodes->addChild(createSkyBox());
 	specialNodes->addChild(createControlFrame());
 	root->addChild(specialNodes);
-	specialPosition = 0;
 
-	sceneElements = new SceneElements(new QMap<qlonglong, Model::Node*> (),
-			new QMap<qlonglong, Model::Edge*> (), this);
+	sceneElements = NULL;
+	graph = NULL;
 	elementsPosition = 1;
 
 	updateNodes = true;
-	graph = NULL;
 }
 
 SceneGraph::~SceneGraph() {
-	delete sceneElements;
+	if (sceneElements != NULL)
+		delete sceneElements;
 //	qDebug() << "SceneGraph deleted";
 }
 
 int SceneGraph::cleanUp() {
 	root->removeChildren(elementsPosition, root->getNumChildren() - elementsPosition);
-	delete sceneElements;
+	if (sceneElements != NULL)
+		delete sceneElements;
+	sceneElements = NULL;
 	graph = NULL; // graph is not deleted here, it may be still used even if graphics is gone
 	return root->getNumChildren();
 }
 
-void SceneGraph::reload(Model::Graph * newGraph, QProgressDialog* progressBar) {
+void SceneGraph::reload(Model::Graph* newGraph, QProgressDialog* progressBar) {
 	if (newGraph == NULL)
 		return;
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
-	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), this, progressBar);
+	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), graph->getTypes(), progressBar);
 
 	elementsPosition = currentPos++;
 	root->addChild(sceneElements->getElementsGroup());
@@ -150,9 +151,9 @@ osg::ref_ptr<OsgFrame> SceneGraph::getNodeFrame() const{
 
 
 void SceneGraph::update(bool forceIdeal) {
-	if (graph == NULL) {
+	if (graph == NULL || sceneElements == NULL)
 		return;
-	}
+
 	if (updateNodes || forceIdeal) {
 		float interpolationSpeed = Util::Config::getValue(
 				"Viewer.Display.InterpolationSpeed").toFloat();
@@ -165,6 +166,8 @@ void SceneGraph::update(bool forceIdeal) {
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {
+	if (sceneElements == NULL)
+		return;
 	QListIterator<OsgNode* > i(sceneElements->getNodes());
 	while (i.hasNext()) {
 		i.next()->showLabel(visible);

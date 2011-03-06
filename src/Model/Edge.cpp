@@ -12,7 +12,7 @@
 using namespace Model;
 
 Edge::Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
-		Data* data, Graph* graph) {
+		QMap<QString, QString>* data, Graph* graph) {
 	Q_ASSERT(graph != NULL);
 	Q_ASSERT(srcNode != NULL && dstNode != NULL);
 	Q_ASSERT(type != NULL);
@@ -24,7 +24,7 @@ Edge::Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
 	this->dstNode = dstNode;
 	dstNode->addEdge(this);
 	srcNode->addEdge(this);
-	this->edgeData = data ? data : new Data();
+	this->edgeData = data ? data : new QMap<QString, QString>();
 }
 
 Edge::~Edge(void) {
@@ -48,8 +48,8 @@ Node* Edge::getOtherNode(Model::Node* node) const {
 		return srcNode; // returns source node even if node is not a node of this edge
 }
 
-QString Edge::data(Type::DataType key) const {
-	return edgeData->value(type->getMapping(key));
+QString Edge::data(QString key) const {
+	return edgeData->value(key);
 }
 
 PseudoEdge::PseudoEdge(Node* srcNode, Node* dstNode) {

@@ -16,24 +16,30 @@
 
 using namespace Vwr;
 
-OsgEdge::OsgEdge(Model::Edge* edge) {
+OsgEdge::OsgEdge(Model::Edge* edge, OsgProperty* property) {
 
 	if (edge == NULL) qWarning() << "NULL reference to Edge in OsgEdge!";
 	this->edge = edge;
+	this->property = property;
 
 	edgeCoords = new osg::Vec3Array(4);
 	edgeTexCoords = new osg::Vec2Array(4);
 //	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
-	oriented = edge->data(Model::Type::IS_ORIENTED) == "true";
+	oriented = false;
+	//edge->data(Model::Type::IS_ORIENTED) == "true"; // FIXME
 
-	label = createLabel(edge->data(Model::Type::LABEL));
+	label = createLabel(getPropertyValue(OsgProperty::LABEL));
 
-	setColor(edge->getType()->getColor(edge->data(Model::Type::COLOR)));
+	setColor(property->getColor(getPropertyValue(OsgProperty::COLOR)));
 }
 
 OsgEdge::~OsgEdge() {
 	edge = NULL;
+}
+
+QString OsgEdge::getPropertyValue(OsgProperty::ValueType prop) {
+	return edge->data(property->getMapping(prop));
 }
 
 void OsgEdge::updateGeometry() {

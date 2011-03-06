@@ -65,7 +65,6 @@ private:
 	osg::ref_ptr<osg::Group> specialNodes;
 
 	bool updateNodes;
-	int specialPosition;
 	int elementsPosition;
 
 };

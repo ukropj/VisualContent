@@ -33,7 +33,7 @@ QString Graph::setName(QString newName) {
 	return name;
 }
 
-Node* Graph::addNode(Type* type, Data* data) {
+Node* Graph::addNode(Type* type, QMap<QString, QString>* data) {
 	if (type == NULL)
 		type = addType("new_type_" + incEleIdCounter());
 	Node* node = new Node(incEleIdCounter(), type, data, this);
@@ -48,11 +48,11 @@ Node* Graph::addNode(Type* type, Data* data) {
 	return node;
 }
 
-Edge* Graph::addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, Data* data) {
+Edge* Graph::addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, QMap<QString, QString>* data) {
 	return addEdge(nodes.value(srcNodeId), nodes.value(dstNodeId), type, data);
 }
 
-Edge* Graph::addEdge(Node* srcNode, Node* dstNode, Type* type, Data* data) {
+Edge* Graph::addEdge(Node* srcNode, Node* dstNode, Type* type, QMap<QString, QString>* data) {
 	if (srcNode == NULL || dstNode == NULL) {
 		qWarning() << "Trying to add edge to NULL node!";
 		return NULL;

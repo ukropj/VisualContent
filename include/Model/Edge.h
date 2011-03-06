@@ -10,12 +10,9 @@
 #include <QTextStream>
 #include <QtCore/QMap>
 
-#include "Model/Type.h"
-
 namespace Model {
 class Type;
 class Node;
-class Data;
 class Graph;
 
 /**
@@ -28,7 +25,7 @@ class Edge {
 public:
 
 	Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
-			Data* data, Graph* graph);
+			QMap<QString, QString>* data, Graph* graph);
 
 	~Edge(void);
 
@@ -36,7 +33,7 @@ public:
 		return id;
 	}
 
-	QString data(Type::DataType key) const;
+	QString data(QString key) const;
 
 	Node* getSrcNode() const {
 		return srcNode;
@@ -78,7 +75,7 @@ private:
 	Node* dstNode;
 
 	Type* type;
-	Data* edgeData;
+	QMap<QString, QString>* edgeData;
 };
 
 class PseudoEdge {

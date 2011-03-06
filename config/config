@@ -1,5 +1,3 @@
-GraphMLParser.edgeTypeAttribute=relation
-GraphMLParser.nodeTypeAttribute=type
 Layout.Algorithm.Alpha=0.02
 Layout.Algorithm.MaxDistance=300.0
 Layout.Algorithm.MaxMovement=200.0
@@ -16,7 +14,6 @@ Viewer.Display.NodesAlwaysOnTop=0
 Viewer.Display.Stereoscopic=0
 Viewer.Display.ViewDistance=10000.0
 Viewer.Labels.Font=
-Viewer.PickHandler.PickedEdgeDistance=200.0
 Viewer.Textures.DefaultNodeScale=8
 Viewer.Textures.Edge=img/texture/edge.png
 Viewer.Textures.EdgeScale=2
