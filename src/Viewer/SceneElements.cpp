@@ -21,9 +21,8 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 		Edge*>* edges, QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar) {
 
 	pd = progressBar;
-	pd = NULL; // XXX
-	if (pd != NULL)
-		pd->hide();
+//	if (pd != NULL)
+//		pd->hide();
 
 	properties.clear();
 	QApplication::restoreOverrideCursor();
@@ -32,6 +31,13 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 
 	elementsGroup = new osg::Group();
 	elementsGroup->setName("scene_elements");
+
+	if (pd != NULL) {
+		pd->reset();
+		pd->setLabelText("Drawing graph ...");
+		pd->setMaximum(nodes->size() + edges->size());
+		step = 0;
+	}
 
 	if (!nodes->isEmpty())
 		elementsGroup->addChild(initNodes(nodes));
@@ -222,7 +228,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 					group->addChild(wrapNode(otherNode));
 					nodeList << otherNode;
 				}
-				edgeI++;
+				++edgeI;
 			}
 			if (group != NULL) {
 				if (uberGroup == NULL)
@@ -269,7 +275,7 @@ void SceneElements::updateNodes(float interpolationSpeed) {
 	QList<OsgNode*>::const_iterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->getNodeData(interpolationSpeed, coords, texCoords, colors);
-		i++;
+		++i;
 	}
 
 	nodesGeometry->setVertexArray(coords);
@@ -292,7 +298,7 @@ void SceneElements::updateEdges() {
 			(*i)->getEdgeData(coords, texCoords, colors);
 		else
 			(*i)->getEdgeData(coordsO, texCoordsO, colorsO);
-		i++;
+		++i;
 	}
 
 	edgesGeometry->setVertexArray(coords);

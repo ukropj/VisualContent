@@ -21,8 +21,11 @@
 namespace Model  {
 class Node;
 class Edge;
-class PseudoEdge;
 class Type;
+
+typedef QMap<qlonglong, Node*>::const_iterator NodeIt;
+typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
+typedef QMap<qlonglong, Type*>::const_iterator TypeIt;
 
 /**
  *  \class Graph
@@ -98,7 +101,7 @@ public:
 	 *  \param   position     position of the Node
 	 *  \return osg::ref_ptr the added Node
 	 */
-	Node* addNode(Type* type, QMap<QString, QString>* data = 0);
+	Node* addNode(Type* type = NULL, QMap<QString, QString>* data = NULL);
 
 	/**
 	 *  \fn public  addEdge(QString name, Node* srcNode, Node* dstNode, Type* type, bool isOriented)
@@ -110,8 +113,8 @@ public:
 	 *  \param   isOriented   true, if the Edge is oriented
 	 *  \return osg::ref_ptr the added Edge
 	 */
-	Edge* addEdge(Node* srcNode, Node* dstNode, Type* type, QMap<QString, QString>* data = 0);
-	Edge* addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, QMap<QString, QString>* data = 0);
+	Edge* addEdge(Node* srcNode, Node* dstNode, Type* type = NULL, QMap<QString, QString>* data = NULL);
+	Edge* addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type = NULL, QMap<QString, QString>* data = NULL);
 
 	/**
 	 *  \fn public  addType(QString name, QMap <QString, QString> *settings = 0)
@@ -120,7 +123,7 @@ public:
 	 *  \param   settings     settings of the Type
 	 *  \return Type * the added Type
 	 */
-	Type* addType(QString name, QMap<QString, QString> *settings = 0); //implemented
+	Type* addType(QString name, QMap<QString, QString> *settings = NULL); //implemented
 
 	/**
 	 *  \fn public  removeNode(Node* node)
@@ -161,10 +164,6 @@ public:
 		return &edges;
 	}
 
-	QMap<uint, PseudoEdge*>* getPseudoEdges() {
-		return &pseudoEdges;
-	}
-
 	/**
 	 *  \fn inline public constant  getTypes
 	 *  \brief Returns QMap of the Types assigned to the Graph
@@ -173,6 +172,8 @@ public:
 	QMap<qlonglong, Type*>* getTypes() {
 		return &types;
 	}
+
+	bool areIncident(Node* u, Node* v) const;
 
 	/**
 	 *  \fn inline public constant  isFrozen
@@ -268,7 +269,6 @@ private:
 	 *  \brief Edges in the Graph
 	 */
 	QMap<qlonglong, Edge* > edges;
-	QMap<uint, PseudoEdge* > pseudoEdges;
 
 	/**
 	 *  QMap<qlonglong,Type*> * types

@@ -39,7 +39,7 @@ Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
 	progress = progressBar;
 	progress->reset();
 	progress->setLabelText("Loading file...");
-	progress->setMaximum(elementCount + 1);
+	progress->setMaximum(elementCount);
 
 	QTime t;
 	t.start();
@@ -49,7 +49,6 @@ Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
 			readGraphML();
 		}
 	}
-	qDebug() << "New load "<< graph->toString() << " " << t.elapsed();
 	if (progress->wasCanceled())
 		return NULL;
 	return graph;
@@ -63,6 +62,7 @@ void IOManager::readGraphML() {
 	nodeType->addKey("node_id", "");
 	edgeType = graph->addType("edge");
 	edgeType->addKey("edge_id", "");
+	edgeType->addKey("directed", "false");
 	edgeType->setEdgeType(true);
 
 	while (xml.readNextStartElement()) {
@@ -137,7 +137,7 @@ void IOManager::readNode() {
 
 	QString id = xml.attributes().value("id").toString();
 	QMap<QString, QString>* data = readData(nodeType);
-	data->insert("id", id);
+	data->insert("node_id", id);
 	Node* node = graph->addNode(nodeType, data);
 	readNodes.insert(id, node->getId());
 //	qDebug() << "n "<< id;
@@ -151,8 +151,8 @@ void IOManager::readEdge() {
 	QString sourceId = xml.attributes().value("source").toString();
 	QString targetId = xml.attributes().value("target").toString();
 	QMap<QString, QString>* data = readData(edgeType);
-	data->insert("id", sourceId + targetId);
-	data->insert("oriented", directed == "true" || defaultDirection ? "true" : "false");
+	data->insert("edge_id", sourceId + targetId);
+	data->insert("directed", directed == "true" || defaultDirection ? "true" : "false");
 	Edge* edge = graph->addEdge(readNodes.value(sourceId), readNodes.value(targetId),
 			edgeType, data);
 //	qDebug() << data->value("id");

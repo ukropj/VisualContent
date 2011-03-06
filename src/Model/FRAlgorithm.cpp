@@ -11,9 +11,6 @@
 
 using namespace Model;
 
-typedef QMap<qlonglong, Node*>::const_iterator NodeIt;
-typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
-
 FRAlgorithm::FRAlgorithm() {
 	ALPHA = Util::Config::getValue("Layout.Algorithm.Alpha").toFloat();
 	MIN_MOVEMENT = Util::Config::getValue("Layout.Algorithm.MinMovement").toFloat();
@@ -87,7 +84,7 @@ void FRAlgorithm::randomize() {
 	}
 
 	for (NodeIt i = graph->getNodes()->constBegin(); i
-			!= graph->getNodes()->constEnd(); i++) {
+			!= graph->getNodes()->constEnd(); ++i) {
 		Node* node = i.value();
 		if (!node->isFixed()) {
 			osg::Vec3f randPos = getRandomLocation();
@@ -113,7 +110,7 @@ double FRAlgorithm::getRandomDouble() {
 
 void FRAlgorithm::play() {
 	if (graph != NULL) {
-		qDebug() << ALPHA;
+//		qDebug() << ALPHA;
 		graph->setFrozen(false);
 		state = RUNNING;
 		notEnd = true;
@@ -187,7 +184,7 @@ void FRAlgorithm::run() {
 
 void FRAlgorithm::resetNodes() {
 	QMap<qlonglong, Node*>* nodes = graph->getNodes();
-	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
 		i.value()->resetVelocity(); // reset velocity
 	}
 	// helps to reduce oscillations when this is NOT reseted
@@ -198,24 +195,23 @@ bool FRAlgorithm::iterate() {
 	bool changed = false;
 	QMap<qlonglong, Node*>* nodes = graph->getNodes();
 
-	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
 		i.value()->resetForce();
 	}
 
-	// "pseudo edges" are edges of complete graph (i.e all distinct node pairs)
-	QMap<uint, PseudoEdge*>* pe = graph->getPseudoEdges();
-	for (QMap<uint, PseudoEdge*>::const_iterator i = pe->constBegin(); i != pe->constEnd(); i++) {
-		PseudoEdge* e = i.value();
-		Node* u = e->getSrcNode();
-		Node* v = e->getDstNode();
-		addForces(u, v, e->isReal());
+	for (NodeIt ui = nodes->constBegin(); ui != nodes->constEnd(); ++ui) {
+		Node* u = ui.value();
+		for (NodeIt vi = ui+1; vi != nodes->constEnd(); ++vi) {
+			Node* v = vi.value();
+			addForces(u, v, graph->areIncident(u, v));
+		}
 	}
 
 	if (state != RUNNING)
 		return true;
 
 	// apply accumulated forces to nodes
-	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); i++) {
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
 		Node* u = i.value();
 		if (!u->isFrozen() && !u->isFixed()) {
 //			last = u->getPosition();

@@ -121,7 +121,7 @@ void CoreWindow::createActions() {
 	flags = flags & (~Qt::WindowContextHelpButtonHint);
 	progressBar->setWindowFlags(flags);
 	progressBar->setModal(true);
-	progressBar->setMinimumDuration(1000);
+	progressBar->setMinimumDuration(500);
 }
 
 void CoreWindow::createMenus() {

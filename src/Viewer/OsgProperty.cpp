@@ -13,27 +13,29 @@ using namespace Vwr;
 QColor OsgProperty::allColors[] = {Qt::white, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::magenta, Qt::cyan, Qt::darkGray};
 
 OsgProperty::OsgProperty() {
-	contentType = NO_CONTENT;
+	contentType = RANDOM;
 }
 
-QList<OsgProperty::ContentType> OsgProperty::getContentTypes(PropertyType type) {
+QList<OsgProperty::ContentType> OsgProperty::getContentTypes() {
 	QList<ContentType> contentTypes;
-	contentTypes << NO_CONTENT;
-	if (type == NODE || type == ALL)
-		contentTypes << IMAGE << TEXT << RANDOM; // << WEB << OSG;
+	contentTypes << RANDOM << IMAGE << TEXT; // << WEB << OSG;
 	return contentTypes;
 }
 
-QList<OsgProperty::ValueType> OsgProperty::getPropertyTypes(PropertyType type) {
+QList<OsgProperty::ValueType> OsgProperty::getValueTypes() {
 	QList<ValueType> propTypes;
-	propTypes << LABEL << COLOR;
-	if (type == NODE || type == ALL) {
-		propTypes << CONTENT;
-	}
-	if (type == EDGE || type == ALL) {
-		;
-	}
+	propTypes << LABEL << COLOR << CONTENT << DIRECTION;
 	return propTypes;
+}
+
+OsgProperty::PropertyType OsgProperty::getPropertyType(ValueType val) {
+	switch (val) {
+	case COLOR :
+	case LABEL : return ALL;
+	case CONTENT : return NODE;
+	case DIRECTION : return EDGE;
+	default : return ALL;
+	}
 }
 
 osg::Vec4f OsgProperty::getColor(QString key, PropertyType type) {

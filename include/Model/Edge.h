@@ -43,17 +43,10 @@ public:
 		return dstNode;
 	}
 
-	Node* getOtherNode(Node* node) const;
+	Node* getOtherNode(const Node* node) const;
 
 	Type* getType() const {
 		return type;
-	}
-
-	void setReal(bool flag) {
-		real = flag;
-	}
-	bool isReal() const {
-		return real;
 	}
 
 	QString toString() const {
@@ -70,7 +63,6 @@ private:
 	Graph* graph;
 	qlonglong id;
 
-	bool real;
 	Node* srcNode;
 	Node* dstNode;
 
@@ -78,24 +70,6 @@ private:
 	QMap<QString, QString>* edgeData;
 };
 
-class PseudoEdge {
-public:
-	PseudoEdge(Node* srcNode, Node* dstNode);
-	~PseudoEdge() {}
-	uint getId() const {return id;}
-	void setReal(bool flag) {real = flag;}
-	bool isReal() const {return real;}
-	Node* getSrcNode() const {return srcNode;}
-	Node* getDstNode() const {return dstNode;}
-
-	static uint computeId(Node* srcNode, Node* dstNode);
-
-private:
-	Node* srcNode;
-	Node* dstNode;
-	uint id;
-	bool real;
-};
 }
 
 #endif

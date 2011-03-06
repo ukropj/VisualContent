@@ -22,7 +22,7 @@ public:
 		NO_CONTENT, TEXT, WEB, IMAGE, OSG, RANDOM
 	};
 	enum ValueType {
-		LABEL, COLOR, CONTENT
+		LABEL, COLOR, CONTENT, DIRECTION
 	};
 	enum PropertyType {
 		NODE, EDGE, ALL
@@ -32,23 +32,24 @@ public:
 
 	osg::Vec4f getColor(QString key = "", PropertyType type = NODE);
 
-	void insertMapping(ValueType prop, QString key) {
+	void insertMapping(ValueType val, QString key) {
 		if (!key.isEmpty())
-			mapping.insert(prop, key);
+			mapping.insert(val, key);
 		else
-			mapping.remove(prop);
+			mapping.remove(val);
 	}
-	QString getMapping(ValueType prop) const {
-		return mapping.value(prop, "");
+	QString getMapping(ValueType val) const {
+		return mapping.value(val, "");
 	}
-	bool hasMapping(ValueType prop) const {
-		return !mapping.value(prop, "").isEmpty();
+	bool hasMapping(ValueType val) const {
+		return !mapping.value(val, "").isEmpty();
 	}
 	void setContentType(ContentType type) { contentType = type; }
 	ContentType getContentType() const { return contentType; }
 
-	static QList<OsgProperty::ContentType> getContentTypes(PropertyType type = ALL);
-	static QList<OsgProperty::ValueType> getPropertyTypes(PropertyType type = ALL);
+	static PropertyType getPropertyType(ValueType val);
+	static QList<OsgProperty::ContentType> getContentTypes();
+	static QList<OsgProperty::ValueType> getValueTypes();
 	static QString contentTypeToString(ContentType ct) {
 		switch (ct) {
 		case NO_CONTENT : return "None";
@@ -60,12 +61,13 @@ public:
 		default : return QString("%1").arg((int)ct);
 		}
 	};
-	static QString propertyTypeToString(ValueType prop) {
-		switch (prop) {
+	static QString propertyTypeToString(ValueType val) {
+		switch (val) {
 		case COLOR : return "Color";
 		case LABEL : return "Label";
 		case CONTENT : return "Content";
-		default : return QString("%1").arg((int)prop);
+		case DIRECTION : return "Directed";
+		default : return QString("%1").arg((int)val);
 		}
 	};
 	static osg::Vec4f getDefaultColor(PropertyType type = NODE);

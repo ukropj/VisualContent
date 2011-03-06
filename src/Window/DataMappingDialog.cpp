@@ -20,7 +20,7 @@ DataMappingDialog::DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, 
 	this->propertyMap = propertyMap;
 
 	contentTypes = OsgProperty::getContentTypes();
-	propertyTypes = OsgProperty::getPropertyTypes();
+	valueTypes = OsgProperty::getValueTypes();
 	createControls();
 }
 
@@ -36,36 +36,47 @@ void DataMappingDialog::createControls() {
 	while (ti.hasNext()) {
 		Model::Type* type = ti.next();
 		QList<QString> keys = type->getKeys();
-		keys.insert(0, "(none)");
+		keys.insert(0, " - ");
 
 		QWidget* tab = new QWidget;
 		QGridLayout* tabLayout = new QGridLayout;
 		tabLayout->setSizeConstraint(QLayout::SetFixedSize);
 
-		QListIterator<OsgProperty::ValueType> pi(propertyTypes);
+		QListIterator<OsgProperty::ValueType> vi(valueTypes);
 		int i = 0;
-		while (pi.hasNext()) {
-			OsgProperty::ValueType prop = pi.next();
-			QLabel* keyLabel = new QLabel(OsgProperty::propertyTypeToString(prop));
-			QComboBox* keySelector = new QComboBox();
-			keySelector->insertItems(0, QStringList(keys));
-			keySelector->setFont(QFont("Courier"));
-			connect(keySelector, SIGNAL(currentIndexChanged(int)), this, SLOT(keySelected(int)));
-			tabLayout->addWidget(keyLabel, i, 0);
-			tabLayout->addWidget(keySelector, i, 1);
-			keySelectors.append(keySelector);
+		while (vi.hasNext()) {
+			OsgProperty::ValueType val = vi.next();
+			OsgProperty::PropertyType propType = OsgProperty::getPropertyType(val);
+			if (propType == OsgProperty::ALL ||
+					(type->isEdgeType() && propType == OsgProperty::EDGE) ||
+					(!type->isEdgeType() && propType == OsgProperty::NODE)) {
+				QLabel* keyLabel = new QLabel(OsgProperty::propertyTypeToString(val));
+				QComboBox* keySelector = new QComboBox();
+				keySelector->insertItems(0, QStringList(keys));
+				keySelector->setFont(QFont("Courier"));
+				connect(keySelector, SIGNAL(currentIndexChanged(int)), this, SLOT(keySelected(int)));
+				tabLayout->addWidget(keyLabel, i, 0);
+				tabLayout->addWidget(keySelector, i, 1);
+				keySelectors.append(keySelector);
+			} else {
+				keySelectors.append(NULL);
+			}
 			i++;
 		}
 
-		QLabel* typeLabel = new QLabel("Content type");
-		QComboBox* typeSelector = new QComboBox();
-		typeSelector->insertItems(0, typeNames);
-		connect(typeSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(typeSelected(int)));
 		if (!type->isEdgeType()) {
-			tabLayout->addWidget(typeLabel, i, 1);
-			tabLayout->addWidget(typeSelector, i, 2);
+			QLabel* typeLabel = new QLabel("Content type");
+			QComboBox* typeSelector = new QComboBox();
+			typeSelector->insertItems(0, typeNames);
+			connect(typeSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(typeSelected(int)));
+			if (!type->isEdgeType()) {
+				tabLayout->addWidget(typeLabel, i, 1);
+				tabLayout->addWidget(typeSelector, i, 2);
+			}
+			typeSelectors.append(typeSelector);
+		} else {
+			typeSelectors.append(NULL);
 		}
-		typeSelectors.append(typeSelector);
 
 		tab->setLayout(tabLayout);
 		tabWidget->addTab(tab, type->getName());
@@ -86,10 +97,10 @@ void DataMappingDialog::keySelected(int index) {
 	const QObject* sender = QObject::sender();
 	QComboBox* comboBox = (QComboBox*)sender;
 	int cbIndex = keySelectors.indexOf(comboBox);
-	Model::Type* type = types.at(cbIndex / propertyTypes.size());
+	Model::Type* type = types.at(cbIndex / valueTypes.size());
 	QString key = comboBox->itemText(index);
 
-	OsgProperty::ValueType prop = propertyTypes.at(cbIndex % propertyTypes.size());
+	OsgProperty::ValueType prop = valueTypes.at(cbIndex % valueTypes.size());
 
 	OsgProperty* p = propertyMap->value(type->getId());
 

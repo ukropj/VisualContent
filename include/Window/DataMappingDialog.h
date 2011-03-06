@@ -38,7 +38,7 @@ private:
 
 	QList<Model::Type*> types;
 	QList<Vwr::OsgProperty::ContentType> contentTypes;
-	QList<Vwr::OsgProperty::ValueType> propertyTypes;
+	QList<Vwr::OsgProperty::ValueType> valueTypes;
 };
 }
 

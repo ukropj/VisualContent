@@ -432,7 +432,7 @@ QSet<AbstractNode*> OsgNode::getIncidentNodes() {
 		OsgNode* n;
 		if ((n = (*i)->getOsgNode()) != NULL)
 			nghbrs.insert(n);
-		i++;
+		++i;
 	}
 	return nghbrs;
 }

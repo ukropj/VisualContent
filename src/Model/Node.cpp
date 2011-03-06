@@ -54,17 +54,20 @@ void Node::removeEdge(Edge* edge) {
 	edges.remove(edge->getId());
 }
 
-Edge* Node::getEdgeTo(Node* otherNode) {
-	foreach (Edge* edge, edges) {
-		if (this->equals(edge->getOtherNode(this)))
-			return edge;
+Edge* Node::getEdgeTo(const Node* otherNode) const {
+	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
+		Edge* edge = i.value();
+		if (this->equals(edge->getOtherNode(otherNode)))
+				return edge;
 	}
 	return NULL;
 }
 
-QSet<Node*> Node::getIncidentNodes() {
+QSet<Node*> Node::getIncidentNodes() const {
+	// TODO replace foreadch with STL iterator
 	QSet<Node*> nodes;
-	foreach (Edge* edge, edges) {
+	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
+		Edge* edge = i.value();
 		nodes.insert(edge->getOtherNode(this));
 	}
 	return nodes;

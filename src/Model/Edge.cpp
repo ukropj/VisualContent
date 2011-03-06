@@ -41,30 +41,17 @@ Edge::~Edge(void) {
 //	osgEdge = NULL;
 }
 
-Node* Edge::getOtherNode(Model::Node* node) const {
+Node* Edge::getOtherNode(const Model::Node* node) const {
+	if (node == NULL)
+		return NULL;
 	if (node->getId() == srcNode->getId())
 		return dstNode;
-	else
-		return srcNode; // returns source node even if node is not a node of this edge
+	else if (node->getId() == dstNode->getId())
+		return srcNode;
+//	qWarning() << "Node not incident to this edge";
+	return NULL;
 }
 
 QString Edge::data(QString key) const {
 	return edgeData->value(key);
-}
-
-PseudoEdge::PseudoEdge(Node* srcNode, Node* dstNode) {
-	this->srcNode = srcNode;
-	this->dstNode = dstNode;
-	this->real = false;
-	QString name;
-	id = computeId(srcNode, dstNode);
-}
-
-uint PseudoEdge::computeId(Node* srcNode, Node* dstNode) {
-	QString name;
-	if (srcNode->getId() < dstNode->getId())
-		name = QString::number(srcNode->getId()) + "_" + QString::number(dstNode->getId());
-	else
-		name = QString::number(dstNode->getId()) + "_" + QString::number(srcNode->getId());
-	return qHash(name);
 }

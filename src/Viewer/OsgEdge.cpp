@@ -26,8 +26,7 @@ OsgEdge::OsgEdge(Model::Edge* edge, OsgProperty* property) {
 	edgeTexCoords = new osg::Vec2Array(4);
 //	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
-	oriented = false;
-	//edge->data(Model::Type::IS_ORIENTED) == "true"; // FIXME
+	oriented = getPropertyValue(OsgProperty::DIRECTION) == "true";
 
 	label = createLabel(getPropertyValue(OsgProperty::LABEL));
 

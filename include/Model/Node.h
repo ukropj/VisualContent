@@ -36,8 +36,8 @@ public:
 
 	void addEdge(Edge* edge);
 	void removeEdge(Edge* edge);
-	Edge* getEdgeTo(Node* otherNode);
-	QSet<Node*> getIncidentNodes();
+	Edge* getEdgeTo(const Node* otherNode) const;
+	QSet<Node*> getIncidentNodes() const;
 
 	qlonglong getId() const {
 		return id;
@@ -137,7 +137,7 @@ public:
 
 	void setOsgNode(Vwr::OsgNode* osgNode);
 
-	Vwr::OsgNode* getOsgNode() {
+	Vwr::OsgNode* getOsgNode() const {
 		return osgNode;
 	}
 

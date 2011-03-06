@@ -17,7 +17,7 @@ GeodeContent::GeodeContent(osg::Geode* geode) {
 	i = parents.begin();
 	while (i != parents.end()) {
 		(*i)->removeChild(contentGeode);
-		i++;
+		++i;
 	}
 	contentGeode->setName("node_content_geode");
 	innerScale = 1;

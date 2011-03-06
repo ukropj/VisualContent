@@ -19,7 +19,6 @@ Graph::Graph(QString name, qlonglong ele_id_counter) {
 Graph::~Graph() {
 	qDeleteAll(nodes); // NOTE: deleting nodes will also delete edges
 	qDeleteAll(types);
-	qDeleteAll(pseudoEdges);
 
 	nodesByType.clear();
 	edgesByType.clear();
@@ -34,14 +33,10 @@ QString Graph::setName(QString newName) {
 }
 
 Node* Graph::addNode(Type* type, QMap<QString, QString>* data) {
-	if (type == NULL)
-		type = addType("new_type_" + incEleIdCounter());
-	Node* node = new Node(incEleIdCounter(), type, data, this);
-
-	for (QMap<qlonglong, Node*>::const_iterator i = nodes.constBegin(); i != nodes.constEnd(); i++) {
-		PseudoEdge* pe = new PseudoEdge(node, i.value());
-		pseudoEdges.insert(pe->getId(), pe);
+	if (type == NULL) {
+		type = addType("new_type_node" + incEleIdCounter());
 	}
+	Node* node = new Node(incEleIdCounter(), type, data, this);
 
 	nodes.insert(node->getId(), node);
 	nodesByType.insert(type->getId(), node);
@@ -61,21 +56,15 @@ Edge* Graph::addEdge(Node* srcNode, Node* dstNode, Type* type, QMap<QString, QSt
 		qWarning() << "Trying to add edge to self on node: " << srcNode->toString();
 		return NULL;
 	}
-	uint pseudoId = PseudoEdge::computeId(srcNode, dstNode);
-	if (pseudoEdges.contains(pseudoId)) {
-		PseudoEdge* pe = pseudoEdges.value(pseudoId);
-		if (pe->isReal()) { // means that this edge was already added - we don't support multiedges
-			qWarning() << "Edge between " << srcNode->toString() << " and "
-					<< dstNode->toString() << "already exists!";
-			return srcNode->getEdgeTo(dstNode);
-		}
-		pe->setReal(true);
-	} else {
-		qWarning() << "[addEdge] Inconsistent pseudoedge ID!"
-				<< srcNode->getId() << ", " << dstNode->getId();
+	if (areIncident(srcNode, dstNode)) {
+		qWarning() << "Edge between " << srcNode->toString() << " and "
+				<< dstNode->toString() << "already exists!";
+		return NULL;
 	}
-	if (type == NULL)
-		type = addType("new_type_" + incEleIdCounter());
+
+	if (type == NULL) {
+		type = addType("new_type_edge" + incEleIdCounter());
+	}
 	Edge* edge = new Edge(incEleIdCounter(), srcNode, dstNode, type, data, this);
 
 	edges.insert(edge->getId(), edge);
@@ -159,23 +148,12 @@ void Graph::removeNode(Node* node) {
 	if (node != NULL && node->getGraph() == this) {
 		nodes.remove(node->getId());
 		nodesByType.remove(node->getType()->getId(), node);
-		for (QMap<qlonglong, Node*>::const_iterator i = nodes.constBegin(); i != nodes.constEnd(); i++) {
-			uint pseudoId = PseudoEdge::computeId(node, i.value());
-			pseudoEdges.remove(pseudoId);
-		}
 		delete node;
 	}
 }
 
 void Graph::removeEdge(Edge* edge) {
 	if (edge != NULL && edge->getGraph() == this) {
-		uint pseudoId = PseudoEdge::computeId(edge->getSrcNode(), edge->getDstNode());
-		if (pseudoEdges.contains(pseudoId)) {
-			pseudoEdges.value(pseudoId)->setReal(false);
-		} else {
-			qWarning() << "[removeEdge] Inconsistent pseudoedge ID!";
-		}
-
 		edges.remove(edge->getId());
 		edgesByType.remove(edge->getType()->getId(), edge);
 		delete edge;
@@ -193,4 +171,13 @@ void Graph::removeType(Type* type) {
 		removeAllNodesOfType(type);
 	}
 	qDebug() << "Type removed";
+}
+
+bool Graph::areIncident(Node* u, Node* v) const {
+	if (u == NULL || v == NULL)
+		return false;
+	if (u->getEdges()->size() <= v->getEdges()->size())
+		return u->getEdgeTo(v) != NULL;
+	else
+		return v->getEdgeTo(u) != NULL;
 }
