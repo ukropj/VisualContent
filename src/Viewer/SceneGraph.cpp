@@ -2,13 +2,19 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
-#include "Viewer/OsgFrame.h"
+#include "Viewer/ControlFrame.h"
 #include "Viewer/SkyTransform.h"
 #include "Viewer/WidgetContent.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
 #include "Model/Graph.h"
+
+#include "Viewer/DataMapping.h"
+#include "Model/Node.h"
+#include "Model/Edge.h"
+#include "Model/Type.h"
+#include "Window/DataMappingDialog.h"
 
 #include <osg/Geode>
 #include <osg/Node>
@@ -80,7 +86,7 @@ void SceneGraph::reload(Model::Graph* newGraph, QProgressDialog* progressBar) {
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
-	nodeFrame = new OsgFrame;
+	controlFrame = new ControlFrame(this);
 
     osg::Camera* hudCamera = new osg::Camera;
     hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
@@ -89,7 +95,7 @@ osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
     hudCamera->setRenderOrder(osg::Camera::POST_RENDER);
     hudCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
 
-	hudCamera->addChild(nodeFrame);
+	hudCamera->addChild(controlFrame);
 	return hudCamera;
 }
 
@@ -145,12 +151,13 @@ osg::ref_ptr<osg::Group> SceneGraph::getRoot() const {
 	return root;
 }
 
-osg::ref_ptr<OsgFrame> SceneGraph::getNodeFrame() const{
-	return nodeFrame;
+osg::ref_ptr<ControlFrame> SceneGraph::getNodeFrame() const{
+	return controlFrame;
 }
 
 
 void SceneGraph::update(bool forceIdeal) {
+//	qDebug() << "SE Updating";
 	if (graph == NULL || sceneElements == NULL)
 		return;
 
@@ -162,7 +169,7 @@ void SceneGraph::update(bool forceIdeal) {
 		sceneElements->updateNodes(interpolationSpeed);
 	}
 	sceneElements->updateEdges();
-	nodeFrame->updateGeometry();
+	controlFrame->updateGeometry();
 }
 
 void SceneGraph::setNodeLabelsVisible(bool visible) {
@@ -175,7 +182,7 @@ void SceneGraph::setNodeLabelsVisible(bool visible) {
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
-
+	// TODO
 }
 
 void SceneGraph::toggleFixedNodes(QList<OsgNode* > nodes) {
@@ -209,6 +216,34 @@ void SceneGraph::setFrozen(bool val) {
 		return;
 	}
 	graph->setFrozen(val);
+}
+
+void SceneGraph::setDataMapping() {
+	QMap<qlonglong, DataMapping*> mapping;
+	QList<Model::Type*> types = graph->getTypes()->values();
+	if (types.size() > 0) {
+		QListIterator<Model::Type*> ti(types);
+		while (ti.hasNext()) {
+			Model::Type* type = ti.next();
+			mapping.insert(type->getId(), new DataMapping());
+		}
+
+		Window::DataMappingDialog* dialog =
+				new Window::DataMappingDialog(types, &mapping, QApplication::activeWindow());
+		dialog->exec(); // XXX
+		delete dialog;
+
+		QListIterator<OsgNode* > i(sceneElements->getNodes());
+		while (i.hasNext()) {
+			OsgNode* node = i.next();
+			node->setDataMapping(mapping.value(node->getNode()->getType()->getId()));
+		}
+		QListIterator<OsgEdge* > j(sceneElements->getEdges());
+		while (j.hasNext()) {
+			OsgEdge* edge = j.next();
+			edge->setDataMapping(mapping.value(edge->getEdge()->getType()->getId()));
+		}
+	}
 }
 
 void SceneGraph::createExperiment() {

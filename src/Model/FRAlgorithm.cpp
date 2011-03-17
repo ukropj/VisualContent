@@ -1,7 +1,6 @@
 #include "Model/FRAlgorithm.h"
 #include "Model/Edge.h"
 #include "Model/Node.h"
-#include "Model/Type.h"
 #include "Model/Graph.h"
 #include "Window/CoreWindow.h"
 #include "Util/Config.h"
@@ -47,7 +46,6 @@ void FRAlgorithm::setGraph(Graph *newGraph) {
 		QThread::msleep(100);
 		state = PAUSED;
 	}
-
 	if (graph != NULL)
 		delete graph; // old graph deleted
 	graph = newGraph;
@@ -83,10 +81,10 @@ void FRAlgorithm::randomize() {
 		state = PAUSED;
 	}
 
-	for (NodeIt i = graph->getNodes()->constBegin(); i
-			!= graph->getNodes()->constEnd(); ++i) {
+	QMap<qlonglong, Node*>* nodes = graph->getNodes();
+	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
 		Node* node = i.value();
-		if (!node->isFixed()) {
+		if (!node->isFixed() && !node->isIgnored()) {
 			osg::Vec3f randPos = getRandomLocation();
 			node->setPosition(randPos);
 		}
@@ -185,7 +183,8 @@ void FRAlgorithm::run() {
 void FRAlgorithm::resetNodes() {
 	QMap<qlonglong, Node*>* nodes = graph->getNodes();
 	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
-		i.value()->resetVelocity(); // reset velocity
+		Node* n = i.value();
+		n->resetVelocity(); // reset velocity
 	}
 	// helps to reduce oscillations when this is NOT reseted
 	// for each individual node in applyForces as before
@@ -201,9 +200,12 @@ bool FRAlgorithm::iterate() {
 
 	for (NodeIt ui = nodes->constBegin(); ui != nodes->constEnd(); ++ui) {
 		Node* u = ui.value();
-		for (NodeIt vi = ui+1; vi != nodes->constEnd(); ++vi) {
-			Node* v = vi.value();
-			addForces(u, v, graph->areIncident(u, v));
+		if (!u->isIgnored()) {
+			for (NodeIt vi = ui+1; vi != nodes->constEnd(); ++vi) {
+				Node* v = vi.value();
+				if (!v->isIgnored())
+					addForces(u, v, u->getEdgeTo(v));
+			}
 		}
 	}
 
@@ -211,14 +213,11 @@ bool FRAlgorithm::iterate() {
 		return true;
 
 	// apply accumulated forces to nodes
-	for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
-		Node* u = i.value();
-		if (!u->isFrozen() && !u->isFixed()) {
-//			last = u->getPosition();
+	for (NodeIt ui = nodes->constBegin(); ui != nodes->constEnd(); ++ui) {
+		Node* u = ui.value();
+		if (!u->isFrozen() && !u->isFixed() && !u->isIgnored()) {
 			bool fo = applyForces(u);
 			changed = changed || fo;
-//			if (fo)
-//				qDebug() << "delta: " << ((last - u->getPosition()).length());
 		}
 	}
 
@@ -241,19 +240,19 @@ bool FRAlgorithm::applyForces(Node* node) {
 			fv.normalize();
 			fv *= MAX_MOVEMENT;
 		}
+
 		// ulozime novu polohu
 		node->setPosition(node->getPosition() + fv);
 		// energeticka strata = 1-flexibilita
 		fv *= flexibility;
 		node->setVelocity(fv); // ulozime novu rychlost
-
 		return true;
 	} else {
 		return false;
 	}
 }
 
-void FRAlgorithm::addForces(Node* u, Node* v, bool isEdge) {
+void FRAlgorithm::addForces(Node* u, Node* v, Edge* e) {
 	osg::Vec3f fv(0, 0, 0);
 	float ideal = K;								// desired distance
 
@@ -270,8 +269,12 @@ void FRAlgorithm::addForces(Node* u, Node* v, bool isEdge) {
 
 	osg::Vec3f vec = getVector(u, v);
 	float dist = vec.normalize();					// distance between nodes
-	float attrF = isEdge ? attr(dist, ideal) : 0;	// attractive force (only if nodes are connected by edge)
-	float replF = rep(dist, ideal);					// repulsive force (always)
+	float attrF = 0;
+	if (e != NULL && !e->isIgnored()) {
+		attrF = attr(dist, ideal) * e->getWeight();	// attractive force (only if nodes are connected by edge)
+	}
+	float replF = rep(dist, ideal) * (u->getWeight() + v->getWeight()) / 2.0f;
+													// repulsive force (always)
 	fv += vec * (attrF + replF);			// add standard forces
 
 	u->addForce(fv);
@@ -312,7 +315,7 @@ float FRAlgorithm::getMinProjDistance(Node* u, Node* v, osg::Vec3f pv) {
 		return 0;
 	Vwr::OsgNode* ou = u->getOsgNode();
 	Vwr::OsgNode* ov = v->getOsgNode();
-	double angle = acos(Util::CameraHelper::getUp() * pv);
+//	double angle = acos(Util::CameraHelper::getUp() * pv);
 	float ideal = ou->getRadius() + ov->getRadius() + M;
 //	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
 //			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;

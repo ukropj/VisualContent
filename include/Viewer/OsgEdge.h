@@ -16,7 +16,7 @@
 #include <osgText/Text>
 #include <osgText/FadeText>
 
-#include "Viewer/OsgProperty.h"
+#include "Viewer/DataMapping.h"
 
 namespace Model {
 class Edge;
@@ -25,7 +25,7 @@ class Edge;
 namespace Vwr {
 
 class OsgEdge {
-	// OsgEdge is not Geode any more (for performance reasons),
+	// OsgEdge is not Geode (for performance reasons),
 	// just an empty shell that provides all data by getEdgeData and renders nothing
 public:
 
@@ -33,15 +33,17 @@ public:
 		ORIENTED, UNORIENTED, ENDPOINT
 	};
 
-	OsgEdge(Model::Edge* edge, OsgProperty* property);
+	OsgEdge(Model::Edge* edge, DataMapping* dataMapping = NULL);
 	~OsgEdge();
 
-	QString getPropertyValue(OsgProperty::ValueType prop);
+	void setDataMapping(DataMapping* dataMapping = NULL);
+	QString getMappingValue(DataMapping::ValueType prop);
 	void updateGeometry();
 	void getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
 			osg::Vec2Array> textureCoords, osg::ref_ptr<
 					osg::Vec4Array> colors);
 
+	Model::Edge* getEdge() const {return edge;}
 	bool isOriented();
 	QString toString() const;
 
@@ -61,6 +63,14 @@ public:
 		selected = val;
 	}
 
+	void setVisible(bool flag) {
+		visible = flag;
+	}
+
+	bool isVisible() const {
+		return visible;
+	}
+
 	void showLabel(bool visible);
 
 	static osg::ref_ptr<osg::StateSet> createStateSet(StateSetType type);
@@ -68,13 +78,15 @@ public:
 private:
 
 	Model::Edge* edge;
-	OsgProperty* property;
+	DataMapping* mapping;
 
 	bool selected;
 	bool oriented;
+	bool visible;
 
 	osg::ref_ptr<osgText::FadeText> label;
 	osg::Vec4 edgeColor;
+	osg::Vec4 selectedColor;
 
 	osg::ref_ptr<osg::Vec3Array> edgeCoords;
 	osg::ref_ptr<osg::Vec2Array> edgeTexCoords;

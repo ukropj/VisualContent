@@ -16,29 +16,39 @@
 
 using namespace Vwr;
 
-OsgEdge::OsgEdge(Model::Edge* edge, OsgProperty* property) {
+OsgEdge::OsgEdge(Model::Edge* edge, DataMapping* dataMapping) {
 
 	if (edge == NULL) qWarning() << "NULL reference to Edge in OsgEdge!";
 	this->edge = edge;
-	this->property = property;
+	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
+	visible = true;
 
 	edgeCoords = new osg::Vec3Array(4);
 	edgeTexCoords = new osg::Vec2Array(4);
 //	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
-	oriented = getPropertyValue(OsgProperty::DIRECTION) == "true";
+	oriented = getMappingValue(DataMapping::DIRECTION) == "true";
 
-	label = createLabel(getPropertyValue(OsgProperty::LABEL));
+	label = createLabel(getMappingValue(DataMapping::LABEL));
 
-	setColor(property->getColor(getPropertyValue(OsgProperty::COLOR)));
+	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
+	selectedColor = Util::Config::getColorF("Viewer.Selected.Color");
 }
 
 OsgEdge::~OsgEdge() {
 	edge = NULL;
 }
 
-QString OsgEdge::getPropertyValue(OsgProperty::ValueType prop) {
-	return edge->data(property->getMapping(prop));
+void OsgEdge::setDataMapping(DataMapping* dataMapping) {
+	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
+	// change label
+	label->setText(getMappingValue(DataMapping::LABEL).toStdString());
+	// change color
+	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
+}
+
+QString OsgEdge::getMappingValue(DataMapping::ValueType prop) {
+	return edge->data(mapping->getMapping(prop));
 }
 
 void OsgEdge::updateGeometry() {
@@ -67,7 +77,7 @@ void OsgEdge::updateGeometry() {
 
 	int repeatCnt = edgeDir.length() / (2 * scale);
 	if (!oriented)
-			repeatCnt = 1;
+		repeatCnt = 1;
 
 	(*edgeTexCoords)[0].set(0.0f, 1.0f);
 	(*edgeTexCoords)[1].set(0.0f, 0.0f);
@@ -80,29 +90,32 @@ void OsgEdge::updateGeometry() {
 void OsgEdge::getEdgeData(osg::ref_ptr<osg::Vec3Array> coords, osg::ref_ptr<
 		osg::Vec2Array> texCoords, osg::ref_ptr<osg::Vec4Array> colors) {
 
-	updateGeometry();
-
-	for (int i = 0; i < 4; i++) {
-		coords->push_back((*edgeCoords)[i]);
-		texCoords->push_back((*edgeTexCoords)[i]);
+	if (isVisible()) {
+		updateGeometry();
+		for (int i = 0; i < 4; i++) {
+			coords->push_back((*edgeCoords)[i]);
+			texCoords->push_back((*edgeTexCoords)[i]);
+		}
+	} else {
+		for (int i = 0; i < 4; i++) {
+			coords->push_back(osg::Vec3f(0,0,0));
+			texCoords->push_back(osg::Vec2f(0,0));
+		}
 	}
-
-	osg::Vec4f defaultColor = getEdgeColor();
-	osg::Vec4f selectedColor = Util::Config::getColorF("Viewer.Selected.Color");
 
 	if (edge->getSrcNode()->getOsgNode()->isSelected()) {
 		colors->push_back(selectedColor);
 		colors->push_back(selectedColor);
 	} else {
-		colors->push_back(defaultColor);
-		colors->push_back(defaultColor);
+		colors->push_back(edgeColor);
+		colors->push_back(edgeColor);
 	}
 	if (edge->getDstNode()->getOsgNode()->isSelected()) {
 		colors->push_back(selectedColor);
 		colors->push_back(selectedColor);
 	} else {
-		colors->push_back(defaultColor);
-		colors->push_back(defaultColor);
+		colors->push_back(edgeColor);
+		colors->push_back(edgeColor);
 	}
 }
 

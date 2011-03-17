@@ -32,12 +32,13 @@ class Node {
 public:
 
 	Node(qlonglong id, Type* type, QMap<QString, QString>* data, Graph* graph);
-	~Node(void);
+	~Node();
 
 	void addEdge(Edge* edge);
 	void removeEdge(Edge* edge);
+	void removeAllEdges();
 	Edge* getEdgeTo(const Node* otherNode) const;
-	QSet<Node*> getIncidentNodes() const;
+	QList<Node*> getIncidentNodes() const;
 
 	qlonglong getId() const {
 		return id;
@@ -59,6 +60,10 @@ public:
 
 	void setPosition(osg::Vec3f pos) {
 		position.set(pos);
+	}
+
+	float getWeight() {
+		return weight;
 	}
 
 	QMap<qlonglong, Edge*>* getEdges() {
@@ -129,7 +134,7 @@ public:
 
 	QString toString() const {
 		QString str;
-		QTextStream(&str) << "N" << id << " " << getId() << "[" << position.x()
+		QTextStream(&str) << "N" << getId() << " [" << position.x()
 				<< "," << position.y() << "," << position.z() << "]"
 				<< (isFixed() ? "fixed" : "");
 		return str;
@@ -140,6 +145,13 @@ public:
 	Vwr::OsgNode* getOsgNode() const {
 		return osgNode;
 	}
+
+	void setParent(Node* parent);
+	Node* getParent() const { return parent;}
+	QListIterator<Node*> getChildrenIterator() const { return QListIterator<Node*>(children);}
+
+protected:
+	float weight;
 
 private:
 
@@ -157,6 +169,9 @@ private:
 	bool fixed;
 	bool frozen;
 	bool ignore;
+
+	Node* parent;
+	QList<Node*> children;
 
 };
 }

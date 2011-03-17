@@ -1,5 +1,5 @@
 /*
- * OsgFrame.cpp
+ * ControlFrame.cpp
  *
  *  Created on: 29.11.2010
  *      Author: jakub
@@ -39,15 +39,15 @@ const osg::BoundingBox& OsgContent::getBoundingBox() const {
 		return (new osg::Geode)->getBoundingBox();
 }
 
-OsgContent* ContentFactory::createContent(OsgProperty::ContentType type, QString data) {
+OsgContent* ContentFactory::createContent(DataMapping::ContentType type, QString data) {
 	switch (type) {
-	case OsgProperty::IMAGE :
+	case DataMapping::IMAGE :
 		return new ImageContent(data);
-	case OsgProperty::TEXT :
+	case DataMapping::TEXT :
 		return new TextContent(data);
 		// TODO other content, validation ?
-	case OsgProperty::RANDOM :
-	case OsgProperty::NO_CONTENT :
+	case DataMapping::RANDOM :
+	case DataMapping::NO_CONTENT :
 	default :
 		// generate random content
 		QString path = QString("img/pic%1.jpg").arg((qrand() % 11) + 1);

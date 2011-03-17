@@ -9,7 +9,7 @@
 #define OSGNODE_H_
 
 #include "Viewer/AbstractNode.h"
-#include "Viewer/OsgProperty.h"
+#include "Viewer/DataMapping.h"
 
 #include <QMap>
 #include <QString>
@@ -34,13 +34,14 @@ namespace Vwr {
 class OsgContent;
 class AbstractVisitor;
 
-class OsgNode: public osg::Switch, public AbstractNode {
+class OsgNode: public osg::AutoTransform, public AbstractNode {
 public:
 
-	OsgNode(Model::Node* node, OsgProperty* property, osg::AutoTransform* nodeTransform);
+	OsgNode(Model::Node* node, DataMapping* dataMapping = NULL);
 	~OsgNode();
 
-	QString getPropertyValue(OsgProperty::ValueType prop);
+	void setDataMapping(DataMapping* dataMapping = NULL);
+	QString getMappingValue(DataMapping::ValueType prop);
 	QSet<AbstractNode*> getIncidentNodes();
 
 	osg::Vec3f getPosition() const;
@@ -51,16 +52,20 @@ public:
 	osg::Vec3f getSize() const;
 	float getRadius() const;
 
-	bool setFixed(bool flag);
+	void setFixed(bool flag);
 	bool isFixed() const;
 	void setFrozen(bool flag);
 	bool isFrozen() const;
-	bool setSelected(bool flag);
+	void setSelected(bool flag);
 	bool isSelected() const;
-	bool setExpanded(bool flag);
+	void setExpanded(bool flag);
 	bool isExpanded() const;
 
+	void setVisible(bool flag);
+	bool isVisible() const;
+
 	bool isPickable(osg::Geode* geode) const;
+	void setPickable(bool flag) {pickable = flag;}
 	bool isResizable(osg::Geode* geode) const;
 
 	void acceptVisitor(AbstractVisitor* visitor);
@@ -68,35 +73,22 @@ public:
 	QString toString() const;
 
 	void setColor(osg::Vec4 color);
-	osg::Vec4 getColor() const {
-		return color;
-	}
-
+	osg::Vec4 getColor() const {return color;}
 	void showLabel(bool visible);
 
-	bool isUsingInterpolation() const {
-		return usingInterpolation;
-	}
-
-	void setUsingInterpolation(bool val) {
-		usingInterpolation = val;
-	}
-
+	bool isUsingInterpolation() const {return usingInterpolation;}
+	void setUsingInterpolation(bool val) {usingInterpolation = val;}
 	void reloadConfig();
 
 	bool isOnScreen() const;
-
 	static bool mayOverlap(OsgNode* u, OsgNode* v);
-
 	float getDistanceToEdge(double angle) const;
-
-	void setPickable(bool flag) {
-		pickable = flag;
-	}
 
 	bool equals(OsgNode* other) const;
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
+
+	Model::Node* getNode() const {return node;}
 
 private:
 
@@ -112,6 +104,7 @@ private:
 	bool pickable;
 	bool expanded;
 	float maxScale;
+	bool visible;
 
 	void setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 			osg::Vec4 color);
@@ -132,24 +125,21 @@ private:
 
 	osg::Vec4 color;
 
-	osg::AutoTransform* nodeTransform;
-
 	osg::ref_ptr<osg::Geode> frameG;
 
 	osg::ref_ptr<osg::Geode> label;
-	static osg::ref_ptr<osg::Geode> fixedG;
+	osg::ref_ptr<osg::Geode> fixedG;
 
+	osg::ref_ptr<osg::Switch> contentSwitch;
 	osg::ref_ptr<osg::Geode> closedG;
-	osg::ref_ptr<OsgContent> contentG;
+	osg::ref_ptr<OsgContent> visualContent;
 
-	OsgProperty* property;
+	DataMapping* mapping;
 
 	// constants
-
-//	static const osg::Vec4 fixedColor;
+	static uint NODE_ON;
+	static uint NODE_OFF;
 };
 }
-
-//const osg::Vec4 OsgNode::fixedColor;
 
 #endif /* OSGNODE_H_ */

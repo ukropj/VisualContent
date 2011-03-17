@@ -10,14 +10,15 @@
 using namespace Model;
 
 Graph::Graph(QString name, qlonglong ele_id_counter) {
-	qDebug() << "Graph created " << name;
+//	qDebug() << "Graph created " << name;
 	this->name = name;
 	this->ele_id_counter = ele_id_counter;
 	frozen = false;
 }
 
 Graph::~Graph() {
-	qDeleteAll(nodes); // NOTE: deleting nodes will also delete edges
+	qDeleteAll(edges); // edges must be deleted before nodes (see ~Edge())
+	qDeleteAll(nodes);
 	qDeleteAll(types);
 
 	nodesByType.clear();
@@ -57,8 +58,8 @@ Edge* Graph::addEdge(Node* srcNode, Node* dstNode, Type* type, QMap<QString, QSt
 		return NULL;
 	}
 	if (areIncident(srcNode, dstNode)) {
-		qWarning() << "Edge between " << srcNode->toString() << " and "
-				<< dstNode->toString() << "already exists!";
+		//qWarning() << "Edge between " << srcNode->toString() << " and "
+		//		<< dstNode->toString() << "already exists!";
 		return NULL;
 	}
 
@@ -137,8 +138,8 @@ void Graph::removeAllNodesOfType(Type* type) {
 	nodesToKill = nodesByType.values(type->getId());
 
 	if (!nodesToKill.isEmpty()) {
-		for (qlonglong i = 0; i < nodesToKill.size(); i++) { //prejdeme kazdy jeden uzol
-			this->removeNode(nodesToKill.at(i));
+		for (qlonglong i = 0; i < nodesToKill.size(); i++) {
+			removeNode(nodesToKill.at(i));
 		}
 		nodesToKill.clear();
 	}
@@ -146,6 +147,12 @@ void Graph::removeAllNodesOfType(Type* type) {
 
 void Graph::removeNode(Node* node) {
 	if (node != NULL && node->getGraph() == this) {
+		QList<Edge*> edgesToKill = node->getEdges()->values();
+		node->removeAllEdges();
+		qDebug() << edgesToKill.size();
+		for (qlonglong i = 0; i < edgesToKill.size(); i++) {
+			removeEdge(edgesToKill.at(i));
+		}
 		nodes.remove(node->getId());
 		nodesByType.remove(node->getType()->getId(), node);
 		delete node;
@@ -165,9 +172,7 @@ void Graph::removeType(Type* type) {
 		types.remove(type->getId());
 		typesByName.remove(type->getName());
 
-		//vymazeme vsetky hrany daneho typu
 		removeAllEdgesOfType(type);
-		//vymazeme vsetky uzly daneho typu
 		removeAllNodesOfType(type);
 	}
 	qDebug() << "Type removed";
@@ -176,8 +181,29 @@ void Graph::removeType(Type* type) {
 bool Graph::areIncident(Node* u, Node* v) const {
 	if (u == NULL || v == NULL)
 		return false;
+	Edge* e;
 	if (u->getEdges()->size() <= v->getEdges()->size())
-		return u->getEdgeTo(v) != NULL;
+		e = u->getEdgeTo(v);
 	else
-		return v->getEdgeTo(u) != NULL;
+		e = v->getEdgeTo(u);
+	return e != NULL && !e->isIgnored();
+}
+
+void Graph::cluster() {
+	// TODO implement
+	/*Type* clusterType = typesByName.value("node");
+	Type* edgeType = typesByName.value("edge");
+	int size = nodes.size();
+	for (qlonglong i = 0; i < nodes.size(); i++) {
+		Node* n = nodes.at(i);
+		if (n->getEdges()->size() == 1) {
+			Node* u = u->getIncidentNodes().at(0);
+			QList<Node*> nghbrs = u->getIncidentNodes();
+			for(QList<Node*>::const_iterator i = nghbrs.constBegin(); i != nghbrs.constEnd(); ++i) {
+				if ((*i)->getEdges()->size() == 1) {
+					(*i)->setParent(u);
+				}
+			}
+		}
+	}*/
 }

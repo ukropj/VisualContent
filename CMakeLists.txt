@@ -101,7 +101,7 @@ SET(SOURCES_H
 	./include/Viewer/PickHandler.h
 	./include/Viewer/AbstractNode.h
 	./include/Viewer/OsgNodeGroup.h
-	./include/Viewer/OsgFrame.h
+	./include/Viewer/ControlFrame.h
 )
 
 # toto makro spracuje Q_OBJECT a vygeneruje novy cpp subor, ktory bude dostupny v ${SOURCES_H_MOC} premennej

@@ -25,20 +25,19 @@ Edge::Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
 	dstNode->addEdge(this);
 	srcNode->addEdge(this);
 	this->edgeData = data ? data : new QMap<QString, QString>();
+	ignore = false;
+	weight = 1;
 }
 
 Edge::~Edge(void) {
+	// don't delete edge directly, use Graph::removeEdge()
 	graph = NULL;
-	if (srcNode != NULL) {
-		srcNode->removeEdge(this);
-		srcNode = NULL;
-	}
-	if (dstNode != NULL) {
-		dstNode->removeEdge(this);
-		dstNode = NULL;
-	}
+	srcNode->removeEdge(this);
+	srcNode = NULL;
+	dstNode->removeEdge(this);
+	dstNode = NULL;
 	type = NULL;
-//	osgEdge = NULL;
+//	qDebug() << "edge removed";
 }
 
 Node* Edge::getOtherNode(const Model::Node* node) const {
@@ -46,7 +45,7 @@ Node* Edge::getOtherNode(const Model::Node* node) const {
 		return NULL;
 	if (node->getId() == srcNode->getId())
 		return dstNode;
-	else if (node->getId() == dstNode->getId())
+	if (node->getId() == dstNode->getId())
 		return srcNode;
 //	qWarning() << "Node not incident to this edge";
 	return NULL;

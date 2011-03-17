@@ -26,6 +26,7 @@ class Config;
 namespace Model {
 class Graph;
 class Node;
+class Edge;
 /**
  *  \class FRAlgorithm
  *  \brief Object represents Fruchterman-Reingold layout algorithm
@@ -227,7 +228,7 @@ private:
 	 */
 	bool iterate();
 
-	void addForces(Node* u, Node* v, bool isEdge);
+	void addForces(Node* u, Node* v, Edge* e);
 
 	osg::Vec3f getVector(Node* u, Node* v);
 	osg::Vec3f getProjVector(Node* u, Node* v);

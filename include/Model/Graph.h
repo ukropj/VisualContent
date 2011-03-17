@@ -208,6 +208,8 @@ public:
 	 */
 	QString toString() const;
 
+	void cluster();
+
 private:
 
 	/**

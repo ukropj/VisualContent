@@ -12,23 +12,23 @@
 using namespace Window;
 using namespace Vwr;
 
-DataMappingDialog::DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, OsgProperty*>* propertyMap,
+DataMappingDialog::DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, DataMapping*>* propertyMap,
 		QWidget* parent) : QDialog(parent) {
 	setWindowTitle(tr("Data Mapping"));
 	setModal(true);
 	this->types = types;
 	this->propertyMap = propertyMap;
 
-	contentTypes = OsgProperty::getContentTypes();
-	valueTypes = OsgProperty::getValueTypes();
+	contentTypes = DataMapping::getContentTypes();
+	valueTypes = DataMapping::getValueTypes();
 	createControls();
 }
 
 void DataMappingDialog::createControls() {
 	QStringList typeNames;
-	QListIterator<OsgProperty::ContentType> cti(contentTypes);
+	QListIterator<DataMapping::ContentType> cti(contentTypes);
 	while (cti.hasNext()) {
-		typeNames.append(OsgProperty::contentTypeToString(cti.next()));
+		typeNames.append(DataMapping::contentTypeToString(cti.next()));
 	}
 	QTabWidget* tabWidget = new QTabWidget;
 
@@ -42,15 +42,15 @@ void DataMappingDialog::createControls() {
 		QGridLayout* tabLayout = new QGridLayout;
 		tabLayout->setSizeConstraint(QLayout::SetFixedSize);
 
-		QListIterator<OsgProperty::ValueType> vi(valueTypes);
+		QListIterator<DataMapping::ValueType> vi(valueTypes);
 		int i = 0;
 		while (vi.hasNext()) {
-			OsgProperty::ValueType val = vi.next();
-			OsgProperty::PropertyType propType = OsgProperty::getPropertyType(val);
-			if (propType == OsgProperty::ALL ||
-					(type->isEdgeType() && propType == OsgProperty::EDGE) ||
-					(!type->isEdgeType() && propType == OsgProperty::NODE)) {
-				QLabel* keyLabel = new QLabel(OsgProperty::propertyTypeToString(val));
+			DataMapping::ValueType val = vi.next();
+			DataMapping::PropertyType propType = DataMapping::getPropertyType(val);
+			if (propType == DataMapping::ALL ||
+					(type->isEdgeType() && propType == DataMapping::EDGE) ||
+					(!type->isEdgeType() && propType == DataMapping::NODE)) {
+				QLabel* keyLabel = new QLabel(DataMapping::propertyTypeToString(val));
 				QComboBox* keySelector = new QComboBox();
 				keySelector->insertItems(0, QStringList(keys));
 				keySelector->setFont(QFont("Courier"));
@@ -100,9 +100,9 @@ void DataMappingDialog::keySelected(int index) {
 	Model::Type* type = types.at(cbIndex / valueTypes.size());
 	QString key = comboBox->itemText(index);
 
-	OsgProperty::ValueType prop = valueTypes.at(cbIndex % valueTypes.size());
+	DataMapping::ValueType prop = valueTypes.at(cbIndex % valueTypes.size());
 
-	OsgProperty* p = propertyMap->value(type->getId());
+	DataMapping* p = propertyMap->value(type->getId());
 
 	if (index > 0) {
 		p->insertMapping(prop, key);
@@ -110,7 +110,7 @@ void DataMappingDialog::keySelected(int index) {
 		p->insertMapping(prop, "");
 	}
 	qDebug() << "Mapped " << type->getName() << ": " <<
-			OsgProperty::propertyTypeToString(prop) << " -> " << key;
+			DataMapping::propertyTypeToString(prop) << " -> " << key;
 }
 
 void DataMappingDialog::typeSelected(int index) {
@@ -119,12 +119,12 @@ void DataMappingDialog::typeSelected(int index) {
 	int cbIndex = typeSelectors.indexOf(comboBox);
 	Model::Type* type = types.at(cbIndex);
 
-	OsgProperty::ContentType contentType = contentTypes.at(index);
+	DataMapping::ContentType contentType = contentTypes.at(index);
 
-	OsgProperty* p = propertyMap->value(type->getId());
+	DataMapping* p = propertyMap->value(type->getId());
 
 	p->setContentType(contentType);
 
 	qDebug() << "Mapped " << type->getName() << ": " <<
-			"Content Type" << " -> " << OsgProperty::contentTypeToString(contentType);
+			"Content Type" << " -> " << DataMapping::contentTypeToString(contentType);
 }

@@ -41,14 +41,17 @@ public:
 	osg::Vec3f getSize() const;
 	void updateSizeAndPos();
 
-	bool setFixed(bool flag);
+	void setFixed(bool flag);
 	bool isFixed() const;
 	void setFrozen(bool flag);
 	bool isFrozen() const;
-	bool setSelected(bool flag);
+	void setSelected(bool flag);
 	bool isSelected() const;
-	bool setExpanded(bool flag);
+	void setExpanded(bool flag);
 	bool isExpanded() const;
+
+	void setVisible(bool flag) {}
+	bool isVisible() const {return true;}
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 

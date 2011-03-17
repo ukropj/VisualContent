@@ -15,9 +15,6 @@ ExpanderVisitor::ExpanderVisitor(bool isExpanding) {
 	this->isExpanding = isExpanding;
 }
 
-ExpanderVisitor::~ExpanderVisitor() {
-}
-
 void ExpanderVisitor::visitNode(AbstractNode* node) {
 	visited.insert(node);
 	if (node->isExpanded() != isExpanding) {
@@ -30,7 +27,7 @@ void ExpanderVisitor::visitNode(AbstractNode* node) {
 			if (!visited.contains((*i))) {
 				(*i)->acceptVisitor(this);
 			}
-			i++;
+			++i;
 		}
 	}
 }

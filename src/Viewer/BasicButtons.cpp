@@ -6,20 +6,22 @@
  */
 
 #include "Viewer/BasicButtons.h"
-#include "Viewer/OsgFrame.h"
+#include "Viewer/ControlFrame.h"
 #include "Viewer/AbstractNode.h"
+#include "Viewer/SceneGraph.h"
 #include "Viewer/Visitors.h"
+#include "Viewer/OsgCluster.h"
 #include "Util/CameraHelper.h"
 #include <QApplication>
 
 using namespace Vwr;
 
-NullButton::NullButton(OsgFrame* parentFrame) : FrameButton(parentFrame) {
+NullButton::NullButton(ControlFrame* parentFrame) : FrameButton(parentFrame) {
 	setName("null_button");
 }
 
 
-MoveButton::MoveButton(OsgFrame* parentFrame, osg::Vec3f pos)
+MoveButton::MoveButton(ControlFrame* parentFrame, osg::Vec3f pos)
 	: FrameButton(parentFrame, pos, "img/texture/b_move.png") {
 	setName("move_button");
 }
@@ -41,8 +43,7 @@ void MoveButton::activate() {
 void MoveButton::deactivate() {
 }
 
-
-ResizeButton::ResizeButton(OsgFrame* parentFrame, osg::Vec3f pos)
+ResizeButton::ResizeButton(ControlFrame* parentFrame, osg::Vec3f pos)
 	: FrameButton(parentFrame, pos, "img/texture/b_resize.png") {
 	setName("resize_button");
 }
@@ -66,7 +67,7 @@ void ResizeButton::deactivate() {
 }
 
 
-HideButton::HideButton(OsgFrame* parentFrame, osg::Vec3f pos)
+HideButton::HideButton(ControlFrame* parentFrame, osg::Vec3f pos)
 	: FrameButton(parentFrame, pos, "img/texture/b_hide.png") {
 	setName("hide_button");
 }
@@ -76,7 +77,7 @@ void HideButton::handlePush() {
 }
 
 
-FixButton::FixButton(OsgFrame* parentFrame, osg::Vec3f pos)
+FixButton::FixButton(ControlFrame* parentFrame, osg::Vec3f pos)
 	: FrameButton(parentFrame, pos, "img/texture/b_lock.png") {
 	setName("fix_button");
 }
@@ -86,7 +87,7 @@ void FixButton::handlePush() {
 }
 
 
-ExpandButton::ExpandButton(OsgFrame* parentFrame, osg::Vec3f pos)
+ExpandButton::ExpandButton(ControlFrame* parentFrame, osg::Vec3f pos)
 	: FrameButton(parentFrame, pos, "img/texture/b_expand.png") {
 	setName("expand_button");
 }
@@ -98,7 +99,7 @@ void ExpandButton::handlePush() {
 }
 
 
-CompactButton::CompactButton(OsgFrame* parentFrame, osg::Vec3f pos)
+CompactButton::CompactButton(ControlFrame* parentFrame, osg::Vec3f pos)
 	: FrameButton(parentFrame, pos, "img/texture/b_compact.png") {
 	setName("compact_button");
 }

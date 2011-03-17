@@ -14,12 +14,12 @@
 #include <QString>
 
 namespace Vwr {
-class OsgFrame;
+class ControlFrame;
 
 class FrameButton : public osg::Geode {
 public:
-	FrameButton(OsgFrame* parentFrame);
-	FrameButton(OsgFrame* parentFrame, osg::Vec3f pos, QString imagePath);
+	FrameButton(ControlFrame* parentFrame);
+	FrameButton(ControlFrame* parentFrame, osg::Vec3f pos, QString imagePath);
 	~FrameButton();
 
 	virtual void handlePush() {}
@@ -33,7 +33,7 @@ public:
 	virtual void activate() {}
 	virtual void deactivate() {}
 protected:
-	OsgFrame* frame;
+	ControlFrame* frame;
 };
 
 }

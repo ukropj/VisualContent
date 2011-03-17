@@ -28,7 +28,7 @@ namespace Vwr {
 class SceneElements;
 class OsgNode;
 class OsgEdge;
-class OsgFrame;
+class ControlFrame;
 
 class SceneGraph {
 public:
@@ -42,16 +42,18 @@ public:
 	void setUpdatingNodes(bool val);
 
 	osg::ref_ptr<osg::Group> getRoot() const;
-	osg::ref_ptr<OsgFrame> getNodeFrame() const;
+	osg::ref_ptr<ControlFrame> getNodeFrame() const;
 
 	void addPermanentNode(osg::ref_ptr<osg::Node> node);
-	void createExperiment();
 
 	void setEdgeLabelsVisible(bool visible);
 	void setNodeLabelsVisible(bool visible);
 	void toggleFixedNodes(QList<OsgNode* > nodes);
 	void setFrozen(bool val);
 
+	void setDataMapping();
+
+	void createExperiment();
 private:
 
 	int cleanUp();
@@ -61,7 +63,7 @@ private:
 	Model::Graph* graph;
 	Vwr::SceneElements* sceneElements;
 	osg::ref_ptr<osg::Group> root;
-	osg::ref_ptr<OsgFrame> nodeFrame;
+	osg::ref_ptr<ControlFrame> controlFrame;
 	osg::ref_ptr<osg::Group> specialNodes;
 
 	bool updateNodes;

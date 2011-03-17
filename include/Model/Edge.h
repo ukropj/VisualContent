@@ -59,9 +59,27 @@ public:
 		return graph;
 	}
 
+	void setIgnored(bool b) {
+		ignore = b;
+	}
+
+	bool isIgnored() const {
+		return ignore;
+	}
+
+	float getWeight() {
+		return weight;
+	}
+
+	void addWeight() {
+		weight += 1;
+	}
+
 private:
 	Graph* graph;
 	qlonglong id;
+	bool ignore;
+	float weight;
 
 	Node* srcNode;
 	Node* dstNode;

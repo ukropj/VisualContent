@@ -14,12 +14,12 @@ namespace Vwr {
 
 class NullButton : public FrameButton {
 public:
-	NullButton(OsgFrame* parentFrame);
+	NullButton(ControlFrame* parentFrame);
 };
 
 class MoveButton : public FrameButton {
 public:
-	MoveButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	MoveButton(ControlFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 	void handleDrag();
 	void handleRelease();
@@ -30,7 +30,7 @@ public:
 
 class ResizeButton : public FrameButton {
 public:
-	ResizeButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	ResizeButton(ControlFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 	void handleDrag();
 	void handleRelease();
@@ -41,25 +41,25 @@ public:
 
 class HideButton : public FrameButton {
 public:
-	HideButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	HideButton(ControlFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 };
 
 class FixButton : public FrameButton {
 public:
-	FixButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	FixButton(ControlFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 };
 
 class ExpandButton : public FrameButton {
 public:
-	ExpandButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	ExpandButton(ControlFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 };
 
 class CompactButton : public FrameButton {
 public:
-	CompactButton(OsgFrame* parentFrame, osg::Vec3f pos);
+	CompactButton(ControlFrame* parentFrame, osg::Vec3f pos);
 	void handlePush();
 };
 

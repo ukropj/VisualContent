@@ -24,7 +24,6 @@ class Type;
 namespace Vwr {
 class OsgEdge;
 class OsgNode;
-class OsgProperty;
 
 /**
  *  \class SceneElements 
@@ -44,6 +43,7 @@ public:
 
 	osg::Group* getElementsGroup();
 	QList<OsgNode* > getNodes();
+	QList<OsgEdge* > getEdges();
 
 private:
 	QSet<qlonglong> nodeIds;
@@ -55,16 +55,13 @@ private:
 	osg::ref_ptr<osg::Group> initNodes(QMap<qlonglong, Model::Node* > *nodes);
 	osg::ref_ptr<osg::Group> initEdges(QMap<qlonglong, Model::Edge* > *edges);
 
-	osg::ref_ptr<osg::AutoTransform> wrapNode(Model::Node* node);
+	osg::ref_ptr<OsgNode> wrapNode(Model::Node* node);
 
 	osg::ref_ptr<osg::Group> getNodeGroup1(Model::Node* node,
 			Model::Edge* parentEdge);
 	osg::ref_ptr<osg::Group> getNodeGroup2(Model::Node* firstNode);
 
 	osg::ref_ptr<osg::StateSet> createStateSet() const;
-
-	void createDataMapping(QList<Model::Type*> types);
-	QMap<qlonglong, OsgProperty*> properties;
 
 	osg::ref_ptr<osg::Geometry> edgesGeometry;
 	osg::ref_ptr<osg::Geometry> edgesOGeometry;

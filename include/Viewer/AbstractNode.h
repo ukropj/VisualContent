@@ -12,6 +12,7 @@
 #include <QSet>
 #include <osg/Vec3f>
 
+
 namespace Vwr {
 class AbstractVisitor;
 
@@ -32,14 +33,17 @@ public:
 	virtual void resize(float factor) = 0;
 	virtual osg::Vec3f getSize() const = 0;
 
-	virtual bool setFixed(bool flag) = 0;
+	virtual void setFixed(bool flag) = 0;
 	virtual bool isFixed() const = 0;
 	virtual void setFrozen(bool flag) = 0;
 	virtual bool isFrozen() const = 0;
-	virtual bool setSelected(bool flag) = 0;
+	virtual void setSelected(bool flag) = 0;
 	virtual bool isSelected() const = 0;
-	virtual bool setExpanded(bool flag) = 0;
+	virtual void setExpanded(bool flag) = 0;
 	virtual bool isExpanded() const = 0;
+
+	virtual void setVisible(bool flag) = 0;
+	virtual bool isVisible() const = 0;
 
 	virtual void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) = 0;
 

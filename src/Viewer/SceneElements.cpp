@@ -1,13 +1,10 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
-#include "Viewer/OsgProperty.h"
 #include "Model/Node.h"
 #include "Model/Edge.h"
-#include "Model/Type.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
-#include "Window/DataMappingDialog.h"
 
 #include <QDebug>
 #include <QApplication>
@@ -21,13 +18,6 @@ SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 		Edge*>* edges, QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar) {
 
 	pd = progressBar;
-//	if (pd != NULL)
-//		pd->hide();
-
-	properties.clear();
-	QApplication::restoreOverrideCursor();
-	createDataMapping(types->values());
-	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	elementsGroup = new osg::Group();
 	elementsGroup->setName("scene_elements");
@@ -59,6 +49,10 @@ QList<OsgNode* > SceneElements::getNodes() {
 	return nodes;
 }
 
+QList<OsgEdge* > SceneElements::getEdges() {
+	return edges;
+}
+
 osg::ref_ptr<osg::Group> SceneElements::initNodes(
 		QMap<qlonglong, Node*>* inNodes) {
 	osg::ref_ptr<osg::Group> nodeGroup = new osg::Group();
@@ -69,7 +63,6 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 	//		nodeGroup->getOrCreateStateSet()->setRenderBinDetails(100, "RenderBin");
 
 	QMapIterator<qlonglong, Node*> i(*inNodes);
-
 	while (i.hasNext()) {
 		i.next();
 		osg::ref_ptr<osg::Group> g;
@@ -80,47 +73,9 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 			nodeGroup->addChild(g);
 		}
 	}
+	nodeIds.clear();
 	return nodeGroup;
 }
-
-/*osg::ref_ptr<osg::Group> SceneElements::initNodes(QMap<qlonglong, Node*>* inNodes) {
-	osg::ref_ptr<osg::Group> allNodes = new osg::Group;
-	osg::ref_ptr<osg::Geode> nodeGeode = new osg::Geode();
-	nodeGeode->setName("nodes");
-	allNodes->addChild(nodeGeode);
-	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
-
-	nodesGeometry = new osg::Geometry();
-	osg::Vec4Array* colors = new osg::Vec4Array;
-
-	QMapIterator<qlonglong, Node*> i(*inNodes);
-	int index = 0;
-	while (i.hasNext()) {
-		if (pd != NULL)
-			pd->setValue(step++);
-		i.next();
-		OsgNode* osgNode = new OsgNode(i.value(), NULL);
-		nodes.append(osgNode);
-		nodesGeometry->addPrimitiveSet(new osg::DrawArrays(
-				osg::PrimitiveSet::QUADS, index, 4));
-		for (int i = 0; i < 4; i++)
-			colors->push_back(osg::Vec4f(0,0,0,1));
-		index += 4;
-	}
-
-	// TODO move to static method OsgNode::createStateSet();
-	osg::StateSet* ss = nodesGeometry->getOrCreateStateSet();
-	ss->setTextureAttributeAndModes(0,
-			Util::TextureWrapper::readTextureFromFile(Util::Config::getValue(
-			"Viewer.Textures.Node")), osg::StateAttribute::ON);
-//	nodesGeometry->setStateSet(ss);
-	nodesGeometry->setColorArray(colors);
-	// important: set color binding only after setting color arrays!
-	nodesGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-
-	nodeGeode->addDrawable(nodesGeometry);
-	return allNodes;
-}*/
 
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
@@ -143,7 +98,7 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		if (pd != NULL)
 			pd->setValue(step++);
 		Model::Edge* edge = i.next();
-		OsgEdge* osgEdge = new OsgEdge(edge, properties.value(edge->getType()->getId()));
+		OsgEdge* osgEdge = new OsgEdge(edge);
 		edges.append(osgEdge);
 		if (!osgEdge->isOriented()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
@@ -183,18 +138,17 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 		group = new osg::Group;
 		group->addChild(wrapNode(node));
 
-		QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
-		while (edgeI != node->getEdges()->end()) {
-			if (*edgeI != parentEdge) {
-				Node* otherNode = (*edgeI)->getOtherNode(node);
-				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup1(otherNode,
-						*edgeI);
+		QMap<qlonglong, Edge*>::const_iterator i = node->getEdges()->begin();
+		while (i != node->getEdges()->end()) {
+			Edge* e = *i;
+			if (e != parentEdge) {
+				Node* otherNode = e->getOtherNode(node);
+				osg::ref_ptr<osg::Group> nodeGroup = getNodeGroup1(otherNode, e);
 
 				if (nodeGroup != NULL)
 					group->addChild(nodeGroup);
 			}
-
-			edgeI++;
+			++i;
 		}
 	}
 	return group;
@@ -219,16 +173,16 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 			osg::ref_ptr<osg::Group> group = NULL;
 			Node* node = nodeList[i];
 
-			QMap<qlonglong, Edge*>::iterator edgeI = node->getEdges()->begin();
-			while (edgeI != node->getEdges()->end()) {
-				Node* otherNode = (*edgeI)->getOtherNode(node);
+			QMap<qlonglong, Edge*>::iterator ei = node->getEdges()->begin();
+			while (ei != node->getEdges()->end()) {
+				Node* otherNode = (*ei)->getOtherNode(node);
 				if (!nodeIds.contains(otherNode->getId())) {
 					if (group == NULL)
 						group = new osg::Group;
 					group->addChild(wrapNode(otherNode));
 					nodeList << otherNode;
 				}
-				++edgeI;
+				++ei;
 			}
 			if (group != NULL) {
 				if (uberGroup == NULL)
@@ -242,46 +196,27 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 	return nodeGroup;
 }
 
-osg::ref_ptr<osg::AutoTransform> SceneElements::wrapNode(Node* node) {
+osg::ref_ptr<OsgNode> SceneElements::wrapNode(Node* node) {
 	if (pd != NULL) {
 		pd->setValue(step++);
 	}
-	osg::ref_ptr<osg::AutoTransform> at = new osg::AutoTransform();
-	at->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-	OsgNode* osgNode = new OsgNode(node, properties.value(node->getType()->getId()), at);
-
+	OsgNode* osgNode;
+	osgNode = new OsgNode(node);
 	nodes.append(osgNode);
 	nodeIds.insert(node->getId());
 
-	at->setName("node_transform");
-	at->addChild(osgNode);
-	return at;
+	return osgNode;
 }
 
 void SceneElements::updateNodes(float interpolationSpeed) {
 	QList<OsgNode* >::const_iterator i = nodes.constBegin();
 
 	while (i != nodes.constEnd()) {
-		(*i)->updatePosition(interpolationSpeed);
+		if ((*i)->isVisible())
+			(*i)->updatePosition(interpolationSpeed);
 		++i;
 	}
 }
-
-/*void SceneElements::updateNodes(float interpolationSpeed) {
-	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
-	osg::ref_ptr<osg::Vec2Array> texCoords = new osg::Vec2Array;
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-
-	QList<OsgNode*>::const_iterator i = nodes.constBegin();
-	while (i != nodes.constEnd()) {
-		(*i)->getNodeData(interpolationSpeed, coords, texCoords, colors);
-		++i;
-	}
-
-	nodesGeometry->setVertexArray(coords);
-	nodesGeometry->setTexCoordArray(0, texCoords);
-	nodesGeometry->setColorArray(colors);
-}*/
 
 void SceneElements::updateEdges() {
 	osg::ref_ptr<osg::Vec3Array> coords = new osg::Vec3Array;
@@ -327,19 +262,4 @@ osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {
 	stateSet->setAttributeAndModes(cull, osg::StateAttribute::ON);
 
 	return stateSet;
-}
-
-void SceneElements::createDataMapping(QList<Model::Type*> types) {
-	if (types.size() > 0) {
-		QListIterator<Model::Type*> ti(types);
-		while (ti.hasNext()) {
-			Model::Type* type = ti.next();
-			properties.insert(type->getId(), new OsgProperty());
-		}
-
-		Window::DataMappingDialog* dialog =
-				new Window::DataMappingDialog(types, &properties, QApplication::activeWindow());
-		dialog->exec();
-		delete dialog;
-	}
 }

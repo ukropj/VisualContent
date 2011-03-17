@@ -1,467 +1,469 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd"> 
-  <key id="center-node-id" for="graph"/> 
-  <key id="graph-background-color" for="graph"> 
-    <default>ffffff</default> 
-  </key> 
-  <key id="node-title" for="node"/> 
-  <key id="node-url" for="node"/> 
-  <key id="node-data-url" for="node"/> 
-  <key id="node-color" for="node"> 
-    <default>000000</default> 
-  </key> 
-  <key id="edge-title" for="edge"/> 
-  <key id="edge-color" for="edge"> 
-    <default>dfdfdf</default> 
-  </key> 
-  <graph id="foaf0" edgedefault="undirected"> 
-    <data key="center-node-id">company_name_215194</data> 
-        <node id="company_name_133875"> 
-          <data key="node-title">REDID Invest, a.s. v likvidácii</data> 
-          <data key="node-url">/firmy/133875</data> 
-          <data key="node-color">99cc99</data> 
-          <data key="node-data-url">/firmy/133875/graf.graphml</data> 
-        </node> 
-        <node id="person_526751"> 
-          <data key="node-title">Miroslav Kučera</data> 
-          <data key="node-url">/ludia/526751</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/526751/graf.graphml</data> 
-        </node> 
-        <node id="person_314924"> 
-          <data key="node-title">Michaela Vinczeová</data> 
-          <data key="node-url">/ludia/314924</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/314924/graf.graphml</data> 
-        </node> 
-        <node id="person_476525"> 
-          <data key="node-title">Iveta Bihariová</data> 
-          <data key="node-url">/ludia/476525</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/476525/graf.graphml</data> 
-        </node> 
-        <node id="person_5879"> 
-          <data key="node-title">Róbert Žatko</data> 
-          <data key="node-url">/ludia/5879</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/5879/graf.graphml</data> 
-        </node> 
-        <node id="person_7975"> 
-          <data key="node-title">Vincent Belan</data> 
-          <data key="node-url">/ludia/7975</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/7975/graf.graphml</data> 
-        </node> 
-        <node id="company_name_1419"> 
-          <data key="node-title">MODEST DELTA, s.r.o.</data> 
-          <data key="node-url">/firmy/1419</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/1419/graf.graphml</data> 
-        </node> 
-        <node id="person_220957"> 
-          <data key="node-title">JUDr. Lukáš Machala</data> 
-          <data key="node-url">/ludia/220957</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/220957/graf.graphml</data> 
-        </node> 
-        <node id="company_name_146300"> 
-          <data key="node-title">Redid PV, a.s. v likvidácii</data> 
-          <data key="node-url">/firmy/146300</data> 
-          <data key="node-color">99cc99</data> 
-          <data key="node-data-url">/firmy/146300/graf.graphml</data> 
-        </node> 
-        <node id="person_75064"> 
-          <data key="node-title">RNDr. Marcela Dobešová</data> 
-          <data key="node-url">/ludia/75064</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/75064/graf.graphml</data> 
-        </node> 
-        <node id="company_name_61314"> 
-          <data key="node-title">TRANGO Invest, s.r.o.</data> 
-          <data key="node-url">/firmy/61314</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/61314/graf.graphml</data> 
-        </node> 
-        <node id="person_249590"> 
-          <data key="node-title">MUDr. Mina Poláková</data> 
-          <data key="node-url">/ludia/249590</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/249590/graf.graphml</data> 
-        </node> 
-        <node id="person_6468"> 
-          <data key="node-title">Ing. Anton Dobeš</data> 
-          <data key="node-url">/ludia/6468</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/6468/graf.graphml</data> 
-        </node> 
-        <node id="person_293464"> 
-          <data key="node-title">Ing. Róbert Obmaščík</data> 
-          <data key="node-url">/ludia/293464</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/293464/graf.graphml</data> 
-        </node> 
-        <node id="person_316377"> 
-          <data key="node-title">Philip Keane</data> 
-          <data key="node-url">/ludia/316377</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/316377/graf.graphml</data> 
-        </node> 
-        <node id="person_63740"> 
-          <data key="node-title">Mgr. Dagmar Naščáková</data> 
-          <data key="node-url">/ludia/63740</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/63740/graf.graphml</data> 
-        </node> 
-        <node id="person_476526"> 
-          <data key="node-title">Mária Slivinská</data> 
-          <data key="node-url">/ludia/476526</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/476526/graf.graphml</data> 
-        </node> 
-        <node id="person_112514"> 
-          <data key="node-title">MUDr. Daniel Kraus</data> 
-          <data key="node-url">/ludia/112514</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/112514/graf.graphml</data> 
-        </node> 
-        <node id="company_name_496"> 
-          <data key="node-title">MODEST, spol. s r. o.</data> 
-          <data key="node-url">/firmy/496</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/496/graf.graphml</data> 
-        </node> 
-        <node id="company_name_232860"> 
-          <data key="node-title">RZP - NR, s.r.o.</data> 
-          <data key="node-url">/firmy/232860</data> 
-          <data key="node-color">99cc99</data> 
-          <data key="node-data-url">/firmy/232860/graf.graphml</data> 
-        </node> 
-        <node id="person_149315"> 
-          <data key="node-title">Ing. Jaroslav Janáč</data> 
-          <data key="node-url">/ludia/149315</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/149315/graf.graphml</data> 
-        </node> 
-        <node id="person_225545"> 
-          <data key="node-title">Mgr. Marek Benedik</data> 
-          <data key="node-url">/ludia/225545</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/225545/graf.graphml</data> 
-        </node> 
-        <node id="person_6469"> 
-          <data key="node-title">Stanislav Mikuš</data> 
-          <data key="node-url">/ludia/6469</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/6469/graf.graphml</data> 
-        </node> 
-        <node id="company_name_215194"> 
-          <data key="node-title">EVE PODHORIE s.r.o.</data> 
-          <data key="node-url">/firmy/215194</data> 
-          <data key="node-color">A04EA4</data> 
-          <data key="node-data-url">/firmy/215194/graf.graphml</data> 
-        </node> 
-        <node id="person_6288"> 
-          <data key="node-title">Ing. Milan Belej</data> 
-          <data key="node-url">/ludia/6288</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/6288/graf.graphml</data> 
-        </node> 
-        <node id="person_181881"> 
-          <data key="node-title">Ing. Dáša Koraušová</data> 
-          <data key="node-url">/ludia/181881</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/181881/graf.graphml</data> 
-        </node> 
-        <node id="person_544716"> 
-          <data key="node-title">Michal Vyvozil</data> 
-          <data key="node-url">/ludia/544716</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/544716/graf.graphml</data> 
-        </node> 
-        <node id="person_476527"> 
-          <data key="node-title">Jozef Trišč</data> 
-          <data key="node-url">/ludia/476527</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/476527/graf.graphml</data> 
-        </node> 
-        <node id="person_221019"> 
-          <data key="node-title">Bc. Peter Kováč</data> 
-          <data key="node-url">/ludia/221019</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/221019/graf.graphml</data> 
-        </node> 
-        <node id="person_112504"> 
-          <data key="node-title">MUDr. Miroslav Džugan</data> 
-          <data key="node-url">/ludia/112504</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/112504/graf.graphml</data> 
-        </node> 
-        <node id="company_name_15754"> 
-          <data key="node-title">EVE PLUS s.r.o.</data> 
-          <data key="node-url">/firmy/15754</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/15754/graf.graphml</data> 
-        </node> 
-        <node id="company_name_98595"> 
-          <data key="node-title">Dom sociálnej starostlivosti, s.r.o.</data> 
-          <data key="node-url">/firmy/98595</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/98595/graf.graphml</data> 
-        </node> 
-        <node id="person_293460"> 
-          <data key="node-title">Dr. Ján Skovajsa</data> 
-          <data key="node-url">/ludia/293460</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/293460/graf.graphml</data> 
-        </node> 
-        <node id="company_name_252837"> 
-          <data key="node-title">Redid PV, akciová spoločnosť</data> 
-          <data key="node-url">/firmy/252837</data> 
-          <data key="node-color">99cc99</data> 
-          <data key="node-data-url">/firmy/252837/graf.graphml</data> 
-        </node> 
-        <node id="person_81732"> 
-          <data key="node-title">Oto Hornáček</data> 
-          <data key="node-url">/ludia/81732</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/81732/graf.graphml</data> 
-        </node> 
-        <node id="person_6289"> 
-          <data key="node-title">Ladislav Jemala</data> 
-          <data key="node-url">/ludia/6289</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/6289/graf.graphml</data> 
-        </node> 
-        <node id="company_name_252645"> 
-          <data key="node-title">REDID Invest, a.s.</data> 
-          <data key="node-url">/firmy/252645</data> 
-          <data key="node-color">99cc99</data> 
-          <data key="node-data-url">/firmy/252645/graf.graphml</data> 
-        </node> 
-        <node id="person_240864"> 
-          <data key="node-title">Róbert Baránek</data> 
-          <data key="node-url">/ludia/240864</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/240864/graf.graphml</data> 
-        </node> 
-        <node id="person_7978"> 
-          <data key="node-title">Ing. Ladislav Stehlík</data> 
-          <data key="node-url">/ludia/7978</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/7978/graf.graphml</data> 
-        </node> 
-        <node id="person_554095"> 
-          <data key="node-title">Stanislav Mikuš</data> 
-          <data key="node-url">/ludia/554095</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/554095/graf.graphml</data> 
-        </node> 
-        <node id="person_149317"> 
-          <data key="node-title">Ing. Iveta Janáčová</data> 
-          <data key="node-url">/ludia/149317</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/149317/graf.graphml</data> 
-        </node> 
-        <node id="company_name_232862"> 
-          <data key="node-title">RZP - BB, s.r.o.</data> 
-          <data key="node-url">/firmy/232862</data> 
-          <data key="node-color">99cc99</data> 
-          <data key="node-data-url">/firmy/232862/graf.graphml</data> 
-        </node> 
-        <node id="person_305407"> 
-          <data key="node-title">Ing. Kvetoslav Majcher</data> 
-          <data key="node-url">/ludia/305407</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/305407/graf.graphml</data> 
-        </node> 
-        <node id="person_476589"> 
-          <data key="node-title">MUDr. Jana Igazová</data> 
-          <data key="node-url">/ludia/476589</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/476589/graf.graphml</data> 
-        </node> 
-        <node id="person_112511"> 
-          <data key="node-title">PaeDr. Jozef Cimra</data> 
-          <data key="node-url">/ludia/112511</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/112511/graf.graphml</data> 
-        </node> 
-        <node id="person_87860"> 
-          <data key="node-title">Ing. Michal Bahelka</data> 
-          <data key="node-url">/ludia/87860</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/87860/graf.graphml</data> 
-        </node> 
-        <node id="person_6471"> 
-          <data key="node-title">Daniel Kucej</data> 
-          <data key="node-url">/ludia/6471</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/6471/graf.graphml</data> 
-        </node> 
-        <node id="person_6290"> 
-          <data key="node-title">Marián Mokráň</data> 
-          <data key="node-url">/ludia/6290</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/6290/graf.graphml</data> 
-        </node> 
-        <node id="person_34362"> 
-          <data key="node-title">Juraj Prieložný</data> 
-          <data key="node-url">/ludia/34362</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/34362/graf.graphml</data> 
-        </node> 
-        <node id="person_510937"> 
-          <data key="node-title">JUDr. Milan Malata</data> 
-          <data key="node-url">/ludia/510937</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/510937/graf.graphml</data> 
-        </node> 
-        <node id="person_240865"> 
-          <data key="node-title">Martin Baránek</data> 
-          <data key="node-url">/ludia/240865</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/240865/graf.graphml</data> 
-        </node> 
-        <node id="company_name_150863"> 
-          <data key="node-title">SPONVEL, s.r.o.</data> 
-          <data key="node-url">/firmy/150863</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/150863/graf.graphml</data> 
-        </node> 
-        <node id="company_name_69111"> 
-          <data key="node-title">TATRA nord s.r.o.</data> 
-          <data key="node-url">/firmy/69111</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/69111/graf.graphml</data> 
-        </node> 
-        <node id="company_name_1483"> 
-          <data key="node-title">ELO, s.r.o.</data> 
-          <data key="node-url">/firmy/1483</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/1483/graf.graphml</data> 
-        </node> 
-        <node id="person_476590"> 
-          <data key="node-title">Dana Kazarková</data> 
-          <data key="node-url">/ludia/476590</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/476590/graf.graphml</data> 
-        </node> 
-        <node id="person_97057"> 
-          <data key="node-title">Radovan Kazarka</data> 
-          <data key="node-url">/ludia/97057</data> 
-          <data key="node-color">3187C1</data> 
-          <data key="node-data-url">/ludia/97057/graf.graphml</data> 
-        </node> 
-        <node id="company_name_54630"> 
-          <data key="node-title">RZP, a.s.</data> 
-          <data key="node-url">/firmy/54630</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/54630/graf.graphml</data> 
-        </node> 
-        <node id="company_name_2309"> 
-          <data key="node-title">B.M.S. s.r.o.</data> 
-          <data key="node-url">/firmy/2309</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/2309/graf.graphml</data> 
-        </node> 
-        <node id="company_name_14849"> 
-          <data key="node-title">ELOSPEKT, s.r.o.</data> 
-          <data key="node-url">/firmy/14849</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/14849/graf.graphml</data> 
-        </node> 
-        <node id="company_name_184106"> 
-          <data key="node-title">SlovWatt s. r. o.</data> 
-          <data key="node-url">/firmy/184106</data> 
-          <data key="node-color">708a35</data> 
-          <data key="node-data-url">/firmy/184106/graf.graphml</data> 
-        </node> 
-        <edge source="company_name_133875" target="person_6468" /> 
-        <edge source="company_name_133875" target="person_6469" /> 
-        <edge source="company_name_133875" target="person_149317" /> 
-        <edge source="company_name_133875" target="person_181881" /> 
-        <edge source="company_name_133875" target="person_149315" /> 
-        <edge source="company_name_133875" target="person_293460" /> 
-        <edge source="company_name_133875" target="person_293464" /> 
-        <edge source="person_526751" target="company_name_184106" /> 
-        <edge source="person_314924" target="company_name_150863" /> 
-        <edge source="person_314924" target="company_name_146300" /> 
-        <edge source="person_314924" target="company_name_252837" /> 
-        <edge source="person_476525" target="company_name_69111" /> 
-        <edge source="person_5879" target="company_name_54630" /> 
-        <edge source="person_7975" target="company_name_2309" /> 
-        <edge source="company_name_1419" target="person_554095" /> 
-        <edge source="company_name_1419" target="person_6288" /> 
-        <edge source="company_name_1419" target="person_6289" /> 
-        <edge source="company_name_1419" target="person_6290" /> 
-        <edge source="person_220957" target="company_name_146300" /> 
-        <edge source="person_220957" target="company_name_252837" /> 
-        <edge source="company_name_146300" target="person_6468" /> 
-        <edge source="company_name_146300" target="person_510937" /> 
-        <edge source="company_name_146300" target="person_63740" /> 
-        <edge source="company_name_146300" target="person_149315" /> 
-        <edge source="company_name_146300" target="person_181881" /> 
-        <edge source="company_name_146300" target="person_305407" /> 
-        <edge source="company_name_146300" target="person_316377" /> 
-        <edge source="person_75064" target="company_name_69111" /> 
-        <edge source="company_name_61314" target="person_6468" /> 
-        <edge source="person_249590" target="company_name_54630" /> 
-        <edge source="person_6468" target="company_name_1483" /> 
-        <edge source="person_6468" target="company_name_54630" /> 
-        <edge source="person_6468" target="company_name_69111" /> 
-        <edge source="person_6468" target="company_name_150863" /> 
-        <edge source="person_6468" target="company_name_184106" /> 
-        <edge source="person_6468" target="company_name_252837" /> 
-        <edge source="person_6468" target="company_name_232862" /> 
-        <edge source="person_6468" target="company_name_252645" /> 
-        <edge source="person_6468" target="company_name_98595" /> 
-        <edge source="person_6468" target="company_name_232860" /> 
-        <edge source="person_6468" target="company_name_215194" /> 
-        <edge source="person_6468" target="company_name_14849" /> 
-        <edge source="person_293464" target="company_name_252645" /> 
-        <edge source="person_316377" target="company_name_252837" /> 
-        <edge source="person_63740" target="company_name_252837" /> 
-        <edge source="person_476526" target="company_name_69111" /> 
-        <edge source="person_112514" target="company_name_54630" /> 
-        <edge source="person_112514" target="company_name_232862" /> 
-        <edge source="person_112514" target="company_name_98595" /> 
-        <edge source="person_112514" target="company_name_232860" /> 
-        <edge source="company_name_496" target="person_554095" /> 
-        <edge source="company_name_232860" target="person_87860" /> 
-        <edge source="person_149315" target="company_name_150863" /> 
-        <edge source="person_149315" target="company_name_252837" /> 
-        <edge source="person_149315" target="company_name_252645" /> 
-        <edge source="person_225545" target="company_name_54630" /> 
-        <edge source="person_6469" target="company_name_1483" /> 
-        <edge source="person_6469" target="company_name_54630" /> 
-        <edge source="person_6469" target="company_name_252645" /> 
-        <edge source="company_name_215194" target="person_554095" /> 
-        <edge source="person_181881" target="company_name_252645" /> 
-        <edge source="person_181881" target="company_name_252837" /> 
-        <edge source="person_544716" target="company_name_184106" /> 
-        <edge source="person_476527" target="company_name_69111" /> 
-        <edge source="person_221019" target="company_name_232862" /> 
-        <edge source="person_221019" target="company_name_54630" /> 
-        <edge source="person_112504" target="company_name_54630" /> 
-        <edge source="person_112504" target="company_name_98595" /> 
-        <edge source="company_name_15754" target="person_554095" /> 
-        <edge source="company_name_98595" target="person_87860" /> 
-        <edge source="person_293460" target="company_name_252645" /> 
-        <edge source="company_name_252837" target="person_510937" /> 
-        <edge source="company_name_252837" target="person_305407" /> 
-        <edge source="person_81732" target="company_name_1483" /> 
-        <edge source="company_name_252645" target="person_149317" /> 
-        <edge source="person_240864" target="company_name_184106" /> 
-        <edge source="person_7978" target="company_name_2309" /> 
-        <edge source="person_554095" target="company_name_2309" /> 
-        <edge source="company_name_232862" target="person_87860" /> 
-        <edge source="person_476589" target="company_name_54630" /> 
-        <edge source="person_112511" target="company_name_54630" /> 
-        <edge source="person_87860" target="company_name_54630" /> 
-        <edge source="person_6471" target="company_name_1483" /> 
-        <edge source="person_34362" target="company_name_14849" /> 
-        <edge source="person_240865" target="company_name_184106" /> 
-        <edge source="person_476590" target="company_name_54630" /> 
-        <edge source="person_97057" target="company_name_54630" /> 
-  </graph> 
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+	<key id="center-node-id" for="graph" />
+	<key id="graph-background-color" for="graph">
+		<default>ffffff</default>
+	</key>
+	<key id="node-title" for="node" />
+	<key id="node-url" for="node" />
+	<key id="node-data-url" for="node" />
+	<key id="node-color" for="node">
+		<default>000000</default>
+	</key>
+	<key id="edge-title" for="edge" />
+	<key id="edge-color" for="edge">
+		<default>dfdfdf</default>
+	</key>
+	<graph id="foaf0" edgedefault="undirected">
+		<data key="center-node-id">company_name_215194</data>
+		<node id="company_name_133875">
+			<data key="node-title">REDID Invest, a.s. v likvidácii</data>
+			<data key="node-url">/firmy/133875</data>
+			<data key="node-color">99cc99</data>
+			<data key="node-data-url">/firmy/133875/graf.graphml</data>
+		</node>
+		<node id="person_526751">
+			<data key="node-title">Miroslav Kučera</data>
+			<data key="node-url">/ludia/526751</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/526751/graf.graphml</data>
+		</node>
+		<node id="person_314924">
+			<data key="node-title">Michaela Vinczeová</data>
+			<data key="node-url">/ludia/314924</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/314924/graf.graphml</data>
+		</node>
+		<node id="person_476525">
+			<data key="node-title">Iveta Bihariová</data>
+			<data key="node-url">/ludia/476525</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/476525/graf.graphml</data>
+		</node>
+		<node id="person_5879">
+			<data key="node-title">Róbert Žatko</data>
+			<data key="node-url">/ludia/5879</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/5879/graf.graphml</data>
+		</node>
+		<node id="person_7975">
+			<data key="node-title">Vincent Belan</data>
+			<data key="node-url">/ludia/7975</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/7975/graf.graphml</data>
+		</node>
+		<node id="company_name_1419">
+			<data key="node-title">MODEST DELTA, s.r.o.</data>
+			<data key="node-url">/firmy/1419</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/1419/graf.graphml</data>
+		</node>
+		<node id="person_220957">
+			<data key="node-title">JUDr. Lukáš Machala</data>
+			<data key="node-url">/ludia/220957</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/220957/graf.graphml</data>
+		</node>
+		<node id="company_name_146300">
+			<data key="node-title">Redid PV, a.s. v likvidácii</data>
+			<data key="node-url">/firmy/146300</data>
+			<data key="node-color">99cc99</data>
+			<data key="node-data-url">/firmy/146300/graf.graphml</data>
+		</node>
+		<node id="person_75064">
+			<data key="node-title">RNDr. Marcela Dobešová</data>
+			<data key="node-url">/ludia/75064</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/75064/graf.graphml</data>
+		</node>
+		<node id="company_name_61314">
+			<data key="node-title">TRANGO Invest, s.r.o.</data>
+			<data key="node-url">/firmy/61314</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/61314/graf.graphml</data>
+		</node>
+		<node id="person_249590">
+			<data key="node-title">MUDr. Mina Poláková</data>
+			<data key="node-url">/ludia/249590</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/249590/graf.graphml</data>
+		</node>
+		<node id="person_6468">
+			<data key="node-title">Ing. Anton Dobeš</data>
+			<data key="node-url">/ludia/6468</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/6468/graf.graphml</data>
+		</node>
+		<node id="person_293464">
+			<data key="node-title">Ing. Róbert Obmaščík</data>
+			<data key="node-url">/ludia/293464</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/293464/graf.graphml</data>
+		</node>
+		<node id="person_316377">
+			<data key="node-title">Philip Keane</data>
+			<data key="node-url">/ludia/316377</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/316377/graf.graphml</data>
+		</node>
+		<node id="person_63740">
+			<data key="node-title">Mgr. Dagmar Naščáková</data>
+			<data key="node-url">/ludia/63740</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/63740/graf.graphml</data>
+		</node>
+		<node id="person_476526">
+			<data key="node-title">Mária Slivinská</data>
+			<data key="node-url">/ludia/476526</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/476526/graf.graphml</data>
+		</node>
+		<node id="person_112514">
+			<data key="node-title">MUDr. Daniel Kraus</data>
+			<data key="node-url">/ludia/112514</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/112514/graf.graphml</data>
+		</node>
+		<node id="company_name_496">
+			<data key="node-title">MODEST, spol. s r. o.</data>
+			<data key="node-url">/firmy/496</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/496/graf.graphml</data>
+		</node>
+		<node id="company_name_232860">
+			<data key="node-title">RZP - NR, s.r.o.</data>
+			<data key="node-url">/firmy/232860</data>
+			<data key="node-color">99cc99</data>
+			<data key="node-data-url">/firmy/232860/graf.graphml</data>
+		</node>
+		<node id="person_149315">
+			<data key="node-title">Ing. Jaroslav Janáč</data>
+			<data key="node-url">/ludia/149315</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/149315/graf.graphml</data>
+		</node>
+		<node id="person_225545">
+			<data key="node-title">Mgr. Marek Benedik</data>
+			<data key="node-url">/ludia/225545</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/225545/graf.graphml</data>
+		</node>
+		<node id="person_6469">
+			<data key="node-title">Stanislav Mikuš</data>
+			<data key="node-url">/ludia/6469</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/6469/graf.graphml</data>
+		</node>
+		<node id="company_name_215194">
+			<data key="node-title">EVE PODHORIE s.r.o.</data>
+			<data key="node-url">/firmy/215194</data>
+			<data key="node-color">A04EA4</data>
+			<data key="node-data-url">/firmy/215194/graf.graphml</data>
+		</node>
+		<node id="person_6288">
+			<data key="node-title">Ing. Milan Belej</data>
+			<data key="node-url">/ludia/6288</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/6288/graf.graphml</data>
+		</node>
+		<node id="person_181881">
+			<data key="node-title">Ing. Dáša Koraušová</data>
+			<data key="node-url">/ludia/181881</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/181881/graf.graphml</data>
+		</node>
+		<node id="person_544716">
+			<data key="node-title">Michal Vyvozil</data>
+			<data key="node-url">/ludia/544716</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/544716/graf.graphml</data>
+		</node>
+		<node id="person_476527">
+			<data key="node-title">Jozef Trišč</data>
+			<data key="node-url">/ludia/476527</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/476527/graf.graphml</data>
+		</node>
+		<node id="person_221019">
+			<data key="node-title">Bc. Peter Kováč</data>
+			<data key="node-url">/ludia/221019</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/221019/graf.graphml</data>
+		</node>
+		<node id="person_112504">
+			<data key="node-title">MUDr. Miroslav Džugan</data>
+			<data key="node-url">/ludia/112504</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/112504/graf.graphml</data>
+		</node>
+		<node id="company_name_15754">
+			<data key="node-title">EVE PLUS s.r.o.</data>
+			<data key="node-url">/firmy/15754</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/15754/graf.graphml</data>
+		</node>
+		<node id="company_name_98595">
+			<data key="node-title">Dom sociálnej starostlivosti, s.r.o.</data>
+			<data key="node-url">/firmy/98595</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/98595/graf.graphml</data>
+		</node>
+		<node id="person_293460">
+			<data key="node-title">Dr. Ján Skovajsa</data>
+			<data key="node-url">/ludia/293460</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/293460/graf.graphml</data>
+		</node>
+		<node id="company_name_252837">
+			<data key="node-title">Redid PV, akciová spoločnosť</data>
+			<data key="node-url">/firmy/252837</data>
+			<data key="node-color">99cc99</data>
+			<data key="node-data-url">/firmy/252837/graf.graphml</data>
+		</node>
+		<node id="person_81732">
+			<data key="node-title">Oto Hornáček</data>
+			<data key="node-url">/ludia/81732</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/81732/graf.graphml</data>
+		</node>
+		<node id="person_6289">
+			<data key="node-title">Ladislav Jemala</data>
+			<data key="node-url">/ludia/6289</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/6289/graf.graphml</data>
+		</node>
+		<node id="company_name_252645">
+			<data key="node-title">REDID Invest, a.s.</data>
+			<data key="node-url">/firmy/252645</data>
+			<data key="node-color">99cc99</data>
+			<data key="node-data-url">/firmy/252645/graf.graphml</data>
+		</node>
+		<node id="person_240864">
+			<data key="node-title">Róbert Baránek</data>
+			<data key="node-url">/ludia/240864</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/240864/graf.graphml</data>
+		</node>
+		<node id="person_7978">
+			<data key="node-title">Ing. Ladislav Stehlík</data>
+			<data key="node-url">/ludia/7978</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/7978/graf.graphml</data>
+		</node>
+		<node id="person_554095">
+			<data key="node-title">Stanislav Mikuš</data>
+			<data key="node-url">/ludia/554095</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/554095/graf.graphml</data>
+		</node>
+		<node id="person_149317">
+			<data key="node-title">Ing. Iveta Janáčová</data>
+			<data key="node-url">/ludia/149317</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/149317/graf.graphml</data>
+		</node>
+		<node id="company_name_232862">
+			<data key="node-title">RZP - BB, s.r.o.</data>
+			<data key="node-url">/firmy/232862</data>
+			<data key="node-color">99cc99</data>
+			<data key="node-data-url">/firmy/232862/graf.graphml</data>
+		</node>
+		<node id="person_305407">
+			<data key="node-title">Ing. Kvetoslav Majcher</data>
+			<data key="node-url">/ludia/305407</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/305407/graf.graphml</data>
+		</node>
+		<node id="person_476589">
+			<data key="node-title">MUDr. Jana Igazová</data>
+			<data key="node-url">/ludia/476589</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/476589/graf.graphml</data>
+		</node>
+		<node id="person_112511">
+			<data key="node-title">PaeDr. Jozef Cimra</data>
+			<data key="node-url">/ludia/112511</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/112511/graf.graphml</data>
+		</node>
+		<node id="person_87860">
+			<data key="node-title">Ing. Michal Bahelka</data>
+			<data key="node-url">/ludia/87860</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/87860/graf.graphml</data>
+		</node>
+		<node id="person_6471">
+			<data key="node-title">Daniel Kucej</data>
+			<data key="node-url">/ludia/6471</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/6471/graf.graphml</data>
+		</node>
+		<node id="person_6290">
+			<data key="node-title">Marián Mokráň</data>
+			<data key="node-url">/ludia/6290</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/6290/graf.graphml</data>
+		</node>
+		<node id="person_34362">
+			<data key="node-title">Juraj Prieložný</data>
+			<data key="node-url">/ludia/34362</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/34362/graf.graphml</data>
+		</node>
+		<node id="person_510937">
+			<data key="node-title">JUDr. Milan Malata</data>
+			<data key="node-url">/ludia/510937</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/510937/graf.graphml</data>
+		</node>
+		<node id="person_240865">
+			<data key="node-title">Martin Baránek</data>
+			<data key="node-url">/ludia/240865</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/240865/graf.graphml</data>
+		</node>
+		<node id="company_name_150863">
+			<data key="node-title">SPONVEL, s.r.o.</data>
+			<data key="node-url">/firmy/150863</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/150863/graf.graphml</data>
+		</node>
+		<node id="company_name_69111">
+			<data key="node-title">TATRA nord s.r.o.</data>
+			<data key="node-url">/firmy/69111</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/69111/graf.graphml</data>
+		</node>
+		<node id="company_name_1483">
+			<data key="node-title">ELO, s.r.o.</data>
+			<data key="node-url">/firmy/1483</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/1483/graf.graphml</data>
+		</node>
+		<node id="person_476590">
+			<data key="node-title">Dana Kazarková</data>
+			<data key="node-url">/ludia/476590</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/476590/graf.graphml</data>
+		</node>
+		<node id="person_97057">
+			<data key="node-title">Radovan Kazarka</data>
+			<data key="node-url">/ludia/97057</data>
+			<data key="node-color">3187C1</data>
+			<data key="node-data-url">/ludia/97057/graf.graphml</data>
+		</node>
+		<node id="company_name_54630">
+			<data key="node-title">RZP, a.s.</data>
+			<data key="node-url">/firmy/54630</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/54630/graf.graphml</data>
+		</node>
+		<node id="company_name_2309">
+			<data key="node-title">B.M.S. s.r.o.</data>
+			<data key="node-url">/firmy/2309</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/2309/graf.graphml</data>
+		</node>
+		<node id="company_name_14849">
+			<data key="node-title">ELOSPEKT, s.r.o.</data>
+			<data key="node-url">/firmy/14849</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/14849/graf.graphml</data>
+		</node>
+		<node id="company_name_184106">
+			<data key="node-title">SlovWatt s. r. o.</data>
+			<data key="node-url">/firmy/184106</data>
+			<data key="node-color">708a35</data>
+			<data key="node-data-url">/firmy/184106/graf.graphml</data>
+		</node>
+		<edge source="company_name_133875" target="person_6468" />
+		<edge source="company_name_133875" target="person_6469" />
+		<edge source="company_name_133875" target="person_149317" />
+		<edge source="company_name_133875" target="person_181881" />
+		<edge source="company_name_133875" target="person_149315" />
+		<edge source="company_name_133875" target="person_293460" />
+		<edge source="company_name_133875" target="person_293464" />
+		<edge source="person_526751" target="company_name_184106" />
+		<edge source="person_314924" target="company_name_150863" />
+		<edge source="person_314924" target="company_name_146300" />
+		<edge source="person_314924" target="company_name_252837" />
+		<edge source="person_476525" target="company_name_69111" />
+		<edge source="person_5879" target="company_name_54630" />
+		<edge source="person_7975" target="company_name_2309" />
+		<edge source="company_name_1419" target="person_554095" />
+		<edge source="company_name_1419" target="person_6288" />
+		<edge source="company_name_1419" target="person_6289" />
+		<edge source="company_name_1419" target="person_6290" />
+		<edge source="person_220957" target="company_name_146300" />
+		<edge source="person_220957" target="company_name_252837" />
+		<edge source="company_name_146300" target="person_6468" />
+		<edge source="company_name_146300" target="person_510937" />
+		<edge source="company_name_146300" target="person_63740" />
+		<edge source="company_name_146300" target="person_149315" />
+		<edge source="company_name_146300" target="person_181881" />
+		<edge source="company_name_146300" target="person_305407" />
+		<edge source="company_name_146300" target="person_316377" />
+		<edge source="person_75064" target="company_name_69111" />
+		<edge source="company_name_61314" target="person_6468" />
+		<edge source="person_249590" target="company_name_54630" />
+		<edge source="person_6468" target="company_name_1483" />
+		<edge source="person_6468" target="company_name_54630" />
+		<edge source="person_6468" target="company_name_69111" />
+		<edge source="person_6468" target="company_name_150863" />
+		<edge source="person_6468" target="company_name_184106" />
+		<edge source="person_6468" target="company_name_252837" />
+		<edge source="person_6468" target="company_name_232862" />
+		<edge source="person_6468" target="company_name_252645" />
+		<edge source="person_6468" target="company_name_98595" />
+		<edge source="person_6468" target="company_name_232860" />
+		<edge source="person_6468" target="company_name_215194" />
+		<edge source="person_6468" target="company_name_14849" />
+		<edge source="person_293464" target="company_name_252645" />
+		<edge source="person_316377" target="company_name_252837" />
+		<edge source="person_63740" target="company_name_252837" />
+		<edge source="person_476526" target="company_name_69111" />
+		<edge source="person_112514" target="company_name_54630" />
+		<edge source="person_112514" target="company_name_232862" />
+		<edge source="person_112514" target="company_name_98595" />
+		<edge source="person_112514" target="company_name_232860" />
+		<edge source="company_name_496" target="person_554095" />
+		<edge source="company_name_232860" target="person_87860" />
+		<edge source="person_149315" target="company_name_150863" />
+		<edge source="person_149315" target="company_name_252837" />
+		<edge source="person_149315" target="company_name_252645" />
+		<edge source="person_225545" target="company_name_54630" />
+		<edge source="person_6469" target="company_name_1483" />
+		<edge source="person_6469" target="company_name_54630" />
+		<edge source="person_6469" target="company_name_252645" />
+		<edge source="company_name_215194" target="person_554095" />
+		<edge source="person_181881" target="company_name_252645" />
+		<edge source="person_181881" target="company_name_252837" />
+		<edge source="person_544716" target="company_name_184106" />
+		<edge source="person_476527" target="company_name_69111" />
+		<edge source="person_221019" target="company_name_232862" />
+		<edge source="person_221019" target="company_name_54630" />
+		<edge source="person_112504" target="company_name_54630" />
+		<edge source="person_112504" target="company_name_98595" />
+		<edge source="company_name_15754" target="person_554095" />
+		<edge source="company_name_98595" target="person_87860" />
+		<edge source="person_293460" target="company_name_252645" />
+		<edge source="company_name_252837" target="person_510937" />
+		<edge source="company_name_252837" target="person_305407" />
+		<edge source="person_81732" target="company_name_1483" />
+		<edge source="company_name_252645" target="person_149317" />
+		<edge source="person_240864" target="company_name_184106" />
+		<edge source="person_7978" target="company_name_2309" />
+		<edge source="person_554095" target="company_name_2309" />
+		<edge source="company_name_232862" target="person_87860" />
+		<edge source="person_476589" target="company_name_54630" />
+		<edge source="person_112511" target="company_name_54630" />
+		<edge source="person_87860" target="company_name_54630" />
+		<edge source="person_6471" target="company_name_1483" />
+		<edge source="person_34362" target="company_name_14849" />
+		<edge source="person_240865" target="company_name_184106" />
+		<edge source="person_476590" target="company_name_54630" />
+		<edge source="person_97057" target="company_name_54630" />
+	</graph>
 </graphml>

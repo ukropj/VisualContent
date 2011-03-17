@@ -6,7 +6,7 @@
  */
 
 #include "Viewer/FrameButton.h"
-#include "Viewer/OsgFrame.h"
+#include "Viewer/ControlFrame.h"
 #include "Util/TextureWrapper.h"
 
 #include <QDebug>
@@ -15,11 +15,11 @@
 
 using namespace Vwr;
 
-FrameButton::FrameButton(OsgFrame* parentFrame) {
+FrameButton::FrameButton(ControlFrame* parentFrame) {
 	frame = parentFrame;
 }
 
-FrameButton::FrameButton(OsgFrame* parentFrame, osg::Vec3f pos, QString imagePath) {
+FrameButton::FrameButton(ControlFrame* parentFrame, osg::Vec3f pos, QString imagePath) {
 	frame = parentFrame;
 
 	float width = 40;

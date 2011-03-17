@@ -22,7 +22,7 @@ class SceneGraph;
 class OsgNode;
 class AbstractNode;
 class OsgEdge;
-class OsgFrame;
+class ControlFrame;
 
 /**
  *  \class PickHandler
@@ -80,7 +80,7 @@ private:
 	QList<OsgNode* > selectedNodes;
 
 	osg::ref_ptr<osg::Geode> selectionQuad;
-	osg::ref_ptr<OsgFrame> nodeFrame;
+	osg::ref_ptr<ControlFrame> nodeFrame;
 
 	// flags
 	bool multiPickEnabled;

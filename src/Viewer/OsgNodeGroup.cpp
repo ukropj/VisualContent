@@ -6,6 +6,7 @@
  */
 
 #include "Viewer/OsgNodeGroup.h"
+#include "Viewer/OsgCluster.h"
 #include "Viewer/AbstractVisitor.h"
 #include "Util/CameraHelper.h"
 
@@ -190,7 +191,7 @@ void OsgNodeGroup::updateSizeAndPos() {
 		emit changedSize(oldSize, getSize());
 }
 
-bool OsgNodeGroup::setFixed(bool flag) {
+void OsgNodeGroup::setFixed(bool flag) {
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->setFixed(flag);
@@ -217,7 +218,7 @@ bool OsgNodeGroup::isFrozen() const {
 	return fixed;
 }
 
-bool OsgNodeGroup::setSelected(bool flag) {
+void OsgNodeGroup::setSelected(bool flag) {
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->setSelected(flag);
@@ -230,7 +231,7 @@ bool OsgNodeGroup::isSelected() const {
 	return fixed;
 }
 
-bool OsgNodeGroup::setExpanded(bool flag) {
+void OsgNodeGroup::setExpanded(bool flag) {
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		(*i)->setExpanded(flag);
@@ -297,16 +298,3 @@ AbstractNode* OsgNodeGroup::merge(AbstractNode* n1, AbstractNode* n2) {
 void OsgNodeGroup::acceptVisitor(AbstractVisitor* visitor) {
 	visitor->visitNode(this);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

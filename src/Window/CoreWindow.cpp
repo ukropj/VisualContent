@@ -33,7 +33,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	currentFile = "";
 
 	qDebug("App initialized");
-	loadFile("input/data/grid3.graphml");
+	loadFile("input/data/grid7.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -43,11 +43,12 @@ void CoreWindow::createActions() {
 	loadAction->setToolTip(tr("Load graph from file"));
 	connect(loadAction, SIGNAL(triggered()), this, SLOT(openFile()));
 
-	reloadAction = new QAction(tr("&Reload"), this);
-	reloadAction->setShortcut(tr("CTRL+R"));
-	reloadAction->setToolTip(tr("Reload current graph"));
-	connect(reloadAction, SIGNAL(triggered()), this, SLOT(reloadFile()));
-	reloadAction->setEnabled(false);
+	QIcon mapIcon("img/icons/map.png");
+	remapAction = new QAction(mapIcon, tr("&Set mapping"), this);
+	remapAction->setShortcut(tr("CTRL+M"));
+	remapAction->setToolTip(tr("Set data mapping"));
+	connect(remapAction, SIGNAL(triggered()), this, SLOT(setDataMapping()));
+	remapAction->setEnabled(false);
 
 	optionsAction = new QAction("&Options", this);
 	connect(optionsAction, SIGNAL(triggered()), this, SLOT(showOptions()));
@@ -127,7 +128,8 @@ void CoreWindow::createActions() {
 void CoreWindow::createMenus() {
 	fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(loadAction);
-	fileMenu->addAction(reloadAction);
+	fileMenu->addAction(remapAction);
+	fileMenu->addAction(captureAction);
 
     separatorAction = fileMenu->addSeparator();
     for (int i = 0; i < MaxRecentFiles; ++i)
@@ -149,6 +151,7 @@ void CoreWindow::createToolBars() {
 	toolBar->addAction(labelsAction);
 	toolBar->addAction(centerAction);
 	toolBar->addSeparator();
+	toolBar->addAction(remapAction);
 	toolBar->addAction(captureAction);
 	toolBar->addSeparator();
 
@@ -185,8 +188,19 @@ void CoreWindow::openRecentFile() {
     }
 }
 
-void CoreWindow::reloadFile() {
-	loadFile(currentFile);
+void CoreWindow::setDataMapping() {
+	layouter->pause();
+	sceneGraph->setUpdatingNodes(false);
+	viewerWidget->setRendering(false);
+
+	sceneGraph->setDataMapping();
+
+	viewerWidget->setRendering(true);
+	sceneGraph->setUpdatingNodes(true);
+	if (labelsAction->isChecked())
+		sceneGraph->setNodeLabelsVisible(true);
+	if (playAction->isChecked())
+		layouter->play();
 }
 
 void CoreWindow::loadFile(QString filePath) {
@@ -217,7 +231,7 @@ void CoreWindow::loadFile(QString filePath) {
 		progressBar->setValue(progressBar->maximum());
 		qDebug() << "GraphML parsed successfully.";
 		setWindowFilePath(filePath);
-		reloadAction->setEnabled(true);
+		remapAction->setEnabled(true);
 		currentFile = filePath;
 
 		// reload

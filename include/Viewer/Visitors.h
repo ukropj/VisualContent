@@ -17,12 +17,12 @@ class AbstractNode;
 class ExpanderVisitor: public AbstractVisitor {
 public:
 	ExpanderVisitor(bool isExpanding);
-	~ExpanderVisitor();
 	void visitNode(AbstractNode* node);
 
 private:
 	bool isExpanding;
 	QSet<AbstractNode*> visited;
 };
+
 }
 #endif /* EXPANDERVISITOR_H_ */

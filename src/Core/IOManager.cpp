@@ -41,8 +41,6 @@ Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
 	progress->setLabelText("Loading file...");
 	progress->setMaximum(elementCount);
 
-	QTime t;
-	t.start();
 	xml.setDevice(device);
 	if (xml.readNextStartElement()) {
 		if (xml.name() == "graphml") {

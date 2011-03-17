@@ -45,7 +45,7 @@ signals:
 	void windowResized();
 private slots:
 	void openFile();
-	void reloadFile();
+	void setDataMapping();
 	void openRecentFile();
 	void showOptions();
 	void closeEvent(QCloseEvent *event);
@@ -70,7 +70,7 @@ private:
 	enum { MaxRecentFiles = 10 };
 
 	QAction* loadAction;
-	QAction* reloadAction;
+	QAction* remapAction;
 	QAction* quitAction;
 	QAction* optionsAction;
 	QAction* separatorAction;

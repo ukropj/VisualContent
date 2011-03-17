@@ -33,17 +33,20 @@ Node::Node(qlonglong id, Type* type, QMap<QString, QString>* data, Graph* graph)
 	fixed = false;
 	ignore = false;
 	frozen = false;
+	weight = 1;
 	osgNode = NULL;
 	edges.clear();
+
+	parent = NULL;
+	children.clear();
 }
 
 Node::~Node(void) {
+	// don't delete node directly, use Graph::removeNode()
+	edges.clear();
 	graph = NULL;
-	qDeleteAll(edges);
-	// NOTE: node deletes edges, not vice versa, edge will in turn call Node::removeEdge()
-	if (osgNode != NULL) {
-		osgNode = NULL;
-	}
+	osgNode = NULL;
+//	qDebug() << "node removed";
 }
 
 void Node::addEdge(Edge* edge) {
@@ -54,21 +57,23 @@ void Node::removeEdge(Edge* edge) {
 	edges.remove(edge->getId());
 }
 
+void Node::removeAllEdges() {
+	edges.clear();
+}
+
 Edge* Node::getEdgeTo(const Node* otherNode) const {
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
 		Edge* edge = i.value();
 		if (this->equals(edge->getOtherNode(otherNode)))
-				return edge;
+			return edge;
 	}
 	return NULL;
 }
-
-QSet<Node*> Node::getIncidentNodes() const {
-	// TODO replace foreadch with STL iterator
-	QSet<Node*> nodes;
+QList<Node*> Node::getIncidentNodes() const {
+	QList<Node*> nodes;
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
 		Edge* edge = i.value();
-		nodes.insert(edge->getOtherNode(this));
+		nodes.append(edge->getOtherNode(this));
 	}
 	return nodes;
 }
@@ -99,4 +104,18 @@ bool Node::equals(Node* node) const {
 		return true;
 	}
 	return true;
+}
+
+void Node::setParent(Node* parent) {
+	if (this->equals(parent)) {
+		qWarning() << "Cannot set self as parent!";
+		return;
+	}
+	if (this->parent != NULL) {
+		this->parent->children.removeOne(this);
+	}
+	if (parent != NULL) {
+		parent->children.append(this);
+	}
+	this->parent = parent;
 }

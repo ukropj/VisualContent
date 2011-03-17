@@ -1,6 +1,7 @@
 #include "Util/TextureWrapper.h"
 #include "Util/Config.h"
 #include <osgDB/ReadFile>
+#include <QDebug>
 
 using namespace Util;
 
@@ -15,7 +16,7 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path, b
 		texture = createTexture(img, repeat);
 	}
 	if (texture == NULL)
-		qWarning("Unable to read texture from file.");
+		qWarning() << "Unable to read texture \"" << path << "\" from file.";
 	return texture;
 }
 
