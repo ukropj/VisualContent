@@ -55,8 +55,6 @@ public:
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
-//	bool isResizable(osg::Geode* geode) const;
-
 	void acceptVisitor(AbstractVisitor* visitor);
 
 	static AbstractNode* merge(AbstractNode* n1, AbstractNode* n2);

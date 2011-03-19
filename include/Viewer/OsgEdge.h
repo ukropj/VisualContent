@@ -71,7 +71,9 @@ public:
 		return visible;
 	}
 
-	void showLabel(bool visible);
+	osg::ref_ptr<osg::Drawable> getLabel() {
+		return label;
+	}
 
 	static osg::ref_ptr<osg::StateSet> createStateSet(StateSetType type);
 
@@ -95,6 +97,8 @@ private:
 	osg::ref_ptr<osg::Geometry> createGeometry();
 	osg::ref_ptr<osg::Geometry> createEndpointGeometry();
 	osg::ref_ptr<osgText::FadeText> createLabel(QString text);
+
+	static float EDGE_VOLUME;
 };
 }
 

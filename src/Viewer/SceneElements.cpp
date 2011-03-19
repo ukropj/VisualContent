@@ -79,14 +79,9 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
-	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
-	osg::ref_ptr<osg::Geode> edgeGeode = new osg::Geode();
-	edgeGeode->setName("edges");
-	allEdges->addChild(edgeGeode);
-	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
-
 	edgesGeometry = new osg::Geometry();
 	edgesOGeometry = new osg::Geometry();
+	edgeLabels = new osg::Geode();
 
 	osg::Vec4Array* colors = new osg::Vec4Array;
 	osg::Vec4Array* colorsO = new osg::Vec4Array;
@@ -113,6 +108,7 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 				colorsO->push_back(osg::Vec4f(0,0,0,1));
 			indexO += 4;
 		}
+		edgeLabels->addDrawable(osgEdge->getLabel());
 	}
 
 	edgesGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::UNORIENTED));
@@ -125,8 +121,17 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	edgesGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 	edgesOGeometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 
+	osg::ref_ptr<osg::Geode> edgeGeode = new osg::Geode();
+	edgeGeode->setName("edges");
+
 	edgeGeode->addDrawable(edgesGeometry);
 	edgeGeode->addDrawable(edgesOGeometry);
+
+	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
+	allEdges->addChild(edgeGeode);
+	allEdges->addChild(edgeLabels);
+	edgeLabels->setNodeMask(OsgNode::MASK_OFF);
+	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
 	return allEdges;
 }
 
@@ -243,6 +248,10 @@ void SceneElements::updateEdges() {
 	edgesOGeometry->setVertexArray(coordsO);
 	edgesOGeometry->setTexCoordArray(0, texCoordsO);
 	edgesOGeometry->setColorArray(colorsO);
+}
+
+void SceneElements::setEdgeLabelsVisible(bool visible) {
+	edgeLabels->setNodeMask(visible ? OsgNode::MASK_ON : OsgNode::MASK_OFF);
 }
 
 osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {

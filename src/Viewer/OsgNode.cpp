@@ -23,8 +23,8 @@
 
 using namespace Vwr;
 
-uint OsgNode::NODE_ON = 0xffffffff;
-uint OsgNode::NODE_OFF = 0x0;
+uint OsgNode::MASK_ON = 0xffffffff;
+uint OsgNode::MASK_OFF = 0x0;
 
 OsgNode::OsgNode(Model::Node* node, DataMapping* dataMapping) {
 	if (node == NULL) qWarning() << "NULL reference to Node in OsgNode!";
@@ -49,17 +49,17 @@ OsgNode::OsgNode(Model::Node* node, DataMapping* dataMapping) {
 	size = osg::Vec3f(0, 0, 0);
 
 	frameG = initFrame();
-	label = createLabel(getMappingValue(DataMapping::LABEL), scale);
+	labelG = createLabel(getMappingValue(DataMapping::LABEL));
 	fixedG = createFixed();
 
 	closedG->setName("closed_node");
 	visualContent->setName("visual_content");
 	frameG->setName("frame");
-	label->setName("label");
+	labelG->setName("label");
 
-	frameG->setNodeMask(NODE_OFF);
-	label->setNodeMask(NODE_OFF);
-	fixedG->setNodeMask(NODE_OFF);
+	frameG->setNodeMask(MASK_OFF);
+	labelG->setNodeMask(MASK_OFF);
+	fixedG->setNodeMask(MASK_OFF);
 
 	contentSwitch = new osg::Switch();
 	contentSwitch->setName("content");
@@ -69,7 +69,7 @@ OsgNode::OsgNode(Model::Node* node, DataMapping* dataMapping) {
 	contentSwitch->setChildValue(visualContent, false);
 
 	addChild(contentSwitch);
-	addChild(label);
+	addChild(labelG);
 	addChild(frameG);
 	addChild(fixedG);
 
@@ -88,7 +88,7 @@ OsgNode::~OsgNode() {
 void OsgNode::setDataMapping(DataMapping* dataMapping) {
 	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
 	// change label
-	osgText::FadeText* ft = dynamic_cast<osgText::FadeText*>(label->getDrawable(0));
+	osgText::FadeText* ft = dynamic_cast<osgText::FadeText*>(labelG->getDrawable(0));
 	ft->setText(getMappingValue(DataMapping::LABEL).toStdString());
 	// change content
 	bool f = isExpanded();
@@ -220,14 +220,16 @@ osg::ref_ptr<osg::Geometry> OsgNode::createCustomGeometry(
 	return g;
 }
 
-osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
+osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text) {
+	if (text.isEmpty()) text = "slon";
+
 	osg::ref_ptr<osgText::FadeText> textDrawable = new osgText::FadeText();
 	textDrawable->setFadeSpeed(0.04);
 
-	QString fontPath = Util::Config::getInstance()->getValue("Viewer.Labels.Font");
-
-	// experimental value
-	float newScale = 1.375f * scale;
+	QString fontPath = Util::Config::getInstance()->getValue(
+			"Viewer.Labels.Font");
+	float size = Util::Config::getInstance()->getValue(
+			"Viewer.Labels.Size").toFloat();
 
 	if (fontPath != NULL && !fontPath.isEmpty())
 		textDrawable->setFont(fontPath.toStdString());
@@ -235,10 +237,10 @@ osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text, const float scale) {
 	textDrawable->setText(text.toStdString());
 	textDrawable->setLineSpacing(0);
 	textDrawable->setAxisAlignment(osgText::Text::SCREEN);
-	textDrawable->setCharacterSize(newScale);
+	textDrawable->setCharacterSize(size);
 	textDrawable->setDrawMode(osgText::Text::TEXT);
 	textDrawable->setAlignment(osgText::Text::CENTER_BOTTOM_BASE_LINE);
-	textDrawable->setPosition(osg::Vec3(0, newScale, 0));
+	textDrawable->setPosition(osg::Vec3(0, size, 0)); // TODO label positioning
 	textDrawable->setColor(DataMapping::getDefaultColor(DataMapping::NODE));
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode();
@@ -323,7 +325,8 @@ void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 }
 
 void OsgNode::showLabel(bool visible) {
-	label->setNodeMask(visible ? NODE_ON : NODE_OFF);
+//	qDebug() << visible ? MASK_ON : MASK_OFF;
+	labelG->setNodeMask(visible ? MASK_ON : MASK_OFF);
 }
 
 void OsgNode::setExpanded(bool flag) {
@@ -341,7 +344,7 @@ void OsgNode::setExpanded(bool flag) {
 		setSize(closedG->getBoundingBox());
 	}
 
-	frameG->setNodeMask(expanded ? NODE_ON : NODE_OFF);
+	frameG->setNodeMask(expanded ? MASK_ON : MASK_OFF);
 	contentSwitch->setChildValue(visualContent, expanded);
 	contentSwitch->setChildValue(closedG, !expanded);
 }
@@ -389,7 +392,7 @@ void OsgNode::setFixed(bool flag) {
 	if (flag) {
 		node->setPosition(getPosition());
 	}
-	fixedG->setNodeMask(flag ? NODE_ON : NODE_OFF);
+	fixedG->setNodeMask(flag ? MASK_ON : MASK_OFF);
 }
 
 void OsgNode::reloadConfig() {
@@ -401,16 +404,6 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 		return false;
 	if (geode->getName() == closedG->getName() ||
 			geode->getName() == visualContent->getGeodeName())
-		return true;
-	else
-		return false;
-}
-
-// TODO unused
-bool OsgNode::isResizable(osg::Geode* geode) const {
-	if (!pickable)
-		return false;
-	if (geode->getName() == frameG->getName())
 		return true;
 	else
 		return false;
@@ -528,7 +521,7 @@ void OsgNode::acceptVisitor(AbstractVisitor* visitor) {
 
 void OsgNode::setVisible(bool flag) {
 	visible = flag;
-	setNodeMask(visible ? NODE_ON : NODE_OFF);
+	setNodeMask(visible ? MASK_ON : MASK_OFF);
 }
 
 bool OsgNode::isVisible() const {

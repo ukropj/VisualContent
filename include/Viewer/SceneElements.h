@@ -40,10 +40,12 @@ public:
 
 	void updateNodes(float interpolationSpeed);
 	void updateEdges();
+	void setEdgeLabelsVisible(bool visible);
 
 	osg::Group* getElementsGroup();
 	QList<OsgNode* > getNodes();
 	QList<OsgEdge* > getEdges();
+
 
 private:
 	QSet<qlonglong> nodeIds;
@@ -65,6 +67,7 @@ private:
 
 	osg::ref_ptr<osg::Geometry> edgesGeometry;
 	osg::ref_ptr<osg::Geometry> edgesOGeometry;
+	osg::ref_ptr<osg::Geode> edgeLabels;
 
 	int step;
 	QProgressDialog* pd;

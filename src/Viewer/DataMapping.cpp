@@ -13,7 +13,10 @@ using namespace Vwr;
 QColor DataMapping::allColors[] = {Qt::white, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::magenta, Qt::cyan, Qt::darkGray};
 
 DataMapping::DataMapping() {
+	// default mappings
 	contentType = RANDOM;
+	insertMapping(LABEL, "id");
+	insertMapping(DIRECTION, "directed");
 }
 
 QList<DataMapping::ContentType> DataMapping::getContentTypes() {

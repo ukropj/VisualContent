@@ -25,12 +25,12 @@ private slots:
 	void keySelected(int index);
 	void typeSelected(int index);
 public:
-	DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, Vwr::DataMapping*>* propertyMap, QWidget* parent = 0);
+	DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, Vwr::DataMapping*>* mappings, QWidget* parent = 0);
 private:
 	void createControls();
 	QString getTypeName(QObject* sender);
 
-	QMap<qlonglong, Vwr::DataMapping*>* propertyMap;
+	QMap<qlonglong, Vwr::DataMapping*>* mappings;
 
 	QList<QComboBox*> keySelectors;
 	QList<QComboBox*> typeSelectors;

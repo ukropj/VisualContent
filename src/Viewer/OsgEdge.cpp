@@ -13,8 +13,11 @@
 #include "Model/Node.h"
 #include "Model/Edge.h"
 #include "Model/Type.h"
+#include <math.h>
 
 using namespace Vwr;
+
+float OsgEdge::EDGE_VOLUME = -1;
 
 OsgEdge::OsgEdge(Model::Edge* edge, DataMapping* dataMapping) {
 
@@ -33,6 +36,9 @@ OsgEdge::OsgEdge(Model::Edge* edge, DataMapping* dataMapping) {
 
 	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
 	selectedColor = Util::Config::getColorF("Viewer.Selected.Color");
+
+	if (EDGE_VOLUME < 0)
+		EDGE_VOLUME = Util::Config::getValue("Viewer.Edge.Volume").toFloat();
 }
 
 OsgEdge::~OsgEdge() {
@@ -61,23 +67,22 @@ void OsgEdge::updateGeometry() {
 	x.set(srcNode->getPosition());
 	y.set(dstNode->getPosition());
 
-	float scale = Util::Config::getValue("Viewer.Textures.EdgeScale").toFloat();
-
 	osg::Vec3f edgeDir = x - y;
 	osg::Vec3f viewVec = Util::CameraHelper::getEye() - (x + y) / 2;
+	float width = sqrt(EDGE_VOLUME / edgeDir.length()) * edge->getWeight();
 
 	osg::Vec3f up = edgeDir ^ viewVec;
 	up.normalize();
-	up *= scale;
+	up *= width;
 
 	(*edgeCoords)[0].set(x + up);
 	(*edgeCoords)[1].set(x - up);
 	(*edgeCoords)[2].set(y - up);
 	(*edgeCoords)[3].set(y + up);
 
-	int repeatCnt = edgeDir.length() / (2 * scale);
-	if (!oriented)
-		repeatCnt = 1;
+	int repeatCnt = 1;
+	if (oriented)
+		repeatCnt = edgeDir.length() / (2 * width);
 
 	(*edgeTexCoords)[0].set(0.0f, 1.0f);
 	(*edgeTexCoords)[1].set(0.0f, 0.0f);
@@ -125,9 +130,8 @@ osg::ref_ptr<osgText::FadeText> OsgEdge::createLabel(QString text) {
 
 	QString fontPath = Util::Config::getInstance()->getValue(
 			"Viewer.Labels.Font");
-
-	// experimental value
-	float scale = 1.375f * edge->getType()->getScale();
+	float size = Util::Config::getInstance()->getValue(
+			"Viewer.Labels.Size").toFloat();
 
 	if (fontPath != NULL && !fontPath.isEmpty())
 		label->setFont(fontPath.toStdString());
@@ -135,7 +139,7 @@ osg::ref_ptr<osgText::FadeText> OsgEdge::createLabel(QString text) {
 	label->setText(text.toStdString());
 	label->setLineSpacing(0);
 	label->setAxisAlignment(osgText::Text::SCREEN);
-	label->setCharacterSize(scale);
+	label->setCharacterSize(size);
 	label->setDrawMode(osgText::Text::TEXT);
 	label->setAlignment(osgText::Text::CENTER_BOTTOM_BASE_LINE);
 	label->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -163,13 +167,6 @@ osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet(StateSetType type) {
 			break;
 	}
 	return stateSet;
-}
-
-void OsgEdge::showLabel(bool visible) { // FIXME not working
-//	if (this->containsDrawable(label) && !visible)
-//		removeDrawable(label);
-//	if (!this->containsDrawable(label) && visible)
-//		addDrawable(label);
 }
 
 bool OsgEdge::isOriented() {

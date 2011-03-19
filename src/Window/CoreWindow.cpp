@@ -295,6 +295,7 @@ void CoreWindow::toggleDebug() {
 
 void CoreWindow::toggleLabels(bool checked) {
 	sceneGraph->setNodeLabelsVisible(checked);
+	sceneGraph->setEdgeLabelsVisible(checked);
 }
 
 void CoreWindow::sliderValueChanged(int value) {

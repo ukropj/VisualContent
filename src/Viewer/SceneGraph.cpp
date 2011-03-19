@@ -63,6 +63,7 @@ int SceneGraph::cleanUp() {
 		delete sceneElements;
 	sceneElements = NULL;
 	graph = NULL; // graph is not deleted here, it may be still used even if graphics is gone
+	actualMappings.clear();
 	return root->getNumChildren();
 }
 
@@ -182,7 +183,7 @@ void SceneGraph::setNodeLabelsVisible(bool visible) {
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
-	// TODO
+	sceneElements->setEdgeLabelsVisible(visible);
 }
 
 void SceneGraph::toggleFixedNodes(QList<OsgNode* > nodes) {
@@ -219,29 +220,29 @@ void SceneGraph::setFrozen(bool val) {
 }
 
 void SceneGraph::setDataMapping() {
-	QMap<qlonglong, DataMapping*> mapping;
 	QList<Model::Type*> types = graph->getTypes()->values();
 	if (types.size() > 0) {
 		QListIterator<Model::Type*> ti(types);
 		while (ti.hasNext()) {
 			Model::Type* type = ti.next();
-			mapping.insert(type->getId(), new DataMapping());
+			if (!actualMappings.contains(type->getId()))
+				actualMappings.insert(type->getId(), new DataMapping());
 		}
 
 		Window::DataMappingDialog* dialog =
-				new Window::DataMappingDialog(types, &mapping, QApplication::activeWindow());
-		dialog->exec(); // XXX
+				new Window::DataMappingDialog(types, &actualMappings, QApplication::activeWindow());
+		dialog->exec();
 		delete dialog;
 
 		QListIterator<OsgNode* > i(sceneElements->getNodes());
 		while (i.hasNext()) {
 			OsgNode* node = i.next();
-			node->setDataMapping(mapping.value(node->getNode()->getType()->getId()));
+			node->setDataMapping(actualMappings.value(node->getNode()->getType()->getId()));
 		}
 		QListIterator<OsgEdge* > j(sceneElements->getEdges());
 		while (j.hasNext()) {
 			OsgEdge* edge = j.next();
-			edge->setDataMapping(mapping.value(edge->getEdge()->getType()->getId()));
+			edge->setDataMapping(actualMappings.value(edge->getEdge()->getType()->getId()));
 		}
 	}
 }

@@ -34,8 +34,11 @@ namespace Vwr {
 class OsgContent;
 class AbstractVisitor;
 
+
 class OsgNode: public osg::AutoTransform, public AbstractNode {
 public:
+	static uint MASK_ON;
+	static uint MASK_OFF;
 
 	OsgNode(Model::Node* node, DataMapping* dataMapping = NULL);
 	~OsgNode();
@@ -66,7 +69,6 @@ public:
 
 	bool isPickable(osg::Geode* geode) const;
 	void setPickable(bool flag) {pickable = flag;}
-	bool isResizable(osg::Geode* geode) const;
 
 	void acceptVisitor(AbstractVisitor* visitor);
 
@@ -118,7 +120,7 @@ private:
 			float width, float height);
 	osg::ref_ptr<osg::Drawable> createRect(float width, float height, osg::Vec4f color);
 	osg::ref_ptr<osg::Geode> createFixed();
-	osg::ref_ptr<osg::Geode> createLabel(QString text, const float scale = 1);
+	osg::ref_ptr<osg::Geode> createLabel(QString text);
 
 	osg::ref_ptr<osg::Geometry> createCustomGeometry(osg::Vec3 coords[], const int vertNum,
 			GLenum mode, osg::Vec4 color = osg::Vec4(1.0, 1.0, 1.0, 1.0));
@@ -127,7 +129,7 @@ private:
 
 	osg::ref_ptr<osg::Geode> frameG;
 
-	osg::ref_ptr<osg::Geode> label;
+	osg::ref_ptr<osg::Geode> labelG;
 	osg::ref_ptr<osg::Geode> fixedG;
 
 	osg::ref_ptr<osg::Switch> contentSwitch;
@@ -135,10 +137,6 @@ private:
 	osg::ref_ptr<OsgContent> visualContent;
 
 	DataMapping* mapping;
-
-	// constants
-	static uint NODE_ON;
-	static uint NODE_OFF;
 };
 }
 

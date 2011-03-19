@@ -12,12 +12,12 @@
 using namespace Window;
 using namespace Vwr;
 
-DataMappingDialog::DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, DataMapping*>* propertyMap,
+DataMappingDialog::DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, DataMapping*>* mappings,
 		QWidget* parent) : QDialog(parent) {
 	setWindowTitle(tr("Data Mapping"));
 	setModal(true);
 	this->types = types;
-	this->propertyMap = propertyMap;
+	this->mappings = mappings;
 
 	contentTypes = DataMapping::getContentTypes();
 	valueTypes = DataMapping::getValueTypes();
@@ -35,6 +35,7 @@ void DataMappingDialog::createControls() {
 	QListIterator<Model::Type*> ti(types);
 	while (ti.hasNext()) {
 		Model::Type* type = ti.next();
+		DataMapping* mapping = mappings->value(type->getId());
 		QList<QString> keys = type->getKeys();
 		keys.insert(0, " - ");
 
@@ -53,6 +54,8 @@ void DataMappingDialog::createControls() {
 				QLabel* keyLabel = new QLabel(DataMapping::propertyTypeToString(val));
 				QComboBox* keySelector = new QComboBox();
 				keySelector->insertItems(0, QStringList(keys));
+				int index = keys.indexOf(mapping->getMapping(val));
+				keySelector->setCurrentIndex(qMax(0, index));
 				keySelector->setFont(QFont("Courier"));
 				connect(keySelector, SIGNAL(currentIndexChanged(int)), this, SLOT(keySelected(int)));
 				tabLayout->addWidget(keyLabel, i, 0);
@@ -68,11 +71,11 @@ void DataMappingDialog::createControls() {
 			QLabel* typeLabel = new QLabel("Content type");
 			QComboBox* typeSelector = new QComboBox();
 			typeSelector->insertItems(0, typeNames);
+			int index = typeNames.indexOf(DataMapping::contentTypeToString(mapping->getContentType()));
+			typeSelector->setCurrentIndex(index);
 			connect(typeSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(typeSelected(int)));
-			if (!type->isEdgeType()) {
-				tabLayout->addWidget(typeLabel, i, 1);
-				tabLayout->addWidget(typeSelector, i, 2);
-			}
+			tabLayout->addWidget(typeLabel, i, 0);
+			tabLayout->addWidget(typeSelector, i, 1);
 			typeSelectors.append(typeSelector);
 		} else {
 			typeSelectors.append(NULL);
@@ -102,7 +105,7 @@ void DataMappingDialog::keySelected(int index) {
 
 	DataMapping::ValueType prop = valueTypes.at(cbIndex % valueTypes.size());
 
-	DataMapping* p = propertyMap->value(type->getId());
+	DataMapping* p = mappings->value(type->getId());
 
 	if (index > 0) {
 		p->insertMapping(prop, key);
@@ -121,7 +124,7 @@ void DataMappingDialog::typeSelected(int index) {
 
 	DataMapping::ContentType contentType = contentTypes.at(index);
 
-	DataMapping* p = propertyMap->value(type->getId());
+	DataMapping* p = mappings->value(type->getId());
 
 	p->setContentType(contentType);
 

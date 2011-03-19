@@ -29,6 +29,7 @@ class SceneElements;
 class OsgNode;
 class OsgEdge;
 class ControlFrame;
+class DataMapping;
 
 class SceneGraph {
 public:
@@ -65,6 +66,7 @@ private:
 	osg::ref_ptr<osg::Group> root;
 	osg::ref_ptr<ControlFrame> controlFrame;
 	osg::ref_ptr<osg::Group> specialNodes;
+	QMap<qlonglong, DataMapping*> actualMappings;
 
 	bool updateNodes;
 	int elementsPosition;
