@@ -130,8 +130,8 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
 	allEdges->addChild(edgeGeode);
 	allEdges->addChild(edgeLabels);
-	edgeLabels->setNodeMask(OsgNode::MASK_OFF);
 	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
+	edgeLabels->setNodeMask(false);
 	return allEdges;
 }
 
@@ -251,7 +251,7 @@ void SceneElements::updateEdges() {
 }
 
 void SceneElements::setEdgeLabelsVisible(bool visible) {
-	edgeLabels->setNodeMask(visible ? OsgNode::MASK_ON : OsgNode::MASK_OFF);
+	edgeLabels->setNodeMask(visible);
 }
 
 osg::ref_ptr<osg::StateSet> SceneElements::createStateSet() const {

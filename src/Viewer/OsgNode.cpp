@@ -23,8 +23,6 @@
 
 using namespace Vwr;
 
-uint OsgNode::MASK_ON = 0xffffffff;
-uint OsgNode::MASK_OFF = 0x0;
 float OsgNode::NODE_SIZE = 8;
 float OsgNode::FRAME_WIDTH = 1;
 
@@ -64,8 +62,8 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	visualFrame->setName("visual_frame");
 	labelG->setName("label");
 
-	labelG->setNodeMask(MASK_OFF);
-	fixedG->setNodeMask(MASK_OFF);
+	labelG->setNodeMask(false);
+	fixedG->setNodeMask(false);
 
 	contentSwitch = new osg::Switch();
 	contentSwitch->setName("content");
@@ -342,8 +340,7 @@ void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 }
 
 void OsgNode::showLabel(bool visible) {
-//	qDebug() << visible ? MASK_ON : MASK_OFF;
-	labelG->setNodeMask(visible ? MASK_ON : MASK_OFF);
+	labelG->setNodeMask(visible);
 }
 
 void OsgNode::setExpanded(bool flag) {
@@ -353,13 +350,12 @@ void OsgNode::setExpanded(bool flag) {
 	expanded = flag;
 	if (expanded) {
 		if (visualG->load()) {
-//			qDebug() << node->getId() << ": content loaded";
 			updateFrame(visualFrame, visualG->getBoundingBox(),
 					visualG->getScale().x(), FRAME_WIDTH, FRAME_WIDTH*1.5f);
 			updateFrame(visualGBorder, visualG->getBoundingBox(),
 					visualG->getScale().x(), FRAME_WIDTH);
 		}
-		setSize(visualG->getBoundingBox());
+		setSize(visualGBorder->getBoundingBox());
 	} else {
 		setSize(closedG->getBoundingBox());
 	}
@@ -414,7 +410,7 @@ void OsgNode::setFixed(bool flag) {
 	if (flag) {
 		node->setPosition(getPosition());
 	}
-	fixedG->setNodeMask(flag ? MASK_ON : MASK_OFF);
+	fixedG->setNodeMask(flag);
 }
 
 void OsgNode::reloadConfig() {
@@ -541,9 +537,15 @@ void OsgNode::acceptVisitor(AbstractVisitor* visitor) {
 	visitor->visitNode(this);
 }
 
+void OsgNode::toggleContent(bool flag) {
+	if (!isExpanded())
+		return;
+	contentSwitch->setChildValue(visualG, flag);
+}
+
 void OsgNode::setVisible(bool flag) {
 	visible = flag;
-	setNodeMask(visible ? MASK_ON : MASK_OFF);
+	setNodeMask(visible);
 }
 
 bool OsgNode::isVisible() const {

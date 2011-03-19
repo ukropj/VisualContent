@@ -37,9 +37,6 @@ class AbstractVisitor;
 
 class OsgNode: public osg::AutoTransform, public AbstractNode {
 public:
-	static uint MASK_ON;
-	static uint MASK_OFF;
-
 	OsgNode(Model::Node* modelNode, DataMapping* dataMapping = NULL);
 	~OsgNode();
 
@@ -64,6 +61,7 @@ public:
 	void setExpanded(bool flag);
 	bool isExpanded() const;
 
+	void toggleContent(bool flag);
 	void setVisible(bool flag);
 	bool isVisible() const;
 

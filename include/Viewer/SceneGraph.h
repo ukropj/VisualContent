@@ -26,8 +26,6 @@ class Graph;
 
 namespace Vwr {
 class SceneElements;
-class OsgNode;
-class OsgEdge;
 class ControlFrame;
 class DataMapping;
 
@@ -49,7 +47,6 @@ public:
 
 	void setEdgeLabelsVisible(bool visible);
 	void setNodeLabelsVisible(bool visible);
-	void toggleFixedNodes(QList<OsgNode* > nodes);
 	void setFrozen(bool val);
 
 	void setDataMapping();

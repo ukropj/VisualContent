@@ -183,15 +183,9 @@ void SceneGraph::setNodeLabelsVisible(bool visible) {
 }
 
 void SceneGraph::setEdgeLabelsVisible(bool visible) {
+	if (sceneElements == NULL)
+		return;
 	sceneElements->setEdgeLabelsVisible(visible);
-}
-
-void SceneGraph::toggleFixedNodes(QList<OsgNode* > nodes) {
-	QListIterator<OsgNode* > i(nodes);
-	while (i.hasNext()) {
-		OsgNode* n = i.next();
-		n->setFixed(!n->isFixed());
-	}
 }
 
 void SceneGraph::reloadConfig() {

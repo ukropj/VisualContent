@@ -7,6 +7,7 @@
 
 #include "Viewer/ControlFrame.h"
 #include "Viewer/AbstractNode.h"
+#include "Viewer/OsgNodeGroup.h"
 #include "Viewer/BasicButtons.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
@@ -45,26 +46,23 @@ ControlFrame::~ControlFrame() {
 void ControlFrame::createButtons() {
 	nullButton = new NullButton(this);
 
-	osg::ref_ptr<FrameButton> mb = new MoveButton(this, osg::Vec3f(30, -20, 2));
-	osg::ref_ptr<FrameButton> eb = new ExpandButton(this, osg::Vec3f(30, -120, 2));
-	osg::ref_ptr<FrameButton> cb = new CompactButton(this, osg::Vec3f(30, -70, 2));
-	osg::ref_ptr<FrameButton> hb = new HideButton(this, osg::Vec3f(30, 30, 2));
-	osg::ref_ptr<FrameButton> rb = new ResizeButton(this, osg::Vec3f(-20, 30, 2));
-	osg::ref_ptr<FrameButton> fb = new FixButton(this, osg::Vec3f(-30, -30, 2));
+	osg::ref_ptr<FrameButton> hb = new HideButton(this, 0, 0);
+	osg::ref_ptr<FrameButton> rb = new ResizeButton(this, -1, 0);
+	osg::ref_ptr<FrameButton> mb = new MoveButton(this, -2, 0);
+	osg::ref_ptr<FrameButton> eb = new ExpandButton(this, 0, -1);
+	osg::ref_ptr<FrameButton> cb = new CompactButton(this, 0, -2);
+	osg::ref_ptr<FrameButton> fb = new FixButton(this, -1, -1);
+	osg::ref_ptr<FrameButton> xb = new XRayButton(this, -1, 0);
 
 	mt = new osg::AutoTransform();
 	mt2 = new osg::AutoTransform();
+	insertButton(hb, mt);
+	insertButton(rb, mt);
 	insertButton(mb, mt);
 	insertButton(eb, mt);
 	insertButton(cb, mt);
-	insertButton(hb, mt);
-	insertButton(rb, mt);
 	insertButton(fb, mt2);
-
-//	mt->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-//	mt2->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-//	mt->setAutoScaleToScreen(true);
-//	mt2->setAutoScaleToScreen(true);
+	insertButton(xb, mt2);
 
 	addChild(mt);
 	addChild(mt2);
@@ -138,10 +136,14 @@ void ControlFrame::setNode(AbstractNode* node) {
 	}
 	if (node != NULL) {
 		node->setSelected(true);
-		connect(node, SIGNAL(nodeAdded(AbstractNode*)),
-				this, SLOT(nodeAdded(AbstractNode*)));
-		connect(node, SIGNAL(nodeRemoved(AbstractNode*)),
-				this, SLOT(nodeRemoved(AbstractNode*)));
+		node->setExpanded(true);
+		OsgNodeGroup* group = dynamic_cast<OsgNodeGroup*>(node);
+		if (group != NULL) {
+			connect(group, SIGNAL(nodeAdded(AbstractNode*)),
+					this, SLOT(nodeAdded(AbstractNode*)));
+			connect(group, SIGNAL(nodeRemoved(AbstractNode*)),
+					this, SLOT(nodeRemoved(AbstractNode*)));
+		}
 	}
 	myNode = node;
 	deactivateAction();

@@ -19,7 +19,8 @@ class ControlFrame;
 class FrameButton : public osg::Geode {
 public:
 	FrameButton(ControlFrame* parentFrame);
-	FrameButton(ControlFrame* parentFrame, osg::Vec3f pos, QString imagePath);
+	FrameButton(ControlFrame* parentFrame, QString imagePath, osg::Vec2f relativePos);
+	FrameButton(ControlFrame* parentFrame, QString imagePath, osg::Vec3f pos, osg::Vec2f size);
 	~FrameButton();
 
 	virtual void handlePush() {}
@@ -34,6 +35,12 @@ public:
 	virtual void deactivate() {}
 protected:
 	ControlFrame* frame;
+
+private:
+	static float BUTTON_SIZE;
+	static float BUTTON_MARGIN;
+
+	void createGeometry(QString imagePath, osg::Vec3f pos, osg::Vec2f size);
 };
 
 }

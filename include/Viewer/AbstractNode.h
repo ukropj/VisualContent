@@ -44,6 +44,7 @@ public:
 
 	virtual void setVisible(bool flag) = 0;
 	virtual bool isVisible() const = 0;
+	virtual void toggleContent(bool flag) = 0;
 
 	virtual void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) = 0;
 

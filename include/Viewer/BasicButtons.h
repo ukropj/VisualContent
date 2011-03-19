@@ -9,6 +9,8 @@
 #define BASICBUTTONS_H_
 
 #include "Viewer/FrameButton.h"
+#include <osg/Vec2f>
+#include <osg/Vec3f>
 
 namespace Vwr {
 
@@ -19,48 +21,49 @@ public:
 
 class MoveButton : public FrameButton {
 public:
-	MoveButton(ControlFrame* parentFrame, osg::Vec3f pos);
+	MoveButton(ControlFrame* parentFrame, int x = 0, int y = 0);
 	void handlePush();
 	void handleDrag();
 	void handleRelease();
-
-	void activate();
-	void deactivate();
 };
 
 class ResizeButton : public FrameButton {
 public:
-	ResizeButton(ControlFrame* parentFrame, osg::Vec3f pos);
+	ResizeButton(ControlFrame* parentFrame, int x = 0, int y = 0);
 	void handlePush();
 	void handleDrag();
 	void handleRelease();
-
-	void activate();
-	void deactivate();
 };
 
 class HideButton : public FrameButton {
 public:
-	HideButton(ControlFrame* parentFrame, osg::Vec3f pos);
+	HideButton(ControlFrame* parentFrame, int x = 0, int y = 0);
 	void handlePush();
 };
 
 class FixButton : public FrameButton {
 public:
-	FixButton(ControlFrame* parentFrame, osg::Vec3f pos);
+	FixButton(ControlFrame* parentFrame, int x = 0, int y = 0);
 	void handlePush();
 };
 
 class ExpandButton : public FrameButton {
 public:
-	ExpandButton(ControlFrame* parentFrame, osg::Vec3f pos);
+	ExpandButton(ControlFrame* parentFrame, int x = 0, int y = 0);
 	void handlePush();
 };
 
 class CompactButton : public FrameButton {
 public:
-	CompactButton(ControlFrame* parentFrame, osg::Vec3f pos);
+	CompactButton(ControlFrame* parentFrame, int x = 0, int y = 0);
 	void handlePush();
+};
+
+class XRayButton : public FrameButton {
+public:
+	XRayButton(ControlFrame* parentFrame, int x = 0, int y = 0);
+	void handlePush();
+	void handleRelease();
 };
 
 }

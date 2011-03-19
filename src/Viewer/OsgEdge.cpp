@@ -69,7 +69,7 @@ void OsgEdge::updateGeometry() {
 
 	osg::Vec3f edgeDir = x - y;
 	osg::Vec3f viewVec = Util::CameraHelper::getEye() - (x + y) / 2;
-	float width = sqrt(EDGE_VOLUME / edgeDir.length()) * edge->getWeight();
+	float width = sqrt(EDGE_VOLUME / qMax(0.1f, edgeDir.length())) * edge->getWeight();
 
 	osg::Vec3f up = edgeDir ^ viewVec;
 	up.normalize();

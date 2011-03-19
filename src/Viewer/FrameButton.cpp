@@ -15,19 +15,37 @@
 
 using namespace Vwr;
 
+float FrameButton::BUTTON_SIZE = 40;
+float FrameButton::BUTTON_MARGIN = 10;
+
 FrameButton::FrameButton(ControlFrame* parentFrame) {
 	frame = parentFrame;
 }
 
-FrameButton::FrameButton(ControlFrame* parentFrame, osg::Vec3f pos, QString imagePath) {
+FrameButton::FrameButton(ControlFrame* parentFrame, QString imagePath,
+		osg::Vec2f relativePos) {
 	frame = parentFrame;
 
-	float width = 40;
-	float height = 40;
+	osg::Vec3f buttonPos(BUTTON_MARGIN / 2.0f, BUTTON_MARGIN / 2.0f + BUTTON_SIZE, 0);
+	buttonPos.x() += relativePos.x() * (BUTTON_SIZE + BUTTON_MARGIN);
+	buttonPos.y() += relativePos.y() * (BUTTON_SIZE + BUTTON_MARGIN);
 
+	createGeometry(imagePath, buttonPos, osg::Vec2f(BUTTON_SIZE, BUTTON_SIZE));
+}
+
+FrameButton::FrameButton(ControlFrame* parentFrame, QString imagePath,
+		osg::Vec3f pos, osg::Vec2f size) {
+	frame = parentFrame;
+	createGeometry(imagePath, pos, size);
+}
+
+FrameButton::~FrameButton() {
+}
+
+void FrameButton::createGeometry(QString imagePath, osg::Vec3f pos, osg::Vec2f size) {
 	osg::Geometry* g = osg::createTexturedQuadGeometry(
-			osg::Vec3(pos.x()-width/2.0f, pos.y()-height/2.0f, 0),
-			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
+			osg::Vec3(pos.x(), pos.y() - size.y(), pos.z()),
+			osg::Vec3(size.x(), 0, 0), osg::Vec3(0, size.y(), 0), 1, 1);
 	g->setUseDisplayList(false);
 
 	osg::ref_ptr<osg::Texture2D> texture =
@@ -48,7 +66,3 @@ FrameButton::FrameButton(ControlFrame* parentFrame, osg::Vec3f pos, QString imag
 	addDrawable(g);
 	setStateSet(stateSet);
 }
-
-FrameButton::~FrameButton() {
-}
-

@@ -52,6 +52,7 @@ public:
 
 	void setVisible(bool flag) {}
 	bool isVisible() const {return true;}
+	void toggleContent(bool flag);
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 

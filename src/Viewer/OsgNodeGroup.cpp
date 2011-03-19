@@ -240,8 +240,17 @@ void OsgNodeGroup::setExpanded(bool flag) {
 	expanded = flag;
 }
 
+
 bool OsgNodeGroup::isExpanded() const {
 	return expanded;
+}
+
+void OsgNodeGroup::toggleContent(bool flag) {
+	NodeIterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		(*i)->toggleContent(flag);
+		++i;
+	}
 }
 
 void OsgNodeGroup::childPosChanged(osg::Vec3f oldPos, osg::Vec3f newPos) {

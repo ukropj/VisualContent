@@ -147,7 +147,7 @@ void CoreWindow::createToolBars() {
 
 	toolBar->addAction(playAction);
 	toolBar->addAction(randomizeAction);
-	toolBar->addAction(fixAction);
+//	toolBar->addAction(fixAction);
 	toolBar->addAction(labelsAction);
 	toolBar->addAction(centerAction);
 	toolBar->addSeparator();
@@ -155,9 +155,6 @@ void CoreWindow::createToolBars() {
 	toolBar->addAction(captureAction);
 	toolBar->addSeparator();
 
-//	QLabel* sliderLabel = new QLabel();
-//	sliderLabel->setText(QString("%1").arg(QChar(0x3b1)));
-//	toolBar->addWidget(sliderLabel);
 	slider = new QSlider(Qt::Vertical, this);
 	slider->setTickPosition(QSlider::TicksLeft);
 	slider->setTickInterval(5);
@@ -165,7 +162,7 @@ void CoreWindow::createToolBars() {
 	slider->setValue(Util::Config::getValue("Layout.Algorithm.Alpha").toFloat() * 1000);
 	connect(slider, SIGNAL(valueChanged(int)), this,
 			SLOT(sliderValueChanged(int)));
-	slider->setFixedHeight(150);
+	slider->setFixedHeight(180);
 	toolBar->addWidget(slider);
 
 	toolBar->addSeparator();
@@ -285,8 +282,7 @@ void CoreWindow::centerView() {
 }
 
 void CoreWindow::toggleFixNodes() {
-	sceneGraph->toggleFixedNodes(viewerWidget->getPickHandler()->getSelectedNodes()); // XXX
-	layouter->wakeUp();
+	// Unused
 }
 
 void CoreWindow::toggleDebug() {
