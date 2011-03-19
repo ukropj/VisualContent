@@ -71,6 +71,7 @@ public:
 		}
 	};
 	static osg::Vec4f getDefaultColor(PropertyType type = NODE);
+	static float getScale(PropertyType type = NODE);
 
 private:
 	ContentType contentType;

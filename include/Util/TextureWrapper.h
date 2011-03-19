@@ -44,6 +44,7 @@ public:
 	 *  \return osg::ref_ptr node texture
 	 */
 	static osg::ref_ptr<osg::Texture2D> getNodeTexture();
+	static osg::ref_ptr<osg::Texture2D> getFrameTexture();
 
 	/**
 	 *  \fn public static  getOrientedEdgeTexture
@@ -85,6 +86,7 @@ private:
 	 *  \brief default node texture
 	 */
 	static osg::ref_ptr<osg::Texture2D> nodeTexture;
+	static osg::ref_ptr<osg::Texture2D> frameTexture;
 
 	/**
 	 *  osg::ref_ptr<osg::Texture2D> edgeTexture

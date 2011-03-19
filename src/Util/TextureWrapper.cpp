@@ -6,6 +6,7 @@
 using namespace Util;
 
 osg::ref_ptr<osg::Texture2D> TextureWrapper::nodeTexture;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::frameTexture;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::edgeTexture;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::orientedEdgeTexture;
 
@@ -41,6 +42,13 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::getNodeTexture() {
 		nodeTexture = readTextureFromFile(Config::getValue(
 				"Viewer.Textures.Node"));
 	return nodeTexture;
+}
+
+osg::ref_ptr<osg::Texture2D> TextureWrapper::getFrameTexture() {
+	if (frameTexture == NULL)
+		frameTexture = readTextureFromFile(Config::getValue(
+				"Viewer.Textures.Frame"));
+	return frameTexture;
 }
 
 osg::ref_ptr<osg::Texture2D> TextureWrapper::getEdgeTexture() {

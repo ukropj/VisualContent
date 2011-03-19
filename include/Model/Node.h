@@ -2,8 +2,8 @@
  * Node.h
  * Projekt 3DVisual
  */
-#ifndef DATA_NODE_DEF
-#define DATA_NODE_DEF 1
+#ifndef MODEL_NODE_DEF
+#define MODEL_NODE_DEF 1
 
 #include <osg/Vec3f>
 #include <vector>

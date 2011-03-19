@@ -19,10 +19,9 @@ using namespace Vwr;
 
 float OsgEdge::EDGE_VOLUME = -1;
 
-OsgEdge::OsgEdge(Model::Edge* edge, DataMapping* dataMapping) {
-
-	if (edge == NULL) qWarning() << "NULL reference to Edge in OsgEdge!";
-	this->edge = edge;
+OsgEdge::OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping) {
+	if (modelNode == NULL) qWarning() << "NULL reference to Edge in OsgEdge!";
+	this->edge = modelNode;
 	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
 	visible = true;
 
@@ -38,7 +37,8 @@ OsgEdge::OsgEdge(Model::Edge* edge, DataMapping* dataMapping) {
 	selectedColor = Util::Config::getColorF("Viewer.Selected.Color");
 
 	if (EDGE_VOLUME < 0)
-		EDGE_VOLUME = Util::Config::getValue("Viewer.Edge.Volume").toFloat();
+		EDGE_VOLUME = Util::Config::getValue("Viewer.Edge.Volume").toFloat() *
+		DataMapping::getScale(DataMapping::EDGE);
 }
 
 OsgEdge::~OsgEdge() {
@@ -132,6 +132,7 @@ osg::ref_ptr<osgText::FadeText> OsgEdge::createLabel(QString text) {
 			"Viewer.Labels.Font");
 	float size = Util::Config::getInstance()->getValue(
 			"Viewer.Labels.Size").toFloat();
+	size *= DataMapping::getScale(DataMapping::EDGE);
 
 	if (fontPath != NULL && !fontPath.isEmpty())
 		label->setFont(fontPath.toStdString());

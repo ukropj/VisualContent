@@ -63,3 +63,13 @@ osg::Vec4f DataMapping::getDefaultColor(PropertyType type) {
 		return Util::Config::getColorF("Viewer.Edge.Color");
 	}
 }
+
+float DataMapping::getScale(PropertyType type) {
+	switch (type) {
+	case NODE :
+	default :
+		return Util::Config::getValue("Viewer.Node.Scale").toFloat();
+	case EDGE :
+		return Util::Config::getValue("Viewer.Edge.Scale").toFloat();
+	}
+}

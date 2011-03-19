@@ -3,8 +3,8 @@
  * Projekt 3DVisual
  */
 
-#ifndef DATA_TYPE_DEF
-#define DATA_TYPE_DEF 1
+#ifndef MODEL_TYPE_DEF
+#define MODEL_TYPE_DEF 1
 
 #include <string>
 #include <QString>
@@ -47,9 +47,6 @@ public:
 	void setValue(QString key, QString value) {
 		settings->insert(key, value);
 	}
-	float getScale() const {
-		return scale;
-	}
 	Graph* getGraph() const {
 		return graph;
 	}
@@ -80,7 +77,6 @@ private:
 	bool edgeType;
 	QMap<QString, QString> dataKeys;
 	QMap<QString, QString>* settings;
-	float scale;
 };
 
 }

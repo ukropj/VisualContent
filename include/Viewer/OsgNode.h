@@ -40,7 +40,7 @@ public:
 	static uint MASK_ON;
 	static uint MASK_OFF;
 
-	OsgNode(Model::Node* node, DataMapping* dataMapping = NULL);
+	OsgNode(Model::Node* modelNode, DataMapping* dataMapping = NULL);
 	~OsgNode();
 
 	void setDataMapping(DataMapping* dataMapping = NULL);
@@ -97,9 +97,10 @@ private:
 	void setSize(osg::BoundingBox box);
 	void setSize(float width, float height, float depth = 0);
 
-	osg::Vec3f size;
-
 	Model::Node* node;
+	osg::Vec3f size;
+	osg::Vec4 color;
+	DataMapping* mapping;
 
 	bool selected;
 	bool usingInterpolation;
@@ -114,29 +115,32 @@ private:
 	osg::ref_ptr<osg::StateSet> createStateSet();
 
 	osg::ref_ptr<osg::Geode> initFrame();
-	void updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box, float scale = 1, float margin = 0);
+	void updateFrame(osg::ref_ptr<osg::Geode> frame, osg::BoundingBox box,
+			float scale = 1, float margin = 0, float offset = 0);
 
 	osg::ref_ptr<osg::Geode> createTextureNode(osg::ref_ptr<osg::Texture2D> texture,
 			float width, float height);
 	osg::ref_ptr<osg::Drawable> createRect(float width, float height, osg::Vec4f color);
-	osg::ref_ptr<osg::Geode> createFixed();
+	osg::ref_ptr<osg::Geode> createFixed(float size);
 	osg::ref_ptr<osg::Geode> createLabel(QString text);
 
 	osg::ref_ptr<osg::Geometry> createCustomGeometry(osg::Vec3 coords[], const int vertNum,
 			GLenum mode, osg::Vec4 color = osg::Vec4(1.0, 1.0, 1.0, 1.0));
 
-	osg::Vec4 color;
-
-	osg::ref_ptr<osg::Geode> frameG;
 
 	osg::ref_ptr<osg::Geode> labelG;
 	osg::ref_ptr<osg::Geode> fixedG;
 
 	osg::ref_ptr<osg::Switch> contentSwitch;
 	osg::ref_ptr<osg::Geode> closedG;
-	osg::ref_ptr<OsgContent> visualContent;
+	osg::ref_ptr<OsgContent> visualG;
+	osg::ref_ptr<osg::Geode> visualGBorder;
 
-	DataMapping* mapping;
+	osg::ref_ptr<osg::Geode> closedFrame;
+	osg::ref_ptr<osg::Geode> visualFrame;
+
+	static float NODE_SIZE;
+	static float FRAME_WIDTH;
 };
 }
 

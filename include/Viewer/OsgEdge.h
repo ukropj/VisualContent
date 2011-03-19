@@ -33,7 +33,7 @@ public:
 		ORIENTED, UNORIENTED, ENDPOINT
 	};
 
-	OsgEdge(Model::Edge* edge, DataMapping* dataMapping = NULL);
+	OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping = NULL);
 	~OsgEdge();
 
 	void setDataMapping(DataMapping* dataMapping = NULL);
