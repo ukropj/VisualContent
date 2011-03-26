@@ -24,5 +24,14 @@ private:
 	QSet<AbstractNode*> visited;
 };
 
+class ClusteringVisitor: public AbstractVisitor {
+public:
+	ClusteringVisitor(bool isExpanding);
+	void visitNode(AbstractNode* node);
+
+private:
+	bool isExpanding;
+};
+
 }
 #endif /* EXPANDERVISITOR_H_ */

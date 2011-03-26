@@ -10,8 +10,9 @@
 #include "Model/Type.h"
 #include "Model/Graph.h"
 #include "Util/Config.h"
-
-#include <QDebug>
+#include "Viewer/OsgNode.h"
+#include <QTextStream>
+#include <math.h>
 
 using namespace Model;
 
@@ -34,11 +35,14 @@ Node::Node(qlonglong id, Type* type, QMap<QString, QString>* data, Graph* graph)
 	ignore = false;
 	frozen = false;
 	weight = 1;
+	cluster = false;
 	osgNode = NULL;
 	edges.clear();
 
 	parent = NULL;
 	children.clear();
+
+	nodeData->insert("id", QString("N%1").arg(id));
 }
 
 Node::~Node(void) {
@@ -62,6 +66,8 @@ void Node::removeAllEdges() {
 }
 
 Edge* Node::getEdgeTo(const Node* otherNode) const {
+	if (edges.size() > otherNode->edges.size())
+		return otherNode->getEdgeTo(this);
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
 		Edge* edge = i.value();
 		if (this->equals(edge->getOtherNode(otherNode)))
@@ -69,6 +75,7 @@ Edge* Node::getEdgeTo(const Node* otherNode) const {
 	}
 	return NULL;
 }
+
 QList<Node*> Node::getIncidentNodes() const {
 	QList<Node*> nodes;
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
@@ -86,7 +93,11 @@ QString Node::data(QString key) const {
 	return nodeData->value(key);
 }
 
-bool Node::equals(Node* node) const {
+float Node::getWeight() const {
+	return cluster ? sqrt(children.size()) * weight : weight;
+}
+
+bool Node::equals(const Node* node) const {
 	if (this == node) {
 		return true;
 	}
@@ -106,16 +117,78 @@ bool Node::equals(Node* node) const {
 	return true;
 }
 
-void Node::setParent(Node* parent) {
-	if (this->equals(parent)) {
-		qWarning() << "Cannot set self as parent!";
+QString Node::toString() const {
+	QString str;
+	QTextStream(&str) << "N" << getId()
+//			<< " [" << position.x() << "," << position.y() << "," << position.z() << "]"
+//			<< (isFixed() ? " fixed" : "")
+//			<< " p:" << (parent != NULL ? "yes" : "no parent")
+//			<< " ch:" << children.size()
+			;
+	return str;
+}
+
+void Node::setIgnored(bool flag) {
+	ignore = flag;
+//	if (osgNode != NULL)
+//		osgNode->setVisible(!ignore);
+}
+
+void Node::setParent(Node* newParent) {
+	if (newParent == NULL) {
+		qWarning() << "Node " << toString() << " cannot have NULL as parent!";
 		return;
 	}
-	if (this->parent != NULL) {
-		this->parent->children.removeOne(this);
-	}
 	if (parent != NULL) {
-		parent->children.append(this);
+		qWarning() << "Node " << toString() << " already has parent! (" << parent->toString() << ")";
+		return;
 	}
-	this->parent = parent;
+	if (this->equals(newParent)) {
+		qWarning() << "Cannot set self as parent! (" << toString() << ")";
+		return;
+	}
+	newParent->children.append(this);
+	newParent->cluster = true;
+	parent = newParent;
+}
+
+bool Node::clusterToParent() {
+	if (parent == NULL || isIgnored())
+		return false;
+	parent->setIgnored(false);
+	osg::Vec3f pos(0, 0, 0);
+	QListIterator<Node*> nodeIt = parent->getChildrenIterator();
+	while (nodeIt.hasNext()) {
+		Node* n = nodeIt.next();
+		n->setIgnored(true);
+		pos += n->getPosition();
+	}
+	parent->setPosition(pos / parent->children.size());
+	graph->setFrozen(false);
+	return true;
+}
+
+bool Node::unclusterChildren() {
+	if (children.isEmpty())
+		return false;
+	QListIterator<Node*> nodeIt = getChildrenIterator();
+	while (nodeIt.hasNext()) {
+		Node* n = nodeIt.next();
+		n->setPosition(getPosition());
+		n->setIgnored(false);
+	}
+	setIgnored(true);
+	graph->setFrozen(false);
+	return true;
+}
+
+Node* Node::getTopCluster() const {
+	if (!ignore || parent == NULL) {
+		return NULL;
+	} else {
+		if (parent->isIgnored())
+			return parent->getTopCluster();
+		else
+			return parent;
+	}
 }

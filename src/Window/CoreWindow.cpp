@@ -33,7 +33,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	currentFile = "";
 
 	qDebug("App initialized");
-	loadFile("input/data/grid7.graphml");
+	loadFile("input/data/grid3.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -90,8 +90,8 @@ void CoreWindow::createActions() {
 	connect(labelsAction, SIGNAL(triggered(bool)), this, SLOT(toggleLabels(bool)));
 
 	QIcon randIcon("img/icons/randomize.png");
-	randomizeAction = new QAction(randIcon, tr("Radomi&ze"), this);
-	randomizeAction->setShortcut(tr("CTRL+Z"));
+	randomizeAction = new QAction(randIcon, tr("&Radomize"), this);
+	randomizeAction->setShortcut(tr("CTRL+R"));
 	randomizeAction->setToolTip(tr("Randomize graph layout"));
 	connect(randomizeAction, SIGNAL(triggered()), this, SLOT(randomize()));
 
@@ -231,6 +231,7 @@ void CoreWindow::loadFile(QString filePath) {
 		remapAction->setEnabled(true);
 		currentFile = filePath;
 
+		graph->cluster(*(graph->getNodes()), true);
 		// reload
 		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar);	// deletes original scene graph

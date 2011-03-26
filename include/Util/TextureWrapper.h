@@ -38,26 +38,9 @@ public:
 	 */
 	static osg::ref_ptr<osg::Texture2D> createTexture(osg::Image* image, bool repeat = false);
 
-	/**
-	 *  \fn public static  getNodeTexture
-	 *  \brief Returns default node texture
-	 *  \return osg::ref_ptr node texture
-	 */
 	static osg::ref_ptr<osg::Texture2D> getNodeTexture();
 	static osg::ref_ptr<osg::Texture2D> getFrameTexture();
-
-	/**
-	 *  \fn public static  getOrientedEdgeTexture
-	 *  \brief Returns default oriented edge texture
-	 *  \return osg::ref_ptr<osg::Texture2D> oriented edge texture
-	 */
-	static osg::ref_ptr<osg::Texture2D> getOrientedEdgeTexture();
-
-	/**
-	 *  \fn public static  getEdgeTexture
-	 *  \brief Returns default edge texture
-	 *  \return osg::ref_ptr edge texture
-	 */
+	static osg::ref_ptr<osg::Texture2D> getDirectedEdgeTexture();
 	static osg::ref_ptr<osg::Texture2D> getEdgeTexture();
 
 	/**
@@ -81,24 +64,10 @@ public:
 
 private:
 
-	/**
-	 *  osg::ref_ptr nodeTexture
-	 *  \brief default node texture
-	 */
 	static osg::ref_ptr<osg::Texture2D> nodeTexture;
 	static osg::ref_ptr<osg::Texture2D> frameTexture;
-
-	/**
-	 *  osg::ref_ptr<osg::Texture2D> edgeTexture
-	 *  \brief default edge texture
-	 */
 	static osg::ref_ptr<osg::Texture2D> edgeTexture;
-
-	/**
-	 *  osg::ref_ptr orientedEdgeTexture
-	 *  \brief default oriented edge texture
-	 */
-	static osg::ref_ptr<osg::Texture2D> orientedEdgeTexture;
+	static osg::ref_ptr<osg::Texture2D> directedEdgeTexture;
 
 };
 }

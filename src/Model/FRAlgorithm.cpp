@@ -24,7 +24,7 @@ FRAlgorithm::FRAlgorithm() {
 	notEnd = true;
 
 	sizeFactor = 30;
-	flexibility = 0.5f;
+	flexibility = 0.6f;
 	useMaxDistance = true;
 	K = sizeFactor;
 	M = K / 8.0f;
@@ -76,7 +76,7 @@ void FRAlgorithm::randomize() {
 	State origState = state;
 	state = PAUSED;
 	while (isIterating) {
-		qDebug() << "s";
+		qDebug() << "r";
 		QThread::msleep(100);
 		state = PAUSED;
 	}
@@ -200,16 +200,16 @@ bool FRAlgorithm::iterate() {
 
 	for (NodeIt ui = nodes->constBegin(); ui != nodes->constEnd(); ++ui) {
 		Node* u = ui.value();
-		if (!u->isIgnored()) {
+		if (!u->isCluster() || !u->isIgnored()) {
 			for (NodeIt vi = ui+1; vi != nodes->constEnd(); ++vi) {
 				Node* v = vi.value();
-				if (!v->isIgnored())
-					addForces(u, v, u->getEdgeTo(v));
+				addStandardForces(u, v);
+				addProjectiveForce(u, v);
 			}
 		}
 	}
 
-	if (state != RUNNING)
+	if (state != RUNNING) // premature break
 		return true;
 
 	// apply accumulated forces to nodes
@@ -225,60 +225,80 @@ bool FRAlgorithm::iterate() {
 	return changed;
 }
 
+void FRAlgorithm::addStandardForces(Node* realU, Node* realV) {
+	if (realU->isCluster() || realV->isCluster()) // clusters will be updated by descendants
+		return;
+
+	// find visible ancestors
+	Node* u;
+	if (realU->isIgnored()) {	// realU is not visible
+		u = realU->getTopCluster(); // all calculations will be performed on
+									// hierarchically closest visible cluster
+		if (u == NULL) return; // realU is cluster that is currently unclustered
+	} else {					// realU is visible
+		u = realU;					// all calculations as usual
+	}
+	Node* v;
+	if (realV->isIgnored()) {
+		v = realV->getTopCluster();
+		if (v == NULL) return;
+	} else {
+		v = realV;
+	}
+	// compute factors (use original input nodes)
+	float repFactor = (realU->getWeight() + realV->getWeight()) / 2.0f;
+	Edge* e = realU->getEdgeTo(realV);
+	float attrFactor = e == NULL ? 0 : e->getWeight();
+	// compute forces
+	osg::Vec3f vec = getVector(u, v);
+	float dist = vec.normalize();					// distance between nodes
+	float attrF = attr(dist, K) * attrFactor;
+	float replF = rep(dist, K) * repFactor;
+	osg::Vec3f fv = vec * (attrF + replF);
+	// add forces to nodes
+	u->addForce(fv);
+	v->addForce(-fv);
+}
+
+void FRAlgorithm::addProjectiveForce(Node* u, Node* v) {
+	// possible to overlap?
+	if (!Vwr::OsgNode::mayOverlap(u->getOsgNode(), v->getOsgNode()))
+		return;
+	osg::Vec3f pvec = getProjVector(u, v);			// compute projective vector
+	if (pvec.length() == 0)
+		return;
+	float pdist = pvec.normalize();					// projective distance between nodes
+	float pideal = getMinProjDistance(u, v, pvec); 	// minimal projective distance
+	float projF = proj(pdist, pideal);				// projective force
+	osg::Vec3f fv = pvec * projF;					// add projective force
+	u->addForce(fv);
+	v->addForce(-fv);
+	// NOTE: node weight is not accounted for, force depends on node radius
+}
+
 bool FRAlgorithm::applyForces(Node* node) {
-	// nakumulovana sila
 	osg::Vec3f fv = node->getForce();
-	// zmensenie
+	// scale
 	fv *= ALPHA;
-	// pricitame aktualnu rychlost
+	// divide by weight
+	fv /= node->getWeight();
+	// add current velocity
 	fv += node->getVelocity();
 
 	float l = fv.length();
-	if (l > MIN_MOVEMENT) { // nie je sila primala?
-//		qDebug() << "l: " << l;
-		if (l > MAX_MOVEMENT) { // je sila privelka?
+	if (l > MIN_MOVEMENT) { // not too small ?
+		if (l > MAX_MOVEMENT) { // not too big
 			fv.normalize();
 			fv *= MAX_MOVEMENT;
 		}
-
-		// ulozime novu polohu
+		// save new position
 		node->setPosition(node->getPosition() + fv);
-		// energeticka strata = 1-flexibilita
-		fv *= flexibility;
-		node->setVelocity(fv); // ulozime novu rychlost
+		// save new velocity
+		node->setVelocity(fv * flexibility);
 		return true;
 	} else {
 		return false;
 	}
-}
-
-void FRAlgorithm::addForces(Node* u, Node* v, Edge* e) {
-	osg::Vec3f fv(0, 0, 0);
-	float ideal = K;								// desired distance
-
-	osg::Vec3f pvec = getProjVector(u, v);	// resolve projective force first
-	if (pvec.length() != 0) {
-		float pdist = pvec.normalize();						// projective distance between nodes
-		float pideal = getMinProjDistance(u, v, pvec); 		// minimal projective distance
-		float projF = proj(pdist, pideal);					// projective force (only if ...)
-		fv += pvec * projF;					// add projective force
-
-		//qDebug() << ideal << ", " << pideal;
-		ideal = qMax(ideal, pideal);		// modify desired distance for standard forces
-	}
-
-	osg::Vec3f vec = getVector(u, v);
-	float dist = vec.normalize();					// distance between nodes
-	float attrF = 0;
-	if (e != NULL && !e->isIgnored()) {
-		attrF = attr(dist, ideal) * e->getWeight();	// attractive force (only if nodes are connected by edge)
-	}
-	float replF = rep(dist, ideal) * (u->getWeight() + v->getWeight()) / 2.0f;
-													// repulsive force (always)
-	fv += vec * (attrF + replF);			// add standard forces
-
-	u->addForce(fv);
-	v->addForce(-fv);
 }
 
 osg::Vec3f FRAlgorithm::getVector(Node* u, Node* v) {
@@ -291,9 +311,6 @@ osg::Vec3f FRAlgorithm::getVector(Node* u, Node* v) {
 }
 
 osg::Vec3f FRAlgorithm::getProjVector(Node* u, Node* v) {
-	if (!Vwr::OsgNode::mayOverlap(u->getOsgNode(), v->getOsgNode()))
-		return osg::Vec3f(0, 0, 0);
-
 	osg::Vec3f up = u->getPosition();
 	osg::Vec3f vp = v->getPosition();
 
@@ -304,9 +321,9 @@ osg::Vec3f FRAlgorithm::getProjVector(Node* u, Node* v) {
 	float length = edgeDir.normalize();
 	pv.normalize();
 	float dist = length * qAbs(pv * edgeDir);
-	if (dist == 0)
+	if (dist == 0) {
 		return osg::Vec3f(0, 0, 0);
-
+	}
 	return pv * dist;
 }
 

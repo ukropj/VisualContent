@@ -29,7 +29,10 @@ OsgEdge::OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping) {
 	edgeTexCoords = new osg::Vec2Array(4);
 //	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
-	oriented = getMappingValue(DataMapping::DIRECTION) == "true";
+	if (Util::Config::getValue("Viewer.Edge.ShowDirected").toFloat() != 0)
+		directed = getMappingValue(DataMapping::DIRECTION) == "true";
+	else
+		directed = false;
 
 	label = createLabel(getMappingValue(DataMapping::LABEL));
 
@@ -81,8 +84,8 @@ void OsgEdge::updateGeometry() {
 	(*edgeCoords)[3].set(y + up);
 
 	int repeatCnt = 1;
-	if (oriented)
-		repeatCnt = edgeDir.length() / (2 * width);
+	if (directed)
+		repeatCnt = edgeDir.length() / (2 * width); // TODO width == 0
 
 	(*edgeTexCoords)[0].set(0.0f, 1.0f);
 	(*edgeTexCoords)[1].set(0.0f, 0.0f);
@@ -153,25 +156,24 @@ osg::ref_ptr<osg::StateSet> OsgEdge::createStateSet(StateSetType type) {
 	stateSet->setAttributeAndModes(new osg::BlendFunc,
 			osg::StateAttribute::ON);
 	switch (type) {
-		case UNORIENTED:
+		case UNDIRECTED:
 				stateSet->setTextureAttributeAndModes(0,
 						Util::TextureWrapper::getEdgeTexture(),
 						osg::StateAttribute::ON);
 				break;
-		case ORIENTED:
+		case DIRECTED:
 				stateSet->setTextureAttributeAndModes(0,
-						Util::TextureWrapper::getOrientedEdgeTexture(),
+						Util::TextureWrapper::getDirectedEdgeTexture(),
 						osg::StateAttribute::ON);
 				break;
-		case ENDPOINT:
 		default:
 			break;
 	}
 	return stateSet;
 }
 
-bool OsgEdge::isOriented() {
-	return oriented;
+bool OsgEdge::isDirected() {
+	return directed;
 }
 
 QString OsgEdge::toString() const {

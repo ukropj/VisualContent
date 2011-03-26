@@ -31,3 +31,15 @@ void ExpanderVisitor::visitNode(AbstractNode* node) {
 		}
 	}
 }
+
+ClusteringVisitor::ClusteringVisitor(bool isExpanding) {
+	this->isExpanding = isExpanding;
+}
+
+void ClusteringVisitor::visitNode(AbstractNode* node) {
+	if (isExpanding) {
+		node->uncluster();
+	} else {
+		node->cluster();
+	}
+}

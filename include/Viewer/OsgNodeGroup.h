@@ -21,9 +21,10 @@ class OsgNodeGroup : public AbstractNode {
 signals:
 	void nodeAdded(AbstractNode* node);
 	void nodeRemoved(AbstractNode* node);
-public slots:
+private slots:
 	void childPosChanged(osg::Vec3f oldPos, osg::Vec3f newPos);
 	void childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize);
+	void childHidden(AbstractNode* child, bool visible);
 public:
 	OsgNodeGroup();
 	~OsgNodeGroup();
@@ -50,13 +51,18 @@ public:
 	void setExpanded(bool flag);
 	bool isExpanded() const;
 
-	void setVisible(bool flag) {}
-	bool isVisible() const {return true;}
+	void setVisible(bool);
+	bool isVisible() const;
 	void toggleContent(bool flag);
+	AbstractNode* cluster();
+	AbstractNode* uncluster();
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
 	void acceptVisitor(AbstractVisitor* visitor);
+
+	QString toString() const;
+	bool equals(const AbstractNode* other) const;
 
 	static AbstractNode* merge(AbstractNode* n1, AbstractNode* n2);
 
@@ -68,11 +74,14 @@ private:
 	QSet<AbstractNode* > nodes;
 	osg::Vec3f massCenter;
 	osg::Vec3f size;
+	qlonglong id;
 
 	bool selected;
 	bool expanded;
 	bool fixed;
 	bool frozen;
+
+	static qlonglong idGen;
 };
 
 }

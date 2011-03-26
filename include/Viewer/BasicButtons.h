@@ -66,6 +66,18 @@ public:
 	void handleRelease();
 };
 
+class UnclusterButton : public FrameButton {
+public:
+	UnclusterButton(ControlFrame* parentFrame, int x = 0, int y = 0);
+	void handlePush();
+};
+
+class ClusterButton : public FrameButton {
+public:
+	ClusterButton(ControlFrame* parentFrame, int x = 0, int y = 0);
+	void handlePush();
+};
+
 }
 
 #endif /* BASICBUTTONS_H_ */

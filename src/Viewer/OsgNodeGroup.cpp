@@ -9,11 +9,14 @@
 #include "Viewer/OsgCluster.h"
 #include "Viewer/AbstractVisitor.h"
 #include "Util/CameraHelper.h"
+#include <QTextStream>
 
 using namespace Vwr;
 typedef QSet<AbstractNode* >::const_iterator NodeIterator;
+qlonglong OsgNodeGroup::idGen = 0;
 
 OsgNodeGroup::OsgNodeGroup() {
+	id = idGen++;
 	selected = false;
 	expanded = false;
 	fixed = false;
@@ -22,13 +25,18 @@ OsgNodeGroup::OsgNodeGroup() {
 	massCenter = osg::Vec3f(0,0,0);
 	size = osg::Vec3f(0,0,0);
 	nodes.clear();
+	qDebug() << "NodeGroup new " << id;
 }
 
 OsgNodeGroup::~OsgNodeGroup() {
+	disconnect(this, 0, 0, 0);
 	removeAll();
-	qDebug() << "NodeGroup deleted";
+	qDebug() << "NodeGroup deleted " << id;
 }
 
+/*
+ * if node is OsgNodeGroup, it will be deleted
+ */
 void OsgNodeGroup::addNode(AbstractNode* node, bool removeIfPresent, bool recalc) {
 	if (node == NULL)
 		return;
@@ -59,6 +67,11 @@ void OsgNodeGroup::addNode(AbstractNode* node, bool removeIfPresent, bool recalc
 	if (expanded && !node->isExpanded()) expanded = false;
 	if (frozen && !node->isFrozen()) frozen = false;
 	if (fixed && !node->isFixed()) fixed = false;
+
+	if (group != NULL) {
+		qDebug() << "deleting group " << group->toString() << " in addNode of " << this->toString();
+		delete group;
+	}
 }
 
 void OsgNodeGroup::addToNodes(AbstractNode* node) {
@@ -67,13 +80,14 @@ void OsgNodeGroup::addToNodes(AbstractNode* node) {
 			this, SLOT(childPosChanged(osg::Vec3f, osg::Vec3f)));
 	connect(node, SIGNAL(changedSize(osg::Vec3f, osg::Vec3f)),
 			this, SLOT(childSizeChanged(osg::Vec3f, osg::Vec3f)));
+	connect(node, SIGNAL(changedVisibility(AbstractNode*, bool)),
+			this, SLOT(childHidden(AbstractNode*, bool)));
 	if (nodes.size() == 1) {
 		selected = node->isSelected();
 		expanded = node->isExpanded();
 		frozen = node->isFrozen();
 		fixed = node->isFixed();
 	}
-
 
 	emit nodeAdded(node);
 }
@@ -95,6 +109,7 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 	if (recalc) {
 		updateSizeAndPos();
 	}
+	qDebug() << "node " << node->toString() << " removed from group " << this->toString();
 }
 
 void OsgNodeGroup::removeAll() {
@@ -167,21 +182,24 @@ void OsgNodeGroup::updateSizeAndPos() {
 	osg::Vec3f oldPos = getPosition();
 	osg::Vec3f oldSize = getSize();
 	float xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000,
-			zMin = 10000, zMax = -10000;//TODO
+			zMin = 10000, zMax = -10000; //TODO
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
-		osg::Vec3f pos = Util::CameraHelper::byView((*i)->getPosition());
-		osg::Vec3f size = (*i)->getSize() / 2.0f;
-		xMin = qMin(xMin, pos.x()-size.x());
-		yMin = qMin(yMin, pos.y()-size.y());
-		zMin = qMin(zMin, pos.z()-size.z());
-		xMax = qMax(xMax, pos.x()+size.x());
-		yMax = qMax(yMax, pos.y()+size.y());
-		zMax = qMax(zMax, pos.z()+size.z());
+		AbstractNode* n = *i;
+		if (n->isVisible()) {
+			osg::Vec3f pos = Util::CameraHelper::byView(n->getPosition());
+			osg::Vec3f size = n->getSize() / 2.0f;
+			xMin = qMin(xMin, pos.x()-size.x());
+			yMin = qMin(yMin, pos.y()-size.y());
+			zMin = qMin(zMin, pos.z()-size.z());
+			xMax = qMax(xMax, pos.x()+size.x());
+			yMax = qMax(yMax, pos.y()+size.y());
+			zMax = qMax(zMax, pos.z()+size.z());
+		}
 		++i;
 	}
-	size.set(xMax-xMin, yMax-yMin, zMax-zMin);
-	massCenter.set(xMin+size.x()/2.0f, yMin+size.y()/2.0f, zMin+size.z()/2.0f);
+	size.set(xMax - xMin, yMax - yMin, zMax - zMin);
+	massCenter.set(xMin + size.x() / 2.0f, yMin + size.y() / 2.0f, zMin + size.z() / 2.0f);
 	massCenter = Util::CameraHelper::byViewInv(massCenter);
 
 //	qDebug() << "Group size updated";
@@ -225,6 +243,10 @@ void OsgNodeGroup::setSelected(bool flag) {
 		++i;
 	}
 	selected = flag;
+
+	if (!selected) { // no reason to keep unselected group
+		delete this;
+	}
 }
 
 bool OsgNodeGroup::isSelected() const {
@@ -240,9 +262,16 @@ void OsgNodeGroup::setExpanded(bool flag) {
 	expanded = flag;
 }
 
-
 bool OsgNodeGroup::isExpanded() const {
 	return expanded;
+}
+
+void OsgNodeGroup::setVisible(bool flag) {
+	qWarning() << "Setting group visibility to " << flag;
+}
+
+bool OsgNodeGroup::isVisible() const {
+	return true;
 }
 
 void OsgNodeGroup::toggleContent(bool flag) {
@@ -253,11 +282,59 @@ void OsgNodeGroup::toggleContent(bool flag) {
 	}
 }
 
+AbstractNode* OsgNodeGroup::cluster() {
+	OsgNodeGroup* clusterGroup = new OsgNodeGroup();
+
+	NodeIterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		AbstractNode* cluster = (*i)->cluster();
+		if (cluster != NULL)
+			clusterGroup->addNode(cluster, false, false);
+		++i;
+	}
+	if (clusterGroup->isEmpty()) {
+		delete clusterGroup;
+		return NULL;
+	}
+	clusterGroup->updateSizeAndPos();
+	return clusterGroup;
+}
+
+AbstractNode* OsgNodeGroup::uncluster() {
+	OsgNodeGroup* unclusterGroup = new OsgNodeGroup();
+
+	NodeIterator i = nodes.constBegin();
+	while (i != nodes.constEnd()) {
+		AbstractNode* ch = (*i)->uncluster();
+		if (ch != NULL)
+			unclusterGroup->addNode(ch, false, false);
+		++i;
+	}
+	if (unclusterGroup->isEmpty()) {
+		delete unclusterGroup;
+		return NULL;
+	}
+	unclusterGroup->updateSizeAndPos();
+	return unclusterGroup;
+}
+
 void OsgNodeGroup::childPosChanged(osg::Vec3f oldPos, osg::Vec3f newPos) {
 	updateSizeAndPos();
 }
+
 void OsgNodeGroup::childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize) {
 	updateSizeAndPos();
+}
+
+void OsgNodeGroup::childHidden(AbstractNode* child, bool visible) {
+	qDebug() << "child hidden " << child->toString() << " - " << visible;
+	if (!nodes.contains(child))
+		return;
+	if (visible) {
+//		updateSizeAndPos();
+	} else {
+		removeNode(child, true);
+	}
 }
 
 void OsgNodeGroup::getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) {
@@ -286,24 +363,45 @@ void OsgNodeGroup::getProjRect(float &xMin, float &yMin, float &xMax, float &yMa
 AbstractNode* OsgNodeGroup::merge(AbstractNode* n1, AbstractNode* n2) {
 	if (n1 == NULL) return n2;
 	if (n2 == NULL) return n1;
-	OsgNodeGroup* group1;
-	OsgNodeGroup* group2;
-	group1 = dynamic_cast<OsgNodeGroup*>(n1);
-	group2 = dynamic_cast<OsgNodeGroup*>(n2);
-	if (group1 != NULL) {
-		group1->addNode(n2, true);
-		return group1;
-	} else if (group2 != NULL) {
-		group2->addNode(n1, true);
-		return group2;
-	} else {
-		OsgNodeGroup* group = new OsgNodeGroup;
-		group->addNode(n1);
+	OsgNodeGroup* group = dynamic_cast<OsgNodeGroup*>(n1);
+	if (group != NULL) {
 		group->addNode(n2, true);
-		return group;
+	} else {
+		group = dynamic_cast<OsgNodeGroup*>(n2);
+		if (group != NULL) {
+			group->addNode(n1, true);
+		} else {
+			group = new OsgNodeGroup();
+			group->addNode(n1, false, false);
+			group->addNode(n2, true);
+		}
 	}
+	return group;
 }
 
 void OsgNodeGroup::acceptVisitor(AbstractVisitor* visitor) {
 	visitor->visitNode(this);
 }
+
+QString OsgNodeGroup::toString() const {
+	QString str;
+	QTextStream(&str) << "Node group " << id;
+	return str;
+}
+
+bool OsgNodeGroup::equals(const AbstractNode* other) const {
+	if (this == other) {
+		return true;
+	}
+	if (other == NULL) {
+		return false;
+	}
+	const OsgNodeGroup* otherGroup = dynamic_cast<const OsgNodeGroup*>(other);
+	if (otherGroup == NULL)
+		return false;
+	if (this->id != otherGroup->id) {
+		return false;
+	}
+	return true;
+}
+

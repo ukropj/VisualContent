@@ -34,7 +34,6 @@ namespace Vwr {
 class OsgContent;
 class AbstractVisitor;
 
-
 class OsgNode: public osg::AutoTransform, public AbstractNode {
 public:
 	OsgNode(Model::Node* modelNode, DataMapping* dataMapping = NULL);
@@ -84,11 +83,14 @@ public:
 	static bool mayOverlap(OsgNode* u, OsgNode* v);
 	float getDistanceToEdge(double angle) const;
 
-	bool equals(OsgNode* other) const;
+	bool equals(const AbstractNode* other) const;
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
 	Model::Node* getNode() const {return node;}
+//	void updateClusterVisibility();
+	AbstractNode* cluster();
+	AbstractNode* uncluster();
 
 private:
 
@@ -107,6 +109,9 @@ private:
 	float maxScale;
 	bool visible;
 
+	bool clustering;
+
+	void setScale(float scale);
 	void setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 			osg::Vec4 color);
 

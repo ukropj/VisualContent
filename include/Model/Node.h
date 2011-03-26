@@ -11,7 +11,7 @@
 #include <QMap>
 #include <QSet>
 #include <QString>
-#include <QTextStream>
+#include <QDebug>
 
 namespace Vwr {
 class OsgNode;
@@ -40,118 +40,44 @@ public:
 	Edge* getEdgeTo(const Node* otherNode) const;
 	QList<Node*> getIncidentNodes() const;
 
-	qlonglong getId() const {
-		return id;
-	}
-
-	Graph* getGraph() const {
-		return graph;
-	}
-
-	Type* getType() const {
-		return type;
-	}
-
+	qlonglong getId() const {return id;}
+	Graph* getGraph() const {return graph;}
+	Type* getType() const {return type;}
 	QString data(QString key) const;
+	float getWeight() const;
+	QMap<qlonglong, Edge*>* getEdges() {return &edges;}
 
-	osg::Vec3f getPosition() const {
-		return osg::Vec3f(position);
-	}
+	osg::Vec3f getPosition() const {return osg::Vec3f(position);}
+	void setPosition(osg::Vec3f pos) {position.set(pos);}
+	void setForce(osg::Vec3f v) {force = v;}
+	osg::Vec3f getForce() const {return force;}
+	void addForce(osg::Vec3f v) {force += v;}
+	void resetForce() {force = osg::Vec3f(0, 0, 0);}
+	void setVelocity(osg::Vec3f v) {velocity = v;}
+	void resetVelocity() {velocity = osg::Vec3f(0, 0, 0);}
+	osg::Vec3f getVelocity() const {return velocity;}
 
-	void setPosition(osg::Vec3f pos) {
-		position.set(pos);
-	}
+	void setFixed(bool flag) {fixed = flag;}
+	bool isFixed() const {return fixed;}
+	void setFrozen(bool flag) {frozen = flag;}
+	bool isFrozen() const {return frozen;}
+	void setIgnored(bool flag);
+	bool isIgnored() const {return ignore;}
 
-	float getWeight() {
-		return weight;
-	}
-
-	QMap<qlonglong, Edge*>* getEdges() {
-		return &edges;
-	}
-
-	void setForce(osg::Vec3f v) {
-		force = v;
-	}
-
-	osg::Vec3f getForce() const {
-		return force;
-	}
-
-	void addForce(osg::Vec3f v) {
-		force += v;
-	}
-
-	void resetForce() {
-		force = osg::Vec3f(0, 0, 0);
-	}
-
-	bool setFixed(bool flag) {
-		if (flag == isFixed())
-			return false;
-		fixed = flag;
-	}
-
-	bool isFixed() const {
-		return fixed;
-	}
-
-	void setFrozen(bool flag) {
-		frozen = flag;
-	}
-
-	bool isFrozen() const {
-		return frozen;
-	}
-
-	void setIgnored(bool b) {
-		ignore = b;
-	}
-
-	bool isIgnored() const {
-		return ignore;
-	}
-
-	void setVelocity(osg::Vec3f v) {
-		velocity = v;
-	}
-
-	void resetVelocity() {
-		velocity = osg::Vec3f(0, 0, 0);
-	}
-
-	osg::Vec3f getVelocity() const {
-		return velocity;
-	}
-
-	/**
-	 *  \fn public  equals(Node* node)
-	 *  \brief Checks if the node and this object is the same object
-	 *  \param   node     Node to compare
-	 *  \return bool true, if this object and node are the same object
-	 */
-	bool equals(Node* node) const;
-
-	QString toString() const {
-		QString str;
-		QTextStream(&str) << "N" << getId() << " [" << position.x()
-				<< "," << position.y() << "," << position.z() << "]"
-				<< (isFixed() ? "fixed" : "");
-		return str;
-	}
+	bool equals(const Node* node) const;
+	QString toString() const;
 
 	void setOsgNode(Vwr::OsgNode* osgNode);
-
-	Vwr::OsgNode* getOsgNode() const {
-		return osgNode;
-	}
+	Vwr::OsgNode* getOsgNode() const {return osgNode;}
 
 	void setParent(Node* parent);
-	Node* getParent() const { return parent;}
-	QListIterator<Node*> getChildrenIterator() const { return QListIterator<Node*>(children);}
+	Node* getParent() const {return parent;}
+	QListIterator<Node*> getChildrenIterator() const {return QListIterator<Node*>(children);}
 
-protected:
-	float weight;
+	bool clusterToParent();
+	bool unclusterChildren();
+	Node* getTopCluster() const;
+	bool isCluster() const {return cluster;}
 
 private:
 
@@ -160,6 +86,7 @@ private:
 	Type* type;
 	Graph* graph;
 	osg::Vec3f position;
+	float weight;
 	QMap<qlonglong, Edge*> edges;
 	Vwr::OsgNode* osgNode;
 
@@ -169,6 +96,7 @@ private:
 	bool fixed;
 	bool frozen;
 	bool ignore;
+	bool cluster;
 
 	Node* parent;
 	QList<Node*> children;

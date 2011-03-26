@@ -27,6 +27,8 @@ Edge::Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
 	this->edgeData = data ? data : new QMap<QString, QString>();
 	ignore = false;
 	weight = 1;
+
+	edgeData->insert("id", QString("E%1%2").arg(srcNode->getId()).arg(dstNode->getId()));
 }
 
 Edge::~Edge(void) {
@@ -53,4 +55,10 @@ Node* Edge::getOtherNode(const Model::Node* node) const {
 
 QString Edge::data(QString key) const {
 	return edgeData->value(key);
+}
+
+QString Edge::toString() const {
+	QString str;
+	QTextStream(&str) << "edge id:" << id;
+	return str;
 }

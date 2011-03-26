@@ -228,7 +228,8 @@ private:
 	 */
 	bool iterate();
 
-	void addForces(Node* u, Node* v, Edge* e);
+	void addStandardForces(Node* u, Node* v);
+	void addProjectiveForce(Node* u, Node* v);
 
 	osg::Vec3f getVector(Node* u, Node* v);
 	osg::Vec3f getProjVector(Node* u, Node* v);

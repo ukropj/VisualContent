@@ -8,6 +8,7 @@
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgContent.h"
 #include "Viewer/OsgCluster.h"
+#include "Viewer/OsgNodeGroup.h"
 #include "Viewer/AbstractVisitor.h"
 #include "Util/Config.h"
 #include "Util/TextureWrapper.h"
@@ -38,6 +39,7 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	usingInterpolation = true;
 	pickable = true;
 	visible = true;
+	clustering = false;
 	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	size = osg::Vec3f(0, 0, 0);
 
@@ -85,13 +87,13 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	setSize(closedG->getBoundingBox());
 	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
 
-	if (node->isIgnored())
-		setVisible(false);
+	setVisible(!node->isIgnored());
+	setScale(node->getWeight());
 }
 
 OsgNode::~OsgNode() {
 	node->setOsgNode(NULL);
-//	qDebug() << "OsgNode deleted";
+//	qDebug() << "OsgNode " << node->getId() << " deleted";
 }
 
 void OsgNode::setDataMapping(DataMapping* dataMapping) {
@@ -286,6 +288,13 @@ void OsgNode::resize(float factor) {
 		emit changedSize(oldSize, getSize());
 }
 
+void OsgNode::setScale(float scale) {
+	osg::Vec3f oldSize = getSize();
+	osg::AutoTransform::setScale(scale);
+	if (oldSize != getSize())
+		emit changedSize(oldSize, getSize());
+}
+
 void OsgNode::setSize(osg::BoundingBox box) {
 	setSize(box.xMax() - box.xMin(), box.yMax() - box.yMin(), box.zMax() - box.zMin());
 }
@@ -295,7 +304,8 @@ void OsgNode::setSize(float width, float height, float depth) {
 }
 
 osg::Vec3f OsgNode::getSize() const {
-	return size * (expanded ? visualG->getScale().x() : 1);
+	// size * scale of node (dependent on Node::weight) * scale of content (modifiable by user)
+	return size * getScale().x() * (expanded ? visualG->getScale().x() : 1);
 }
 
 float OsgNode::getRadius() const {
@@ -350,10 +360,10 @@ void OsgNode::setExpanded(bool flag) {
 	expanded = flag;
 	if (expanded) {
 		if (visualG->load()) {
-			updateFrame(visualFrame, visualG->getBoundingBox(),
-					visualG->getScale().x(), FRAME_WIDTH, FRAME_WIDTH*1.5f);
 			updateFrame(visualGBorder, visualG->getBoundingBox(),
 					visualG->getScale().x(), FRAME_WIDTH);
+			updateFrame(visualFrame, visualG->getBoundingBox(),
+					visualG->getScale().x(), FRAME_WIDTH, FRAME_WIDTH);
 		}
 		setSize(visualGBorder->getBoundingBox());
 	} else {
@@ -428,16 +438,39 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 }
 
 osg::Vec3f OsgNode::getPosition() const {
+	if (!visible) {
+		Model::Node* topCluster = node->getTopCluster();
+		if (topCluster != NULL)
+			return topCluster->getOsgNode()->getPosition();
+	}
 	return osg::AutoTransform::getPosition();
 }
 
 void OsgNode::updatePosition(float interpolationSpeed) {
 	osg::Vec3f currentPos = getPosition();
-	osg::Vec3f targetPos = node->getPosition();
+	osg::Vec3f targetPos;
+	if (!clustering) {
+		targetPos = node->getPosition();
+	} else {
+		targetPos = node->getParent()->getPosition();
+	}
 
 	float eps = 1;
-	if ((currentPos - targetPos).length() < eps)
+	if ((currentPos - targetPos).length() < eps) {
+		if (clustering) {
+			qDebug() << "Clustered:" << this->toString();
+			clustering = false;
+			OsgNode* cluster = node->getParent()->getOsgNode();
+			if (!cluster->isVisible()) {
+				cluster->updatePosition();
+				cluster->setVisible(true);
+				emit changedVisibility(cluster, true);
+			}
+			setVisible(false);
+			emit changedVisibility(this, false);
+		}
 		return;
+	}
 
 	if (!usingInterpolation || interpolationSpeed == 1) {
 		osg::AutoTransform::setPosition(targetPos);
@@ -481,6 +514,8 @@ bool OsgNode::isOnScreen() const {
 bool OsgNode::mayOverlap(OsgNode* u, OsgNode* v) {
 	if (u == NULL || v == NULL)
 		return false;
+	if (!u->isVisible() || !v->isVisible())
+		return false;
 	if (!u->isExpanded() && !v->isExpanded())
 		return false;
 	float udist = (u->getPosition() - Util::CameraHelper::getEye()).length();
@@ -512,22 +547,20 @@ float OsgNode::getDistanceToEdge(double angle) const {
 }
 
 QString OsgNode::toString() const {
-	QString str;
-	osg::Vec3f pos = getPosition();
-	QTextStream(&str) << "N" << node->getId() << " " << "["
-			<< pos.x() << "," << pos.y() << "," << pos.z() << "]"
-			<< (isFixed() ? "fixed" : "");
-	return str;
+	return node->toString();
 }
 
-bool OsgNode::equals(OsgNode* other) const {
+bool OsgNode::equals(const AbstractNode* other) const {
 	if (this == other) {
 		return true;
 	}
 	if (other == NULL) {
 		return false;
 	}
-	if (!node->equals(other->node)) {
+	const OsgNode* otherNode = dynamic_cast<const OsgNode*>(other);
+	if (otherNode == NULL)
+		return false;
+	if (!node->equals(otherNode->node)) {
 		return false;
 	}
 	return true;
@@ -544,10 +577,64 @@ void OsgNode::toggleContent(bool flag) {
 }
 
 void OsgNode::setVisible(bool flag) {
-	visible = flag;
-	setNodeMask(visible);
+	if (visible != flag) {
+		visible = flag;
+		setNodeMask(visible);
+		if (!visible) {
+			setFixed(false);
+			setExpanded(false);
+		}
+	}
 }
 
 bool OsgNode::isVisible() const {
 	return visible;
+}
+
+/*void OsgNode::updateClusterVisibility() {
+	bool flag = !node->isIgnored();
+	if (visible != flag) {
+		visible = flag;
+		setNodeMask(visible);
+	}
+}*/
+
+AbstractNode* OsgNode::cluster() {
+	if (node->clusterToParent()) {
+		qDebug() << "clustering" << this->toString();
+		Model::Node* nodeCluster = node->getParent();
+		if (nodeCluster != NULL) {
+			QListIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
+			while (nodeIt.hasNext()) {
+				OsgNode* ch = nodeIt.next()->getOsgNode();
+				ch->clustering = true;
+			}
+			return nodeCluster->getOsgNode();
+		} else {
+			qWarning() << "clustering with NULL parent ??";
+			return NULL;
+		}
+	} else {
+		qDebug() << "unable to cluster";
+		return NULL;
+	}
+}
+
+AbstractNode* OsgNode::uncluster() {
+	qDebug() << "unclustering" << this->toString();
+	if (node->unclusterChildren()) {
+		this->setVisible(false);
+		OsgNodeGroup* unclusterGroup = new OsgNodeGroup();
+		QListIterator<Model::Node*> nodeIt = node->getChildrenIterator();
+		while (nodeIt.hasNext()) {
+			OsgNode* ch = nodeIt.next()->getOsgNode();
+			ch->updatePosition();
+			ch->setVisible(true);
+			unclusterGroup->addNode(ch, false, false);
+		}
+		unclusterGroup->updateSizeAndPos();
+		return unclusterGroup;
+	} else {
+		return this;
+	}
 }

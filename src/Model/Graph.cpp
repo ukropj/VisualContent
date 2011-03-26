@@ -44,6 +44,17 @@ Node* Graph::addNode(Type* type, QMap<QString, QString>* data) {
 	return node;
 }
 
+Node* Graph::addCluster(Type* type) {
+	if (type == NULL) {
+		type = addType("new_type_cluster" + incEleIdCounter());
+	}
+	Node* node = new Node(incEleIdCounter(), type, NULL, this);
+
+	clusters.insert(node->getId(), node);
+	nodesByType.insert(type->getId(), node);
+	return node;
+}
+
 Edge* Graph::addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, QMap<QString, QString>* data) {
 	return addEdge(nodes.value(srcNodeId), nodes.value(dstNodeId), type, data);
 }
@@ -181,29 +192,109 @@ void Graph::removeType(Type* type) {
 bool Graph::areIncident(Node* u, Node* v) const {
 	if (u == NULL || v == NULL)
 		return false;
-	Edge* e;
-	if (u->getEdges()->size() <= v->getEdges()->size())
-		e = u->getEdgeTo(v);
-	else
-		e = v->getEdgeTo(u);
+	Edge* e = v->getEdgeTo(u);
 	return e != NULL && !e->isIgnored();
 }
 
-void Graph::cluster() {
-	// TODO implement
-	/*Type* clusterType = typesByName.value("node");
-	Type* edgeType = typesByName.value("edge");
-	int size = nodes.size();
-	for (qlonglong i = 0; i < nodes.size(); i++) {
-		Node* n = nodes.at(i);
-		if (n->getEdges()->size() == 1) {
-			Node* u = u->getIncidentNodes().at(0);
-			QList<Node*> nghbrs = u->getIncidentNodes();
-			for(QList<Node*>::const_iterator i = nghbrs.constBegin(); i != nghbrs.constEnd(); ++i) {
-				if ((*i)->getEdges()->size() == 1) {
-					(*i)->setParent(u);
+/*
+int WHITE = 0, GRAY = 1, BLACK = 2;
+double flow[][], capacity[][], res_capacity[][];
+int parent[], color[];
+double min_capacity[];
+double max_flow;*/
+
+void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible) {
+	qDebug() << "clustring starts " << someNodes.size();
+	clusters.clear();
+	for (NodeIt ui = someNodes.begin(); ui != someNodes.end(); ++ui) {
+		Node* u = ui.value();
+//		qDebug() << "u: " << u->getId();
+		if (u->getParent() == NULL) {
+			Node* c = addCluster(u->getType());
+//			qDebug() << "new cluster " << c->getId();
+			u->setParent(c);
+			c->setIgnored(!clustersVisible);
+			u->setIgnored(clustersVisible);
+			QList<Node*> in = u->getIncidentNodes();
+			QList<Node*>::const_iterator i = in.begin();
+			while (i != in.end()) {
+				Node* v = *i;
+//				qDebug() << "v: " << v->getId();
+				if (v->getParent() == NULL) {
+					v->setParent(c);
+					v->setIgnored(clustersVisible);
 				}
+				++i;
 			}
 		}
-	}*/
+	}
+	nodes.unite(clusters);
+//	if (clusters.size() > 1) {
+//		cluster(clusters, clustersVisible);
+//	}
+
+	qDebug() << "clustring ends " << clusters.size() << "/" <<  nodes.size();
 }
+
+/*void Graph::maxFlow(Node* source, Node* sink) {
+	flow = new double[size][size];
+	res_capacity = new double[size][size];
+	parent = new int[size];
+	min_capacity = new double[size];
+	color = new int[size];
+	queue = new int[size];
+
+	for (int i = 0; i < size; i++)
+		for (int j = 0; j < size; j++)
+			res_capacity[i][j] = capacity[i][j];
+
+	while (BFS(source))
+	{
+		max_flow += min_capacity[sink];
+		int v = sink, u;
+		while (v != source)
+		{
+			u = parent[v];
+			flow[u][v] += min_capacity[sink];
+			flow[v][u] -= min_capacity[sink];
+			res_capacity[u][v] -= min_capacity[sink];
+			res_capacity[v][u] += min_capacity[sink];
+			v = u;
+		}
+	}
+}
+
+bool Graph::BFS(Node* source, Node* sink) {
+	int size = nodes.size();
+
+	for (int i = 0; i < size; i++) {
+		color[i] = WHITE;
+		min_capacity[i] = INT_MAX;
+	}
+
+	first = last = 0;
+//	queue[last++] = source;
+	color[source] = GRAY;
+	QQueue<Node*> queue;
+	queue.enqueue(source);
+
+	while (!queue.isEmpty()) {
+//	while (first != last) {
+		Node* v = queue.dequeue();
+//		int v = queue[first++];
+		for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
+			Node* u = i.value();
+//		for (int u = 0; u < size; u++)
+			if (color[u] == WHITE && res_capacity[v][u] > 0) {
+				min_capacity[u] = qMin(min_capacity[v], res_capacity[v][u]);
+				parent[u] = v;
+				color[u] = GRAY;
+				if (u->equals(sink))
+					return true;
+//				queue[last++] = u;
+				queue.enqueue(u);
+			}
+		}
+	}
+	return false;
+}*/

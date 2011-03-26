@@ -9,6 +9,7 @@
 #define ABSTRACTNODE_H_
 
 #include <QObject>
+#include <QString>
 #include <QSet>
 #include <osg/Vec3f>
 
@@ -21,6 +22,7 @@ Q_OBJECT
 signals:
 	void changedPosition(osg::Vec3f oldPos, osg::Vec3f newPos);
 	void changedSize(osg::Vec3f oldSize, osg::Vec3f newSize);
+	void changedVisibility(AbstractNode* node, bool visible);
 public:
 
 	AbstractNode() {}
@@ -45,10 +47,15 @@ public:
 	virtual void setVisible(bool flag) = 0;
 	virtual bool isVisible() const = 0;
 	virtual void toggleContent(bool flag) = 0;
+	virtual AbstractNode* cluster() = 0;
+	virtual AbstractNode* uncluster() = 0;
 
 	virtual void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) = 0;
 
 	virtual void acceptVisitor(AbstractVisitor* visitor) = 0;
+
+	virtual QString toString() const = 0;
+	virtual bool equals(const AbstractNode* other) const = 0;
 };
 
 }

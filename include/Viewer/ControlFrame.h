@@ -34,6 +34,7 @@ public:
 	~ControlFrame();
 	void show();
 	void hide();
+	void addNode(AbstractNode* node);
 	void setNode(AbstractNode* node);
 	AbstractNode* getNode() const;
 
@@ -85,6 +86,8 @@ private:
 	osg::ref_ptr<osg::AutoTransform> mt;
 	osg::ref_ptr<osg::AutoTransform> mt2;
 	osg::ref_ptr<osg::Geode> rect;
+
+	static osg::Vec2f MIN_SIZE;
 };
 
 }

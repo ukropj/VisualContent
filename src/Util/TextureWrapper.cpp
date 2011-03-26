@@ -8,7 +8,7 @@ using namespace Util;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::nodeTexture;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::frameTexture;
 osg::ref_ptr<osg::Texture2D> TextureWrapper::edgeTexture;
-osg::ref_ptr<osg::Texture2D> TextureWrapper::orientedEdgeTexture;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::directedEdgeTexture;
 
 osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path, bool repeat) {
 	osg::ref_ptr<osg::Texture2D> texture = NULL;
@@ -58,16 +58,16 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::getEdgeTexture() {
 	return edgeTexture;
 }
 
-osg::ref_ptr<osg::Texture2D> TextureWrapper::getOrientedEdgeTexture() {
-	if (orientedEdgeTexture == NULL) {
+osg::ref_ptr<osg::Texture2D> TextureWrapper::getDirectedEdgeTexture() {
+	if (directedEdgeTexture == NULL) {
 		osg::ref_ptr<osg::ImageSequence> imageSequence = new osg::ImageSequence;
 		imageSequence->setMode(osg::ImageSequence::PRE_LOAD_ALL_IMAGES);
 
 		for (int x = 0; x < 15; x++) {
 			std::stringstream os;
-			os << Config::getValue("Viewer.Textures.OrientedEdgePrefix").toStdString();
+			os << Config::getValue("Viewer.Textures.DirectedEdgePrefix").toStdString();
 			os << x;
-			os << Config::getValue("Viewer.Textures.OrientedEdgeSuffix").toStdString();
+			os << Config::getValue("Viewer.Textures.DirectedEdgeSuffix").toStdString();
 
 			osg::ref_ptr<osg::Image> image = osgDB::readImageFile(os.str());
 			if (image.valid()) {
@@ -79,21 +79,21 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::getOrientedEdgeTexture() {
 		imageSequence->setLoopingMode(osg::ImageStream::LOOPING);
 		imageSequence->play();
 
-		orientedEdgeTexture = new osg::Texture2D;
-		orientedEdgeTexture->setImage(imageSequence.get());
+		directedEdgeTexture = new osg::Texture2D;
+		directedEdgeTexture->setImage(imageSequence.get());
 
-		orientedEdgeTexture->setDataVariance(osg::Object::DYNAMIC);
-		orientedEdgeTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-		orientedEdgeTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+		directedEdgeTexture->setDataVariance(osg::Object::DYNAMIC);
+		directedEdgeTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
+		directedEdgeTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
 	}
 
-	return orientedEdgeTexture;
+	return directedEdgeTexture;
 }
 
 void TextureWrapper::reloadTextures() {
 	nodeTexture = NULL;
 	edgeTexture = NULL;
-	orientedEdgeTexture = NULL;
+	directedEdgeTexture = NULL;
 }
 
 #include <noise.h>

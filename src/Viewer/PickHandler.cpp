@@ -268,10 +268,11 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 				}
 				group->updateSizeAndPos();
 				if (multiPickEnabled) {
-					nodeFrame->setNode(Vwr::OsgNodeGroup::merge(nodeFrame->getNode(), group));
+					nodeFrame->addNode(group);
 				} else {
 					nodeFrame->setNode(group);
 				}
+				group = NULL;
 				nodeFrame->show();
 				sceneGraph->setFrozen(false);
 			} else {

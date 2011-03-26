@@ -95,7 +95,7 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		Model::Edge* edge = i.next();
 		OsgEdge* osgEdge = new OsgEdge(edge);
 		edges.append(osgEdge);
-		if (!osgEdge->isOriented()) {
+		if (!osgEdge->isDirected()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
 					osg::PrimitiveSet::QUADS, index, 4));
 			for (int i = 0; i < 4; i++)
@@ -111,8 +111,8 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		edgeLabels->addDrawable(osgEdge->getLabel());
 	}
 
-	edgesGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::UNORIENTED));
-	edgesOGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::ORIENTED));
+	edgesGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::UNDIRECTED));
+	edgesOGeometry->setStateSet(OsgEdge::createStateSet(OsgEdge::DIRECTED));
 
 	edgesGeometry->setColorArray(colors);
 	edgesOGeometry->setColorArray(colorsO);
@@ -217,8 +217,11 @@ void SceneElements::updateNodes(float interpolationSpeed) {
 	QList<OsgNode* >::const_iterator i = nodes.constBegin();
 
 	while (i != nodes.constEnd()) {
-		if ((*i)->isVisible())
-			(*i)->updatePosition(interpolationSpeed);
+		OsgNode* n = *i;
+//		n->updateClusterVisibility();
+		if (n->isVisible()) {
+			n->updatePosition(interpolationSpeed);
+		}
 		++i;
 	}
 }
@@ -234,7 +237,7 @@ void SceneElements::updateEdges() {
 
 	QList<OsgEdge*>::const_iterator i = edges.constBegin();
 	while (i != edges.constEnd()) {
-		if (!(*i)->isOriented())
+		if (!(*i)->isDirected())
 			(*i)->getEdgeData(coords, texCoords, colors);
 		else
 			(*i)->getEdgeData(coordsO, texCoordsO, colorsO);

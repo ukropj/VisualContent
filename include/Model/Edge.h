@@ -26,54 +26,23 @@ public:
 
 	Edge(qlonglong id, Node* srcNode, Node* dstNode, Type* type,
 			QMap<QString, QString>* data, Graph* graph);
-
 	~Edge(void);
 
-	qlonglong getId() const {
-		return id;
-	}
-
+	qlonglong getId() const {return id;}
+	Type* getType() const {return type;}
 	QString data(QString key) const;
+	Graph* getGraph() const {return graph;}
 
-	Node* getSrcNode() const {
-		return srcNode;
-	}
-
-	Node* getDstNode() const {
-		return dstNode;
-	}
-
+	Node* getSrcNode() const {return srcNode;}
+	Node* getDstNode() const {return dstNode;}
 	Node* getOtherNode(const Node* node) const;
 
-	Type* getType() const {
-		return type;
-	}
+	void setIgnored(bool b) {ignore = b;}
+	bool isIgnored() const {return ignore;}
+	float getWeight() {return weight;}
+	void addWeight() {weight += 1;}
 
-	QString toString() const {
-		QString str;
-		QTextStream(&str) << "edge id:" << id;
-		return str;
-	}
-
-	Graph* getGraph() const {
-		return graph;
-	}
-
-	void setIgnored(bool b) {
-		ignore = b;
-	}
-
-	bool isIgnored() const {
-		return ignore;
-	}
-
-	float getWeight() {
-		return weight;
-	}
-
-	void addWeight() {
-		weight += 1;
-	}
+	QString toString() const;
 
 private:
 	Graph* graph;

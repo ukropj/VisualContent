@@ -135,7 +135,6 @@ void IOManager::readNode() {
 
 	QString id = xml.attributes().value("id").toString();
 	QMap<QString, QString>* data = readData(nodeType);
-	data->insert("id", id);
 	Node* node = graph->addNode(nodeType, data);
 	readNodes.insert(id, node->getId());
 //	qDebug() << "n "<< id;
@@ -149,7 +148,6 @@ void IOManager::readEdge() {
 	QString sourceId = xml.attributes().value("source").toString();
 	QString targetId = xml.attributes().value("target").toString();
 	QMap<QString, QString>* data = readData(edgeType);
-	data->insert("id", sourceId + targetId);
 	data->insert("directed", directed == "true" || defaultDirection ? "true" : "false");
 	Edge* edge = graph->addEdge(readNodes.value(sourceId), readNodes.value(targetId),
 			edgeType, data);

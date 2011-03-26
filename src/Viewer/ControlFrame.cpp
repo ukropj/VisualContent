@@ -22,6 +22,8 @@
 
 using namespace Vwr;
 
+osg::Vec2f ControlFrame::MIN_SIZE = osg::Vec2f(60, 60);
+
 ControlFrame::ControlFrame(SceneGraph* sceneGraph) {
 	this->sceneGraph = sceneGraph;
 	myNode = NULL;
@@ -53,6 +55,8 @@ void ControlFrame::createButtons() {
 	osg::ref_ptr<FrameButton> cb = new CompactButton(this, 0, -2);
 	osg::ref_ptr<FrameButton> fb = new FixButton(this, -1, -1);
 	osg::ref_ptr<FrameButton> xb = new XRayButton(this, -1, 0);
+	osg::ref_ptr<FrameButton> clb = new ClusterButton(this, 1, -1);
+	osg::ref_ptr<FrameButton> uclb = new UnclusterButton(this, 1, -2);
 
 	mt = new osg::AutoTransform();
 	mt2 = new osg::AutoTransform();
@@ -61,6 +65,8 @@ void ControlFrame::createButtons() {
 	insertButton(mb, mt);
 	insertButton(eb, mt);
 	insertButton(cb, mt);
+	insertButton(clb, mt);
+	insertButton(uclb, mt);
 	insertButton(fb, mt2);
 	insertButton(xb, mt2);
 
@@ -123,6 +129,17 @@ AbstractNode* ControlFrame::getNode() const {
 	return myNode;
 }
 
+void ControlFrame::addNode(AbstractNode* node) {
+	if (node == NULL)
+		return;
+	OsgNodeGroup* myGroup = dynamic_cast<OsgNodeGroup*>(myNode);
+	if (myGroup != NULL) {
+		myGroup->addNode(node, true);
+	} else {
+		setNode(Vwr::OsgNodeGroup::merge(node, myNode));
+	}
+}
+
 void ControlFrame::setNode(AbstractNode* node) {
 	if (node == myNode) {
 //		qDebug() << "already framed";
@@ -131,12 +148,13 @@ void ControlFrame::setNode(AbstractNode* node) {
 //	qDebug() << "setting";
 
 	if (myNode != NULL) {
-		myNode->setSelected(false);
 		disconnect(myNode, 0 ,this, 0);
+		myNode->setSelected(false);
+		myNode = NULL;
 	}
 	if (node != NULL) {
 		node->setSelected(true);
-		node->setExpanded(true);
+//		node->setExpanded(true);
 		OsgNodeGroup* group = dynamic_cast<OsgNodeGroup*>(node);
 		if (group != NULL) {
 			connect(group, SIGNAL(nodeAdded(AbstractNode*)),
@@ -163,6 +181,16 @@ void ControlFrame::updateGeometry() {
 
 	float xMin, yMin, xMax, yMax;
 	myNode->getProjRect(xMin, yMin, xMax, yMax);
+
+	float d = 0;
+	if ((d = xMax-xMin) < MIN_SIZE.x()) {
+		xMax += (MIN_SIZE.x()-d)/2.0f;
+		xMin -= (MIN_SIZE.x()-d)/2.0f;
+	}
+	if ((d = yMax-yMin) < MIN_SIZE.y()) {
+		yMax += (MIN_SIZE.y()-d)/2.0f;
+		yMin -= (MIN_SIZE.y()-d)/2.0f;
+	}
 
 	mt->setPosition(osg::Vec3f(xMax, yMax, 0));
 	mt2->setPosition(osg::Vec3f(xMin, yMin, 0));
@@ -242,9 +270,11 @@ bool ControlFrame::handleRelease(const osgGA::GUIEventAdapter& event) {
 }
 
 void ControlFrame::nodeAdded(AbstractNode* node) {
+	qDebug() << "node " << node->toString() << " added to ControlFrame";
 	node->setSelected(true);
 }
 
 void ControlFrame::nodeRemoved(AbstractNode* node) {
+	qDebug() << "node " << node->toString() << " removed from ControlFrame";
 	node->setSelected(false);
 }

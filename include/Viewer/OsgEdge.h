@@ -30,7 +30,7 @@ class OsgEdge {
 public:
 
 	enum StateSetType {
-		ORIENTED, UNORIENTED, ENDPOINT
+		DIRECTED, UNDIRECTED
 	};
 
 	OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping = NULL);
@@ -44,7 +44,7 @@ public:
 					osg::Vec4Array> colors);
 
 	Model::Edge* getEdge() const {return edge;}
-	bool isOriented();
+	bool isDirected();
 	QString toString() const;
 
 	osg::Vec4 getEdgeColor() const {
@@ -83,7 +83,7 @@ private:
 	DataMapping* mapping;
 
 	bool selected;
-	bool oriented;
+	bool directed;
 	bool visible;
 
 	osg::ref_ptr<osgText::FadeText> label;

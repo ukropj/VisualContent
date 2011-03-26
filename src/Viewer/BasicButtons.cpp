@@ -111,3 +111,23 @@ void XRayButton::handlePush() {
 void XRayButton::handleRelease() {
 	frame->getNode()->toggleContent(true);
 }
+
+
+UnclusterButton::UnclusterButton(ControlFrame* parentFrame, int x, int y)
+	: FrameButton(parentFrame, "img/texture/b_expand.png", osg::Vec2f(x, y)) {
+	setName("uncluster_button");
+}
+void UnclusterButton::handlePush() {
+	AbstractNode* nodes = frame->getNode()->uncluster();
+	frame->setNode(nodes);
+}
+
+
+ClusterButton::ClusterButton(ControlFrame* parentFrame, int x, int y)
+	: FrameButton(parentFrame, "img/texture/b_compact.png", osg::Vec2f(x, y)) {
+	setName("cluster_button");
+}
+void ClusterButton::handlePush() {
+	AbstractNode* topCluster = frame->getNode()->cluster();
+	frame->addNode(topCluster);
+}
