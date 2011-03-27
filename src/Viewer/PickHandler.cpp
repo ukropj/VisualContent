@@ -21,6 +21,7 @@
 
 using namespace Vwr;
 typedef QList<OsgNode* >::const_iterator NodeIterator;
+float PickHandler::MIN_SEL_DIAG = 5;
 
 PickHandler::PickHandler(SceneGraph * sceneGraph) {
 	//vytvorenie timera a vynulovanie premennych
@@ -198,6 +199,7 @@ bool PickHandler::handlePush(const osgGA::GUIEventAdapter& event,
 		multiPickEnabled = isShift(event); // TODO move to frame?
 		nodeFrame->deactivateAction();
 
+
 		OsgNode* node = pickOne(getViewer(action), event);
 		if (nodeFrame->isActive() || node != NULL) {
 			if (node != NULL) {
@@ -276,6 +278,7 @@ bool PickHandler::handleRelease(const osgGA::GUIEventAdapter& event,
 				nodeFrame->show();
 				sceneGraph->setFrozen(false);
 			} else {
+				qDebug() << "hide on release";
 				nodeFrame->hide();
 				nodeFrame->setNode(NULL);
 			}
@@ -357,12 +360,14 @@ bool PickHandler::handleDrag(const osgGA::GUIEventAdapter& event,
 			return true;
 		} else {					// draw selecting rectangle
 			lastPos.set(thisPos.x(), thisPos.y());
-			if (!isDrawingSelectionQuad) { // init quad
+			if (!isDrawingSelectionQuad &&
+					(originPos - lastPos).length() > MIN_SEL_DIAG) { // init quad
 				isDrawingSelectionQuad = true;
 				drawSelectionQuad(); // rewrite old coords before showing
 				initSelectionQuad();
 			}
-			drawSelectionQuad();
+			if (isDrawingSelectionQuad)
+				drawSelectionQuad();
 			return true;
 		}
 	}

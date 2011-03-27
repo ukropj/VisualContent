@@ -280,10 +280,10 @@ bool FRAlgorithm::applyForces(Node* node) {
 	osg::Vec3f fv = node->getForce();
 	// scale
 	fv *= ALPHA;
-	// divide by weight
-	fv /= node->getWeight();
 	// add current velocity
 	fv += node->getVelocity();
+	// divide by weight
+	fv /= sqrt(node->getWeight());
 
 	float l = fv.length();
 	if (l > MIN_MOVEMENT) { // not too small ?

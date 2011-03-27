@@ -111,15 +111,32 @@ void ControlFrame::createBorder() {
 	addChild(rect);
 }
 
+void ControlFrame::updateButtons(AbstractNode* node, bool nodeAdded) {
+	return;
+	// TODO how to call this when node state changes?
+	// TODO how to handle groups, additions and removals?
+
+	if (node == NULL)
+		return;
+	buttons.value(ExpandButton::name())->setEnabled(!node->isExpanded());
+	buttons.value(CompactButton::name())->setEnabled(node->isExpanded());
+	buttons.value(XRayButton::name())->setEnabled(node->isExpanded());
+	buttons.value(ResizeButton::name())->setEnabled(node->isExpanded());
+
+	buttons.value(ClusterButton::name())->setEnabled(node->isClusterable());
+//	buttons.value(UnclusterButton::name())->setEnabled(node->hasParent());
+	// TODO
+}
+
 void ControlFrame::show() {
 	if (!isNodeSet())
 		return;
-//	qDebug() << "show";
+	qDebug() << "show";
 	setNodeMask(true);
 }
 
 void ControlFrame::hide() {
-//	qDebug() << "hide";
+	qDebug() << "hide";
 	setNodeMask(false);
 	if (isActive())
 		deactivateAction();
@@ -164,7 +181,9 @@ void ControlFrame::setNode(AbstractNode* node) {
 		}
 	}
 	myNode = node;
+	updateButtons(node);
 	deactivateAction();
+	qDebug() << "Node set " << (myNode ? myNode->toString() : "NULL");
 }
 
 bool ControlFrame::isNodeSet() const {
@@ -222,22 +241,23 @@ bool ControlFrame::activateAction(osg::Geode* button) {
 	if (newButton == nullButton) {
 		deactivateAction();
 	} else if (newButton != activeButton) {
-		activeButton->deactivate();
+//		activeButton->deactivate();
 		activeButton = newButton;
-		activeButton->activate();
+//		activeButton->activate();
 	}
 //	qDebug() << "act:" << activeButton->getName().c_str();
 	return isActive();
 }
 
 void ControlFrame::deactivateAction() {
-	//qDebug() << "deact: null_button";
+//	qDebug() << "deact: " << activeButton->getName().c_str();
 	activeButton->deactivate();
 	activeButton = nullButton;
 }
 
 bool ControlFrame::handlePush(const osgGA::GUIEventAdapter& event) {
-	if (isNodeSet()) {
+//	qDebug() << "push";
+	if (isNodeSet() && activeButton->isEnabled()) {
 		originPos.set(event.getX(), event.getY());
 		currentPos.set(originPos.x(), originPos.y());
 		lastDragPos.set(originPos.x(), originPos.y());
@@ -249,7 +269,7 @@ bool ControlFrame::handlePush(const osgGA::GUIEventAdapter& event) {
 }
 
 bool ControlFrame::handleDrag(const osgGA::GUIEventAdapter& event) {
-	if (isNodeSet()) {
+	if (isNodeSet() && activeButton->isEnabled()) {
 		currentPos.set(event.getX(), event.getY());
 		activeButton->handleDrag();
 		lastDragPos.set(currentPos.x(), currentPos.y());
@@ -260,7 +280,8 @@ bool ControlFrame::handleDrag(const osgGA::GUIEventAdapter& event) {
 }
 
 bool ControlFrame::handleRelease(const osgGA::GUIEventAdapter& event) {
-	if (isNodeSet()) {
+//	qDebug() << "release";
+	if (isNodeSet() && activeButton->isEnabled()) {
 		currentPos.set(event.getX(), event.getY());
 		activeButton->handleRelease();
 		return true;
@@ -270,11 +291,14 @@ bool ControlFrame::handleRelease(const osgGA::GUIEventAdapter& event) {
 }
 
 void ControlFrame::nodeAdded(AbstractNode* node) {
-	qDebug() << "node " << node->toString() << " added to ControlFrame";
+//	qDebug() << "node " << node->toString() << " added to ControlFrame";
 	node->setSelected(true);
+	updateButtons(node, true);
 }
 
 void ControlFrame::nodeRemoved(AbstractNode* node) {
-	qDebug() << "node " << node->toString() << " removed from ControlFrame";
+//	qDebug() << "node " << node->toString() << " removed from ControlFrame";
 	node->setSelected(false);
+	updateButtons(myNode);
 }
+

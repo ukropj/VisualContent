@@ -201,8 +201,10 @@ void SceneGraph::reloadConfig() {
 //	}
 }
 
-void SceneGraph::setUpdatingNodes(bool val) {
+bool SceneGraph::setUpdatingNodes(bool val) {
+	bool oldVal = updateNodes;
 	updateNodes = val;
+	return oldVal;
 }
 
 void SceneGraph::setFrozen(bool val) {

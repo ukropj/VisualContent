@@ -54,6 +54,7 @@ public:
 	void setVisible(bool);
 	bool isVisible() const;
 	void toggleContent(bool flag);
+	bool isClusterable() const;
 	AbstractNode* cluster();
 	AbstractNode* uncluster();
 

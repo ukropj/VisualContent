@@ -88,7 +88,8 @@ public:
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);
 
 	Model::Node* getNode() const {return node;}
-//	void updateClusterVisibility();
+
+	bool isClusterable() const;
 	AbstractNode* cluster();
 	AbstractNode* uncluster();
 

@@ -203,37 +203,45 @@ int parent[], color[];
 double min_capacity[];
 double max_flow;*/
 
-void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible) {
-	qDebug() << "clustring starts " << someNodes.size();
+void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int maxLevels) {
+	qDebug() << "clustering starts " << someNodes.size();
 	clusters.clear();
 	for (NodeIt ui = someNodes.begin(); ui != someNodes.end(); ++ui) {
 		Node* u = ui.value();
-//		qDebug() << "u: " << u->getId();
+		qDebug() << "u: " << u->getId();
 		if (u->getParent() == NULL) {
-			Node* c = addCluster(u->getType());
-//			qDebug() << "new cluster " << c->getId();
-			u->setParent(c);
-			c->setIgnored(!clustersVisible);
-			u->setIgnored(clustersVisible);
-			QList<Node*> in = u->getIncidentNodes();
-			QList<Node*>::const_iterator i = in.begin();
+			Node* c = NULL;
+			QSet<Node*> in = u->getIncidentNodes();
+			QSet<Node*>::const_iterator i = in.begin();
 			while (i != in.end()) {
 				Node* v = *i;
-//				qDebug() << "v: " << v->getId();
+				qDebug() << "v: " << v->getId();
 				if (v->getParent() == NULL) {
+					if (c == NULL) {
+						c = addCluster(u->getType()); // TODO cluster type
+						qDebug() << "new c: " << c->getId();
+					}
 					v->setParent(c);
 					v->setIgnored(clustersVisible);
+					qDebug() << "v added to c";
 				}
 				++i;
+			}
+			if (c != NULL) {
+				u->setParent(c);
+				c->setIgnored(!clustersVisible);
+				u->setIgnored(clustersVisible);
+				qDebug() << "u added to c";
 			}
 		}
 	}
 	nodes.unite(clusters);
-//	if (clusters.size() > 1) {
-//		cluster(clusters, clustersVisible);
-//	}
-
-	qDebug() << "clustring ends " << clusters.size() << "/" <<  nodes.size();
+	if (clusters.size() > 1 && maxLevels > 0) {
+		QMap<qlonglong, Node*> newNodes(clusters);
+		clusters.clear();
+		cluster(newNodes, clustersVisible, maxLevels - 1);
+	}
+	qDebug() << "clustering ends " << clusters.size() << "/" <<  nodes.size();
 }
 
 /*void Graph::maxFlow(Node* source, Node* sink) {

@@ -38,7 +38,7 @@ public:
 	void reloadConfig();
 
 	void update(bool forceIdeal = false);
-	void setUpdatingNodes(bool val);
+	bool setUpdatingNodes(bool val);
 
 	osg::ref_ptr<osg::Group> getRoot() const;
 	osg::ref_ptr<ControlFrame> getNodeFrame() const;

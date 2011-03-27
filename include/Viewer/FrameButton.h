@@ -23,6 +23,9 @@ public:
 	FrameButton(ControlFrame* parentFrame, QString imagePath, osg::Vec3f pos, osg::Vec2f size);
 	~FrameButton();
 
+	bool isEnabled() const;
+	virtual void setEnabled(bool enabled);
+
 	virtual void handlePush() {}
 	virtual void handleDoubleclick() {}
 	virtual void handleDrag() {}
@@ -31,16 +34,22 @@ public:
 	virtual void handleKeyDown() {}
 	virtual void handleKeyUp() {}
 
-	virtual void activate() {}
-	virtual void deactivate() {}
+	virtual void activate();
+	virtual void deactivate();
 protected:
 	ControlFrame* frame;
 
 private:
+	bool enabled;
+
 	static float BUTTON_SIZE;
 	static float BUTTON_MARGIN;
+	static osg::Vec4f ENABLED_COLOR;
+	static osg::Vec4f DISABLED_COLOR;
+	static osg::Vec4f SELECTED_COLOR;
 
 	void createGeometry(QString imagePath, osg::Vec3f pos, osg::Vec2f size);
+	void setColor(osg::Vec4f color);
 };
 
 }

@@ -17,13 +17,12 @@
 using namespace Vwr;
 
 NullButton::NullButton(ControlFrame* parentFrame) : FrameButton(parentFrame) {
-	setName("null_button");
+	setName(NullButton::name());
 }
-
 
 MoveButton::MoveButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_move.png", osg::Vec2f(x, y)) {
-	setName("move_button");
+	setName(MoveButton::name());
 }
 void MoveButton::handlePush() {
 	frame->getNode()->setFrozen(true);
@@ -42,7 +41,7 @@ void MoveButton::handleRelease() {
 
 ResizeButton::ResizeButton(ControlFrame* parentFrame, int x, int y)
 : FrameButton(parentFrame, "img/texture/b_resize.png", osg::Vec2f(x, y)) {
-	setName("resize_button");
+	setName(ResizeButton::name());
 }
 void ResizeButton::handlePush() {
 	frame->getNode()->setFrozen(true);
@@ -62,7 +61,7 @@ void ResizeButton::handleRelease() {
 
 HideButton::HideButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_hide.png", osg::Vec2f(x, y)) {
-	setName("hide_button");
+	setName(HideButton::name());
 }
 void HideButton::handlePush() {
 	frame->hide();
@@ -72,7 +71,7 @@ void HideButton::handlePush() {
 
 FixButton::FixButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_lock.png", osg::Vec2f(x, y)) {
-	setName("fix_button");
+	setName(FixButton::name());
 }
 void FixButton::handlePush() {
 	frame->getNode()->setFixed(!frame->getNode()->isFixed());
@@ -81,8 +80,9 @@ void FixButton::handlePush() {
 
 ExpandButton::ExpandButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_expand.png", osg::Vec2f(x, y)) {
-	setName("expand_button");
+	setName(ExpandButton::name());
 }
+
 void ExpandButton::handlePush() {
 	AbstractVisitor* v = new ExpanderVisitor(true);
 	frame->getNode()->acceptVisitor(v);
@@ -92,7 +92,7 @@ void ExpandButton::handlePush() {
 
 CompactButton::CompactButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_compact.png", osg::Vec2f(x, y)) {
-	setName("compact_button");
+	setName(CompactButton::name());
 }
 void CompactButton::handlePush() {
 	AbstractVisitor* v = new ExpanderVisitor(false);
@@ -103,7 +103,7 @@ void CompactButton::handlePush() {
 
 XRayButton::XRayButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_xray.png", osg::Vec2f(x, y)) {
-	setName("xray_button");
+	setName(XRayButton::name());
 }
 void XRayButton::handlePush() {
 	frame->getNode()->toggleContent(false);
@@ -115,19 +115,23 @@ void XRayButton::handleRelease() {
 
 UnclusterButton::UnclusterButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_expand.png", osg::Vec2f(x, y)) {
-	setName("uncluster_button");
+	setName(UnclusterButton::name());
 }
 void UnclusterButton::handlePush() {
+	bool v = frame->getSceneGraph()->setUpdatingNodes(false);
 	AbstractNode* nodes = frame->getNode()->uncluster();
 	frame->setNode(nodes);
+	frame->getSceneGraph()->setUpdatingNodes(v);
 }
 
 
 ClusterButton::ClusterButton(ControlFrame* parentFrame, int x, int y)
 	: FrameButton(parentFrame, "img/texture/b_compact.png", osg::Vec2f(x, y)) {
-	setName("cluster_button");
+	setName(ClusterButton::name());
 }
 void ClusterButton::handlePush() {
+	bool v = frame->getSceneGraph()->setUpdatingNodes(false);
 	AbstractNode* topCluster = frame->getNode()->cluster();
 	frame->addNode(topCluster);
+	frame->getSceneGraph()->setUpdatingNodes(v);
 }

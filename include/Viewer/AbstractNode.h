@@ -47,6 +47,7 @@ public:
 	virtual void setVisible(bool flag) = 0;
 	virtual bool isVisible() const = 0;
 	virtual void toggleContent(bool flag) = 0;
+	virtual bool isClusterable() const = 0;
 	virtual AbstractNode* cluster() = 0;
 	virtual AbstractNode* uncluster() = 0;
 

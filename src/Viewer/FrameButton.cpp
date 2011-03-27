@@ -17,9 +17,13 @@ using namespace Vwr;
 
 float FrameButton::BUTTON_SIZE = 40;
 float FrameButton::BUTTON_MARGIN = 10;
+osg::Vec4f FrameButton::ENABLED_COLOR = osg::Vec4f(1, 1, 1, 1);
+osg::Vec4f FrameButton::DISABLED_COLOR = osg::Vec4f(1, 1, 1, 0.5f);
+osg::Vec4f FrameButton::SELECTED_COLOR = osg::Vec4f(0.7, 0.7, 1, 1);
 
 FrameButton::FrameButton(ControlFrame* parentFrame) {
 	frame = parentFrame;
+	enabled = false;
 }
 
 FrameButton::FrameButton(ControlFrame* parentFrame, QString imagePath,
@@ -31,15 +35,56 @@ FrameButton::FrameButton(ControlFrame* parentFrame, QString imagePath,
 	buttonPos.y() += relativePos.y() * (BUTTON_SIZE + BUTTON_MARGIN);
 
 	createGeometry(imagePath, buttonPos, osg::Vec2f(BUTTON_SIZE, BUTTON_SIZE));
+	enabled = true;
 }
 
 FrameButton::FrameButton(ControlFrame* parentFrame, QString imagePath,
 		osg::Vec3f pos, osg::Vec2f size) {
 	frame = parentFrame;
 	createGeometry(imagePath, pos, size);
+	enabled = true;
 }
 
 FrameButton::~FrameButton() {
+//	qDebug() << "Button deleted";
+}
+
+bool FrameButton::isEnabled() const {
+	return enabled;
+}
+
+void FrameButton::setEnabled(bool flag) {
+	if (enabled == flag)
+		return;
+	enabled = flag;
+	qDebug() << getName().c_str() << "enabled " << enabled;
+	if (enabled) {
+		setColor(ENABLED_COLOR);
+	} else {
+		setColor(DISABLED_COLOR);
+	}
+}
+
+void FrameButton::activate() {
+	setColor(SELECTED_COLOR);
+}
+
+void FrameButton::deactivate() {
+	if (isEnabled()) {
+		setColor(ENABLED_COLOR);
+	} else {
+		setColor(DISABLED_COLOR);
+	}
+}
+
+void FrameButton::setColor(osg::Vec4f color) {
+	osg::Geometry* g = dynamic_cast<osg::Geometry*> (getDrawable(0));
+	if (g != NULL) {
+		osg::Vec4Array* colorArray =
+				dynamic_cast<osg::Vec4Array*> (g->getColorArray());
+		colorArray->pop_back();
+		colorArray->push_back(color);
+	}
 }
 
 void FrameButton::createGeometry(QString imagePath, osg::Vec3f pos, osg::Vec2f size) {
@@ -65,4 +110,5 @@ void FrameButton::createGeometry(QString imagePath, osg::Vec3f pos, osg::Vec2f s
 
 	addDrawable(g);
 	setStateSet(stateSet);
+	setColor(ENABLED_COLOR);
 }

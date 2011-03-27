@@ -25,13 +25,13 @@ OsgNodeGroup::OsgNodeGroup() {
 	massCenter = osg::Vec3f(0,0,0);
 	size = osg::Vec3f(0,0,0);
 	nodes.clear();
-	qDebug() << "NodeGroup new " << id;
+//	qDebug() << "NodeGroup new " << id;
 }
 
 OsgNodeGroup::~OsgNodeGroup() {
 	disconnect(this, 0, 0, 0);
 	removeAll();
-	qDebug() << "NodeGroup deleted " << id;
+//	qDebug() << "NodeGroup deleted " << id;
 }
 
 /*
@@ -69,7 +69,7 @@ void OsgNodeGroup::addNode(AbstractNode* node, bool removeIfPresent, bool recalc
 	if (fixed && !node->isFixed()) fixed = false;
 
 	if (group != NULL) {
-		qDebug() << "deleting group " << group->toString() << " in addNode of " << this->toString();
+//		qDebug() << "deleting group " << group->toString() << " in addNode of " << this->toString();
 		delete group;
 	}
 }
@@ -109,7 +109,7 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 	if (recalc) {
 		updateSizeAndPos();
 	}
-	qDebug() << "node " << node->toString() << " removed from group " << this->toString();
+//	qDebug() << "node " << node->toString() << " removed from group " << this->toString();
 }
 
 void OsgNodeGroup::removeAll() {
@@ -282,15 +282,28 @@ void OsgNodeGroup::toggleContent(bool flag) {
 	}
 }
 
+bool OsgNodeGroup::isClusterable() const {
+	//TODO
+	return false;
+}
+
 AbstractNode* OsgNodeGroup::cluster() {
 	OsgNodeGroup* clusterGroup = new OsgNodeGroup();
 
+	QSet<AbstractNode*> clusterable;
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
-		AbstractNode* cluster = (*i)->cluster();
+		AbstractNode* n = *i;
+		if (n->isClusterable())
+			clusterable.insert(n);
+		++i;
+	}
+	NodeIterator ic = clusterable.constBegin();
+	while (ic != clusterable.constEnd()) {
+		AbstractNode* cluster = (*ic)->cluster();
 		if (cluster != NULL)
 			clusterGroup->addNode(cluster, false, false);
-		++i;
+		++ic;
 	}
 	if (clusterGroup->isEmpty()) {
 		delete clusterGroup;
@@ -327,12 +340,8 @@ void OsgNodeGroup::childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize) {
 }
 
 void OsgNodeGroup::childHidden(AbstractNode* child, bool visible) {
-	qDebug() << "child hidden " << child->toString() << " - " << visible;
-	if (!nodes.contains(child))
-		return;
-	if (visible) {
-//		updateSizeAndPos();
-	} else {
+//	qDebug() << "child hidden " << child->toString() << " - " << visible;
+	if (nodes.contains(child) && ! visible) {
 		removeNode(child, true);
 	}
 }

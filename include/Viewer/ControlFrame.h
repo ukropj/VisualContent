@@ -71,6 +71,7 @@ private:
 	void createButtons();
 	void createBorder();
 	void insertButton(osg::ref_ptr<FrameButton> button, osg::Transform* transform);
+	void updateButtons(AbstractNode* node, bool nodeAdded = false);
 
 	osg::Vec2f originPos;
 	osg::Vec2f currentPos;

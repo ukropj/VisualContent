@@ -88,6 +88,7 @@ private:
 	bool isResizingNode;
 	char pressedKey;
 	InputMode mode;
+	static float MIN_SEL_DIAG;
 
 	osgViewer::Viewer* getViewer(osgGA::GUIActionAdapter& aa) {
 		return dynamic_cast<osgViewer::Viewer*> (&aa);

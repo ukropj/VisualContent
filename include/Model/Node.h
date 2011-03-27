@@ -38,7 +38,7 @@ public:
 	void removeEdge(Edge* edge);
 	void removeAllEdges();
 	Edge* getEdgeTo(const Node* otherNode) const;
-	QList<Node*> getIncidentNodes() const;
+	QSet<Node*> getIncidentNodes(bool getClusters = true) const;
 
 	qlonglong getId() const {return id;}
 	Graph* getGraph() const {return graph;}
@@ -72,8 +72,9 @@ public:
 
 	void setParent(Node* parent);
 	Node* getParent() const {return parent;}
-	QListIterator<Node*> getChildrenIterator() const {return QListIterator<Node*>(children);}
+	QSetIterator<Node*> getChildrenIterator() const {return QSetIterator<Node*>(children);}
 
+	bool canCluster() const;
 	bool clusterToParent();
 	bool unclusterChildren();
 	Node* getTopCluster() const;
@@ -98,8 +99,9 @@ private:
 	bool ignore;
 	bool cluster;
 
-	Node* parent;
-	QList<Node*> children;
+	Node* parent;				// immediate parent cluster
+	QSet<Node*> children;
+	int expandedChClusters;		// number of children that are expanded (ignored) clusters
 
 };
 }

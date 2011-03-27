@@ -88,7 +88,7 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
 
 	setVisible(!node->isIgnored());
-	setScale(node->getWeight());
+	setScale(sqrt(node->getWeight()));
 }
 
 OsgNode::~OsgNode() {
@@ -337,11 +337,11 @@ void OsgNode::setColor(osg::Vec4 color) {
 void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 		osg::Vec4 color) {
 	osg::Geometry* geometry =
-			dynamic_cast<osg::Geometry *> (geode->getDrawable(drawablePos));
+			dynamic_cast<osg::Geometry*> (geode->getDrawable(drawablePos));
 
 	if (geometry != NULL) {
 		osg::Vec4Array* colorArray =
-				dynamic_cast<osg::Vec4Array *> (geometry->getColorArray());
+				dynamic_cast<osg::Vec4Array*> (geometry->getColorArray());
 		colorArray->pop_back();
 		colorArray->push_back(color);
 	} else {
@@ -439,9 +439,9 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 
 osg::Vec3f OsgNode::getPosition() const {
 	if (!visible) {
-		Model::Node* topCluster = node->getTopCluster();
-		if (topCluster != NULL)
-			return topCluster->getOsgNode()->getPosition();
+		Model::Node* cluster = node->getParent();
+		if (cluster != NULL)
+			return cluster->getOsgNode()->getPosition();
 	}
 	return osg::AutoTransform::getPosition();
 }
@@ -456,9 +456,9 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 	}
 
 	float eps = 1;
-	if ((currentPos - targetPos).length() < eps) {
-		if (clustering) {
-			qDebug() << "Clustered:" << this->toString();
+	if ((currentPos - targetPos).length() < eps) { // don't interpolate if distance is small
+		if (clustering) {	// execute clustering
+//			qDebug() << "Clustered:" << this->toString();
 			clustering = false;
 			OsgNode* cluster = node->getParent()->getOsgNode();
 			if (!cluster->isVisible()) {
@@ -489,9 +489,9 @@ void OsgNode::setPosition(osg::Vec3f pos) {
 }
 
 QSet<AbstractNode*> OsgNode::getIncidentNodes() {
-	QList<Model::Node*>nodes = node->getIncidentNodes();
+	QSet<Model::Node*>nodes = node->getIncidentNodes();
 	QSet<AbstractNode*> nghbrs;
-	QList<Model::Node*>::const_iterator i = nodes.begin();
+	QSet<Model::Node*>::const_iterator i = nodes.begin();
 	while (i != nodes.end()) {
 		OsgNode* n;
 		if ((n = (*i)->getOsgNode()) != NULL)
@@ -591,20 +591,16 @@ bool OsgNode::isVisible() const {
 	return visible;
 }
 
-/*void OsgNode::updateClusterVisibility() {
-	bool flag = !node->isIgnored();
-	if (visible != flag) {
-		visible = flag;
-		setNodeMask(visible);
-	}
-}*/
+bool OsgNode::isClusterable() const {
+	return node->canCluster();
+}
 
 AbstractNode* OsgNode::cluster() {
 	if (node->clusterToParent()) {
 		qDebug() << "clustering" << this->toString();
 		Model::Node* nodeCluster = node->getParent();
 		if (nodeCluster != NULL) {
-			QListIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
+			QSetIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
 			while (nodeIt.hasNext()) {
 				OsgNode* ch = nodeIt.next()->getOsgNode();
 				ch->clustering = true;
@@ -615,19 +611,19 @@ AbstractNode* OsgNode::cluster() {
 			return NULL;
 		}
 	} else {
-		qDebug() << "unable to cluster";
 		return NULL;
 	}
 }
 
 AbstractNode* OsgNode::uncluster() {
-	qDebug() << "unclustering" << this->toString();
 	if (node->unclusterChildren()) {
+//	qDebug() << "unclustering" << this->toString();
 		this->setVisible(false);
 		OsgNodeGroup* unclusterGroup = new OsgNodeGroup();
-		QListIterator<Model::Node*> nodeIt = node->getChildrenIterator();
+		QSetIterator<Model::Node*> nodeIt = node->getChildrenIterator();
 		while (nodeIt.hasNext()) {
 			OsgNode* ch = nodeIt.next()->getOsgNode();
+			ch->clustering = false;
 			ch->updatePosition();
 			ch->setVisible(true);
 			unclusterGroup->addNode(ch, false, false);

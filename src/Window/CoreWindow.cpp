@@ -231,7 +231,7 @@ void CoreWindow::loadFile(QString filePath) {
 		remapAction->setEnabled(true);
 		currentFile = filePath;
 
-		graph->cluster(*(graph->getNodes()), true);
+		graph->cluster(*(graph->getNodes()), true, 2);
 		// reload
 		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar);	// deletes original scene graph
