@@ -208,22 +208,22 @@ void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int
 	clusters.clear();
 	for (NodeIt ui = someNodes.begin(); ui != someNodes.end(); ++ui) {
 		Node* u = ui.value();
-		qDebug() << "u: " << u->getId();
+//		qDebug() << "u: " << u->getId();
 		if (u->getParent() == NULL) {
 			Node* c = NULL;
 			QSet<Node*> in = u->getIncidentNodes();
 			QSet<Node*>::const_iterator i = in.begin();
 			while (i != in.end()) {
 				Node* v = *i;
-				qDebug() << "v: " << v->getId();
+//				qDebug() << "v: " << v->getId();
 				if (v->getParent() == NULL) {
 					if (c == NULL) {
 						c = addCluster(u->getType()); // TODO cluster type
-						qDebug() << "new c: " << c->getId();
+//						qDebug() << "new c: " << c->getId();
 					}
 					v->setParent(c);
 					v->setIgnored(clustersVisible);
-					qDebug() << "v added to c";
+//					qDebug() << "v added to c";
 				}
 				++i;
 			}
@@ -231,7 +231,7 @@ void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int
 				u->setParent(c);
 				c->setIgnored(!clustersVisible);
 				u->setIgnored(clustersVisible);
-				qDebug() << "u added to c";
+//				qDebug() << "u added to c";
 			}
 		}
 	}

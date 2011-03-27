@@ -23,9 +23,9 @@ FRAlgorithm::FRAlgorithm() {
 	last = osg::Vec3f();
 	notEnd = true;
 
-	sizeFactor = 30;
-	flexibility = 0.6f;
-	useMaxDistance = true;
+	sizeFactor = Util::Config::getValue("Layout.Algorithm.CalmDistance").toFloat();
+	flexibility = Util::Config::getValue("Layout.Algorithm.Flexibility").toFloat();
+	useMaxDistance = MAX_DISTANCE > 0;
 	K = sizeFactor;
 	M = K / 8.0f;
 
@@ -245,12 +245,22 @@ void FRAlgorithm::addStandardForces(Node* realU, Node* realV) {
 	} else {
 		v = realV;
 	}
+
+//	if (u->equals(v)) // XXX why is this causong problems ??
+//		return;
+
 	// compute factors (use original input nodes)
 	float repFactor = (realU->getWeight() + realV->getWeight()) / 2.0f;
 	Edge* e = realU->getEdgeTo(realV);
 	float attrFactor = e == NULL ? 0 : e->getWeight();
-	// compute forces
 	osg::Vec3f vec = getVector(u, v);
+
+	// replace [0, 0, 0] by small random vector
+	if (!u->equals(v) && vec.length() == 0) {
+//		qDebug() << "dist == 0 " << u->toString() << " - " << v->toString();
+		vec.set(getRandomDouble() * 10, getRandomDouble() * 10, getRandomDouble() * 10);
+	}
+	// compute forces
 	float dist = vec.normalize();					// distance between nodes
 	float attrF = attr(dist, K) * attrFactor;
 	float replF = rep(dist, K) * repFactor;

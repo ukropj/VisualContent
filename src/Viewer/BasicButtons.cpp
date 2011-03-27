@@ -114,7 +114,7 @@ void XRayButton::handleRelease() {
 
 
 UnclusterButton::UnclusterButton(ControlFrame* parentFrame, int x, int y)
-	: FrameButton(parentFrame, "img/texture/b_expand.png", osg::Vec2f(x, y)) {
+	: FrameButton(parentFrame, "img/texture/b_uncluster.png", osg::Vec2f(x, y)) {
 	setName(UnclusterButton::name());
 }
 void UnclusterButton::handlePush() {
@@ -126,7 +126,7 @@ void UnclusterButton::handlePush() {
 
 
 ClusterButton::ClusterButton(ControlFrame* parentFrame, int x, int y)
-	: FrameButton(parentFrame, "img/texture/b_compact.png", osg::Vec2f(x, y)) {
+	: FrameButton(parentFrame, "img/texture/b_cluster.png", osg::Vec2f(x, y)) {
 	setName(ClusterButton::name());
 }
 void ClusterButton::handlePush() {

@@ -110,7 +110,8 @@ private:
 	float maxScale;
 	bool visible;
 
-	bool clustering;
+	bool movingToCluster;
+	int childrenMovingToCluster;
 
 	void setScale(float scale);
 	void setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
@@ -130,7 +131,7 @@ private:
 
 	osg::ref_ptr<osg::Geometry> createCustomGeometry(osg::Vec3 coords[], const int vertNum,
 			GLenum mode, osg::Vec4 color = osg::Vec4(1.0, 1.0, 1.0, 1.0));
-
+	bool isClustering() const;
 
 	osg::ref_ptr<osg::Geode> labelG;
 	osg::ref_ptr<osg::Geode> fixedG;
@@ -140,7 +141,7 @@ private:
 	osg::ref_ptr<OsgContent> visualG;
 	osg::ref_ptr<osg::Geode> visualGBorder;
 
-	osg::ref_ptr<osg::Geode> closedFrame;
+	static osg::ref_ptr<osg::Geode> closedFrame;
 	osg::ref_ptr<osg::Geode> visualFrame;
 
 	static float NODE_SIZE;

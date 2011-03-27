@@ -93,9 +93,9 @@ QSet<Node*> Node::getIncidentNodes(bool getClusters) const {
 			QSet<Node*> clusters;
 			QSetIterator<Node*> nodeIt(nodes);
 			while (nodeIt.hasNext()) {
-				Node* parent = nodeIt.next()->getParent();
-				if (parent != NULL && parent != this)
-					clusters.insert(parent);
+				Node* parentN = nodeIt.next()->getParent();
+				if (parentN != NULL && parentN != this && parentN != parent)
+					clusters.insert(parentN);
 			}
 			nodes.unite(clusters);
 		}
@@ -125,13 +125,6 @@ bool Node::equals(const Node* node) const {
 	if (id != node->getId()) {
 		return false;
 	}
-	if ((graph == NULL && node->getGraph() != NULL) || (graph != NULL
-			&& node->getGraph() == NULL)) {
-		return false;
-	}
-	if (graph == NULL && node->getGraph() == NULL) {
-		return true;
-	}
 	return true;
 }
 
@@ -152,7 +145,7 @@ void Node::setIgnored(bool flag) {
 	ignore = flag;
 	if (parent != NULL && this->isCluster()) {
 		parent->expandedChClusters += flag ? +1 : -1;
-		qDebug() << parent->toString() << " " << parent->expandedChClusters;
+//		qDebug() << parent->toString() << " " << parent->expandedChClusters;
 	}
 }
 

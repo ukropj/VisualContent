@@ -52,11 +52,11 @@ void ControlFrame::createButtons() {
 	osg::ref_ptr<FrameButton> rb = new ResizeButton(this, -1, 0);
 	osg::ref_ptr<FrameButton> mb = new MoveButton(this, -2, 0);
 	osg::ref_ptr<FrameButton> eb = new ExpandButton(this, 0, -1);
-	osg::ref_ptr<FrameButton> cb = new CompactButton(this, 0, -2);
+	osg::ref_ptr<FrameButton> cb = new CompactButton(this, 1, -1);
 	osg::ref_ptr<FrameButton> fb = new FixButton(this, -1, -1);
-	osg::ref_ptr<FrameButton> xb = new XRayButton(this, -1, 0);
-	osg::ref_ptr<FrameButton> clb = new ClusterButton(this, 1, -1);
-	osg::ref_ptr<FrameButton> uclb = new UnclusterButton(this, 1, -2);
+	osg::ref_ptr<FrameButton> xb = new XRayButton(this, 0, -2);
+	osg::ref_ptr<FrameButton> uclb = new UnclusterButton(this, -2, 0);
+	osg::ref_ptr<FrameButton> clb = new ClusterButton(this, -1, 0);
 
 	mt = new osg::AutoTransform();
 	mt2 = new osg::AutoTransform();
@@ -65,10 +65,10 @@ void ControlFrame::createButtons() {
 	insertButton(mb, mt);
 	insertButton(eb, mt);
 	insertButton(cb, mt);
-	insertButton(clb, mt);
-	insertButton(uclb, mt);
+	insertButton(clb, mt2);
+	insertButton(uclb, mt2);
 	insertButton(fb, mt2);
-	insertButton(xb, mt2);
+	insertButton(xb, mt);
 
 	addChild(mt);
 	addChild(mt2);

@@ -26,6 +26,7 @@ using namespace Vwr;
 
 float OsgNode::NODE_SIZE = 8;
 float OsgNode::FRAME_WIDTH = 1;
+osg::ref_ptr<osg::Geode> OsgNode::closedFrame = NULL;
 
 OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	if (modelNode == NULL) qWarning() << "NULL reference to Node in OsgNode!";
@@ -39,7 +40,8 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	usingInterpolation = true;
 	pickable = true;
 	visible = true;
-	clustering = false;
+	movingToCluster = false;
+	childrenMovingToCluster = 0;
 	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	size = osg::Vec3f(0, 0, 0);
 
@@ -48,9 +50,11 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	visualG = ContentFactory::createContent(mapping->getContentType(), getMappingValue(DataMapping::CONTENT));
 	visualGBorder = initFrame();
 
-	closedFrame = createTextureNode(Util::TextureWrapper::getFrameTexture(),
-			NODE_SIZE * 2, NODE_SIZE * 2);
-	setDrawableColor(closedFrame, 0, Util::Config::getColorF("Viewer.Selected.Color"));
+	if (closedFrame == NULL) {
+		closedFrame = createTextureNode(Util::TextureWrapper::getFrameTexture(),
+				NODE_SIZE * 2, NODE_SIZE * 2);
+		setDrawableColor(closedFrame, 0, Util::Config::getColorF("Viewer.Selected.Color"));
+	}
 	visualFrame = initFrame();
 	setDrawableColor(visualFrame, 0, Util::Config::getColorF("Viewer.Selected.Color"));
 
@@ -438,7 +442,7 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 }
 
 osg::Vec3f OsgNode::getPosition() const {
-	if (!visible) {
+	if (!isVisible()) {
 		Model::Node* cluster = node->getParent();
 		if (cluster != NULL)
 			return cluster->getOsgNode()->getPosition();
@@ -449,7 +453,7 @@ osg::Vec3f OsgNode::getPosition() const {
 void OsgNode::updatePosition(float interpolationSpeed) {
 	osg::Vec3f currentPos = getPosition();
 	osg::Vec3f targetPos;
-	if (!clustering) {
+	if (!movingToCluster) {
 		targetPos = node->getPosition();
 	} else {
 		targetPos = node->getParent()->getPosition();
@@ -457,10 +461,12 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 
 	float eps = 1;
 	if ((currentPos - targetPos).length() < eps) { // don't interpolate if distance is small
-		if (clustering) {	// execute clustering
+		if (movingToCluster) {	// execute clustering
 //			qDebug() << "Clustered:" << this->toString();
-			clustering = false;
+			movingToCluster = false;
 			OsgNode* cluster = node->getParent()->getOsgNode();
+			cluster->childrenMovingToCluster--;
+			cluster->setScale(sqrt(cluster->node->getWeight() - cluster->childrenMovingToCluster));
 			if (!cluster->isVisible()) {
 				cluster->updatePosition();
 				cluster->setVisible(true);
@@ -471,12 +477,21 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 		}
 		return;
 	}
-
 	if (!usingInterpolation || interpolationSpeed == 1) {
 		osg::AutoTransform::setPosition(targetPos);
 	} else {
 		osg::Vec3 directionVector = osg::Vec3(targetPos - currentPos);
-		directionVector *= interpolationSpeed;
+		float step = 4;
+
+		if (movingToCluster && directionVector.length() * interpolationSpeed < step) {
+			if (directionVector.length() > step) {
+				directionVector.normalize();
+				directionVector *= step;
+			}
+		} else {
+			directionVector *= interpolationSpeed;
+		}
+
 		osg::AutoTransform::setPosition(currentPos + directionVector);
 	}
 
@@ -584,6 +599,9 @@ void OsgNode::setVisible(bool flag) {
 			setFixed(false);
 			setExpanded(false);
 		}
+		if (node->isIgnored() == visible) {
+			qWarning() << "inconsistnt view! " << toString() << "visible: " << visible;
+		}
 	}
 }
 
@@ -592,10 +610,21 @@ bool OsgNode::isVisible() const {
 }
 
 bool OsgNode::isClusterable() const {
-	return node->canCluster();
+	return node->canCluster() && !isClustering();
+}
+
+bool OsgNode::isClustering() const {
+	if (movingToCluster || childrenMovingToCluster > 0)
+		return true;
+	Model::Node* parent = node->getParent();
+	if (parent != NULL && parent->getOsgNode()->childrenMovingToCluster > 0)
+		return true;
+	return false;
 }
 
 AbstractNode* OsgNode::cluster() {
+	if (isClustering())
+		return NULL;
 	if (node->clusterToParent()) {
 		qDebug() << "clustering" << this->toString();
 		Model::Node* nodeCluster = node->getParent();
@@ -603,7 +632,9 @@ AbstractNode* OsgNode::cluster() {
 			QSetIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
 			while (nodeIt.hasNext()) {
 				OsgNode* ch = nodeIt.next()->getOsgNode();
-				ch->clustering = true;
+				ch->movingToCluster = true;
+				// TODO temporarily change color of moving-to-cluster nodes
+				nodeCluster->getOsgNode()->childrenMovingToCluster++;
 			}
 			return nodeCluster->getOsgNode();
 		} else {
@@ -616,6 +647,9 @@ AbstractNode* OsgNode::cluster() {
 }
 
 AbstractNode* OsgNode::uncluster() {
+	if (isClustering())
+		return this;
+
 	if (node->unclusterChildren()) {
 //	qDebug() << "unclustering" << this->toString();
 		this->setVisible(false);
@@ -623,9 +657,9 @@ AbstractNode* OsgNode::uncluster() {
 		QSetIterator<Model::Node*> nodeIt = node->getChildrenIterator();
 		while (nodeIt.hasNext()) {
 			OsgNode* ch = nodeIt.next()->getOsgNode();
-			ch->clustering = false;
-			ch->updatePosition();
+			ch->movingToCluster = false;
 			ch->setVisible(true);
+			ch->updatePosition();
 			unclusterGroup->addNode(ch, false, false);
 		}
 		unclusterGroup->updateSizeAndPos();
