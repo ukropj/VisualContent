@@ -19,6 +19,7 @@ class OsgNode;
 
 namespace Model {
 class Edge;
+class Cluster;
 class Type;
 class Graph;
 
@@ -38,7 +39,7 @@ public:
 	void removeEdge(Edge* edge);
 	void removeAllEdges();
 	Edge* getEdgeTo(const Node* otherNode) const;
-	QSet<Node*> getIncidentNodes(bool getClusters = true) const;
+	virtual QSet<Node*> getIncidentNodes(bool getClusters = true) const;
 
 	qlonglong getId() const {return id;}
 	Graph* getGraph() const {return graph;}
@@ -61,7 +62,7 @@ public:
 	bool isFixed() const {return fixed;}
 	void setFrozen(bool flag) {frozen = flag;}
 	bool isFrozen() const {return frozen;}
-	void setIgnored(bool flag);
+	virtual void setIgnored(bool flag);
 	bool isIgnored() const {return ignore;}
 
 	bool equals(const Node* node) const;
@@ -70,24 +71,24 @@ public:
 	void setOsgNode(Vwr::OsgNode* osgNode);
 	Vwr::OsgNode* getOsgNode() const {return osgNode;}
 
-	void setParent(Node* parent);
-	Node* getParent() const {return parent;}
-	QSetIterator<Node*> getChildrenIterator() const {return QSetIterator<Node*>(children);}
+	virtual void setParent(Cluster* parent);
+	Cluster* getParent() const {return parent;}
 
-	bool canCluster() const;
-	bool clusterToParent();
-	bool unclusterChildren();
+	bool canBeClustered() const;
+
 	Node* getTopCluster() const;
-	bool isCluster() const {return cluster;}
+	virtual bool isCluster() const {return false;}
+
+protected:
+	Cluster* parent; // immediate parent cluster
+	Graph* graph;
+	Type* type;
+	QMap<QString, QString>* nodeData;
+	float weight;
 
 private:
-
 	qlonglong id;
-	QMap<QString, QString>* nodeData;
-	Type* type;
-	Graph* graph;
 	osg::Vec3f position;
-	float weight;
 	QMap<qlonglong, Edge*> edges;
 	Vwr::OsgNode* osgNode;
 
@@ -97,11 +98,7 @@ private:
 	bool fixed;
 	bool frozen;
 	bool ignore;
-	bool cluster;
 
-	Node* parent;				// immediate parent cluster
-	QSet<Node*> children;
-	int expandedChClusters;		// number of children that are expanded (ignored) clusters
 
 };
 }

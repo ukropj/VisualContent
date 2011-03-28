@@ -33,6 +33,7 @@ class Node;
 namespace Vwr {
 class OsgContent;
 class AbstractVisitor;
+class OsgCluster;
 
 class OsgNode: public osg::AutoTransform, public AbstractNode {
 public:
@@ -89,15 +90,21 @@ public:
 
 	Model::Node* getNode() const {return node;}
 
-	bool isClusterable() const;
-	AbstractNode* cluster();
-	AbstractNode* uncluster();
+	virtual bool isClusterable() const;
+	virtual AbstractNode* clusterToParent();
+	virtual AbstractNode* uncluster();
+
+	void setMovingToCluster(bool flag) {movingToCluster = flag;}
+	bool isMovingToCluster() const {return movingToCluster;}
+	virtual bool isClustering() const;
+
+	void resolveParent();
+protected:
+//	OsgCluster* getParentCluster() const;
+	void setScale(float scale);
+	OsgCluster* parent;
 
 private:
-
-	void setSize(osg::BoundingBox box);
-	void setSize(float width, float height, float depth = 0);
-
 	Model::Node* node;
 	osg::Vec3f size;
 	osg::Vec4 color;
@@ -111,9 +118,9 @@ private:
 	bool visible;
 
 	bool movingToCluster;
-	int childrenMovingToCluster;
 
-	void setScale(float scale);
+	void setSize(osg::BoundingBox box);
+	void setSize(float width, float height, float depth = 0);
 	void setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 			osg::Vec4 color);
 
@@ -131,7 +138,6 @@ private:
 
 	osg::ref_ptr<osg::Geometry> createCustomGeometry(osg::Vec3 coords[], const int vertNum,
 			GLenum mode, osg::Vec4 color = osg::Vec4(1.0, 1.0, 1.0, 1.0));
-	bool isClustering() const;
 
 	osg::ref_ptr<osg::Geode> labelG;
 	osg::ref_ptr<osg::Geode> fixedG;

@@ -6,6 +6,7 @@
 #include "Model/Type.h"
 #include "Model/Edge.h"
 #include "Model/Node.h"
+#include "Model/NodeCluster.h"
 
 using namespace Model;
 
@@ -44,11 +45,11 @@ Node* Graph::addNode(Type* type, QMap<QString, QString>* data) {
 	return node;
 }
 
-Node* Graph::addCluster(Type* type) {
+Cluster* Graph::addCluster(Type* type) { // TODO cluster type
 	if (type == NULL) {
 		type = addType("new_type_cluster" + incEleIdCounter());
 	}
-	Node* node = new Node(incEleIdCounter(), type, NULL, this);
+	Cluster* node = new Cluster(incEleIdCounter(), type, this);
 
 	clusters.insert(node->getId(), node);
 	nodesByType.insert(type->getId(), node);
@@ -210,7 +211,7 @@ void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int
 		Node* u = ui.value();
 //		qDebug() << "u: " << u->getId();
 		if (u->getParent() == NULL) {
-			Node* c = NULL;
+			Cluster* c = NULL;
 			QSet<Node*> in = u->getIncidentNodes();
 			QSet<Node*>::const_iterator i = in.begin();
 			while (i != in.end()) {

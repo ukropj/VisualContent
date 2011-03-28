@@ -15,6 +15,7 @@
 #include "Util/CameraHelper.h"
 #include "Model/Type.h"
 #include "Model/Node.h"
+#include "Model/NodeCluster.h"
 
 #include <math.h>
 #include <osgText/FadeText>
@@ -40,8 +41,8 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	usingInterpolation = true;
 	pickable = true;
 	visible = true;
+	parent = NULL;
 	movingToCluster = false;
-	childrenMovingToCluster = 0;
 	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	size = osg::Vec3f(0, 0, 0);
 
@@ -92,7 +93,6 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
 
 	setVisible(!node->isIgnored());
-	setScale(sqrt(node->getWeight()));
 }
 
 OsgNode::~OsgNode() {
@@ -442,10 +442,8 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 }
 
 osg::Vec3f OsgNode::getPosition() const {
-	if (!isVisible()) {
-		Model::Node* cluster = node->getParent();
-		if (cluster != NULL)
-			return cluster->getOsgNode()->getPosition();
+	if (!isVisible() && parent != NULL) {
+		return parent->getPosition();
 	}
 	return osg::AutoTransform::getPosition();
 }
@@ -453,25 +451,19 @@ osg::Vec3f OsgNode::getPosition() const {
 void OsgNode::updatePosition(float interpolationSpeed) {
 	osg::Vec3f currentPos = getPosition();
 	osg::Vec3f targetPos;
-	if (!movingToCluster) {
+	if (!isMovingToCluster()) {
 		targetPos = node->getPosition();
 	} else {
-		targetPos = node->getParent()->getPosition();
+		targetPos = parent->getNode()->getPosition();
 	}
+
+	// TODO if moving to cluster, let parent set my position
 
 	float eps = 1;
 	if ((currentPos - targetPos).length() < eps) { // don't interpolate if distance is small
-		if (movingToCluster) {	// execute clustering
-//			qDebug() << "Clustered:" << this->toString();
-			movingToCluster = false;
-			OsgNode* cluster = node->getParent()->getOsgNode();
-			cluster->childrenMovingToCluster--;
-			cluster->setScale(sqrt(cluster->node->getWeight() - cluster->childrenMovingToCluster));
-			if (!cluster->isVisible()) {
-				cluster->updatePosition();
-				cluster->setVisible(true);
-				emit changedVisibility(cluster, true);
-			}
+		if (isMovingToCluster()) {	// finish clustering
+			setMovingToCluster(false);
+			parent->moveChildIn();
 			setVisible(false);
 			emit changedVisibility(this, false);
 		}
@@ -610,61 +602,34 @@ bool OsgNode::isVisible() const {
 }
 
 bool OsgNode::isClusterable() const {
-	return node->canCluster() && !isClustering();
+	if (!node->canBeClustered())
+		return false;
+	if (isClustering())
+		return false;
+	return true;
 }
 
 bool OsgNode::isClustering() const {
-	if (movingToCluster || childrenMovingToCluster > 0)
+	if (isMovingToCluster())
 		return true;
-	Model::Node* parent = node->getParent();
-	if (parent != NULL && parent->getOsgNode()->childrenMovingToCluster > 0)
+	if (parent != NULL && parent->isClustering())
 		return true;
 	return false;
 }
 
-AbstractNode* OsgNode::cluster() {
-	if (isClustering())
-		return NULL;
-	if (node->clusterToParent()) {
-		qDebug() << "clustering" << this->toString();
-		Model::Node* nodeCluster = node->getParent();
-		if (nodeCluster != NULL) {
-			QSetIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
-			while (nodeIt.hasNext()) {
-				OsgNode* ch = nodeIt.next()->getOsgNode();
-				ch->movingToCluster = true;
-				// TODO temporarily change color of moving-to-cluster nodes
-				nodeCluster->getOsgNode()->childrenMovingToCluster++;
-			}
-			return nodeCluster->getOsgNode();
-		} else {
-			qWarning() << "clustering with NULL parent ??";
-			return NULL;
-		}
+AbstractNode* OsgNode::clusterToParent() {
+	if (parent != NULL) {
+		return parent->cluster();
 	} else {
 		return NULL;
 	}
 }
 
 AbstractNode* OsgNode::uncluster() {
-	if (isClustering())
-		return this;
+	return this;
+}
 
-	if (node->unclusterChildren()) {
-//	qDebug() << "unclustering" << this->toString();
-		this->setVisible(false);
-		OsgNodeGroup* unclusterGroup = new OsgNodeGroup();
-		QSetIterator<Model::Node*> nodeIt = node->getChildrenIterator();
-		while (nodeIt.hasNext()) {
-			OsgNode* ch = nodeIt.next()->getOsgNode();
-			ch->movingToCluster = false;
-			ch->setVisible(true);
-			ch->updatePosition();
-			unclusterGroup->addNode(ch, false, false);
-		}
-		unclusterGroup->updateSizeAndPos();
-		return unclusterGroup;
-	} else {
-		return this;
-	}
+void OsgNode::resolveParent() {
+	if (node->getParent() != NULL)
+		parent = dynamic_cast<OsgCluster*>(node->getParent()->getOsgNode());
 }

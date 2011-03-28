@@ -287,7 +287,7 @@ bool OsgNodeGroup::isClusterable() const {
 	return false;
 }
 
-AbstractNode* OsgNodeGroup::cluster() {
+AbstractNode* OsgNodeGroup::clusterToParent() {
 	OsgNodeGroup* clusterGroup = new OsgNodeGroup();
 
 	QSet<AbstractNode*> clusterable;
@@ -300,7 +300,7 @@ AbstractNode* OsgNodeGroup::cluster() {
 	}
 	NodeIterator ic = clusterable.constBegin();
 	while (ic != clusterable.constEnd()) {
-		AbstractNode* cluster = (*ic)->cluster();
+		AbstractNode* cluster = (*ic)->clusterToParent();
 		if (cluster != NULL)
 			clusterGroup->addNode(cluster, false, false);
 		++ic;

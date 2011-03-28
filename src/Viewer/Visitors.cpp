@@ -40,6 +40,6 @@ void ClusteringVisitor::visitNode(AbstractNode* node) {
 	if (isExpanding) {
 		node->uncluster();
 	} else {
-		node->cluster();
+		node->clusterToParent();
 	}
 }

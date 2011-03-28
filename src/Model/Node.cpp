@@ -6,6 +6,7 @@
  * nemam cas, takze sa raz k tomu vratim 8)
  */
 #include "Model/Node.h"
+#include "Model/NodeCluster.h"
 #include "Model/Edge.h"
 #include "Model/Type.h"
 #include "Model/Graph.h"
@@ -34,14 +35,10 @@ Node::Node(qlonglong id, Type* type, QMap<QString, QString>* data, Graph* graph)
 	ignore = false;
 	frozen = false;
 	weight = 1;
-	cluster = false;
 	osgNode = NULL;
 	edges.clear();
 
 	parent = NULL;
-	children.clear();
-	expandedChClusters = 0;
-
 	nodeData->insert("id", QString("N%1").arg(id));
 }
 
@@ -78,27 +75,9 @@ Edge* Node::getEdgeTo(const Node* otherNode) const {
 
 QSet<Node*> Node::getIncidentNodes(bool getClusters) const {
 	QSet<Node*> nodes;
-	if (!isCluster()) {
-		for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
-			Edge* edge = i.value();
-			nodes.insert(edge->getOtherNode(this));
-		}
-	} else {
-		QSetIterator<Node*> nodeIt = getChildrenIterator();
-		while (nodeIt.hasNext()) {
-			nodes.unite(nodeIt.next()->getIncidentNodes());
-		}
-		nodes.subtract(children);
-		if (getClusters) {
-			QSet<Node*> clusters;
-			QSetIterator<Node*> nodeIt(nodes);
-			while (nodeIt.hasNext()) {
-				Node* parentN = nodeIt.next()->getParent();
-				if (parentN != NULL && parentN != this && parentN != parent)
-					clusters.insert(parentN);
-			}
-			nodes.unite(clusters);
-		}
+	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
+		Edge* edge = i.value();
+		nodes.insert(edge->getOtherNode(this));
 	}
 	return nodes;
 }
@@ -143,13 +122,9 @@ void Node::setIgnored(bool flag) {
 	if (ignore == flag)
 		return;
 	ignore = flag;
-	if (parent != NULL && this->isCluster()) {
-		parent->expandedChClusters += flag ? +1 : -1;
-//		qDebug() << parent->toString() << " " << parent->expandedChClusters;
-	}
 }
 
-void Node::setParent(Node* newParent) {
+void Node::setParent(Cluster* newParent) {
 	if (newParent == NULL) {
 		qWarning() << "Node " << toString() << " cannot have NULL as parent!";
 		return;
@@ -162,56 +137,18 @@ void Node::setParent(Node* newParent) {
 		qWarning() << "Cannot set self as parent! (" << toString() << ")";
 		return;
 	}
-
-	if (!newParent->isCluster()) {
-		newParent->cluster = true;
-		newParent->weight = this->weight;
-	} else {
-		newParent->weight += this->weight;
-	}
+// TODO move this code
+	newParent->weight += this->weight;
 	newParent->children.insert(this);
-	if (this->isIgnored() && this->isCluster())
-		newParent->expandedChClusters++;
 	parent = newParent;
 }
 
-bool Node::canCluster() const {
-	if (isIgnored() || parent == NULL)
+bool Node::canBeClustered() const {
+	if (isIgnored())
 		return false;
-	if (parent->expandedChClusters > 0) {
-		qDebug() << "Unable to cluster, ecc: " << parent->expandedChClusters;
+	if (parent == NULL || !parent->canCluster()) {
 		return false;
 	}
-	return true;
-}
-
-bool Node::clusterToParent() {
-	if (!canCluster())
-		return false;
-	parent->setIgnored(false);
-	osg::Vec3f pos(0, 0, 0);
-	QSetIterator<Node*> nodeIt = parent->getChildrenIterator();
-	while (nodeIt.hasNext()) {
-		Node* n = nodeIt.next();
-		n->setIgnored(true);
-		pos += n->getPosition();
-	}
-	parent->setPosition(pos / parent->children.size());
-	graph->setFrozen(false);
-	return true;
-}
-
-bool Node::unclusterChildren() {
-	if (children.isEmpty())
-		return false;
-	QSetIterator<Node*> nodeIt = getChildrenIterator();
-	while (nodeIt.hasNext()) {
-		Node* n = nodeIt.next();
-		n->setPosition(getPosition());
-		n->setIgnored(false);
-	}
-	setIgnored(true);
-	graph->setFrozen(false);
 	return true;
 }
 
@@ -225,3 +162,4 @@ Node* Node::getTopCluster() const {
 			return parent;
 	}
 }
+

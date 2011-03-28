@@ -1,15 +1,14 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
+#include "Viewer/OsgCluster.h"
 #include "Model/Node.h"
+#include "Model/NodeCluster.h"
 #include "Model/Edge.h"
 #include "Util/Config.h"
-#include "Util/TextureWrapper.h"
 
 #include <QDebug>
-#include <QApplication>
 #include <iostream>
-#include <osgManipulator/TabBoxDragger>
 
 using namespace Vwr;
 using namespace Model;
@@ -45,11 +44,11 @@ osg::Group* SceneElements::getElementsGroup() {
 	return elementsGroup;
 }
 
-QList<OsgNode* > SceneElements::getNodes() {
+QList<OsgNode*> SceneElements::getNodes() {
 	return nodes;
 }
 
-QList<OsgEdge* > SceneElements::getEdges() {
+QList<OsgEdge*> SceneElements::getEdges() {
 	return edges;
 }
 
@@ -74,6 +73,11 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 		}
 	}
 	nodeIds.clear();
+	QListIterator<OsgNode*> j(nodes);
+	while (j.hasNext()) {
+		j.next()->resolveParent();
+		// cannot be done in constructor, as parent might not exist yet
+	}
 	return nodeGroup;
 }
 
@@ -206,7 +210,12 @@ osg::ref_ptr<OsgNode> SceneElements::wrapNode(Node* node) {
 		pd->setValue(step++);
 	}
 	OsgNode* osgNode;
-	osgNode = new OsgNode(node);
+	Cluster* cluster = dynamic_cast<Cluster*>(node);
+	if (cluster != NULL) {
+		osgNode = new OsgCluster(cluster);
+	} else {
+		osgNode = new OsgNode(node);
+	}
 	nodes.append(osgNode);
 	nodeIds.insert(node->getId());
 

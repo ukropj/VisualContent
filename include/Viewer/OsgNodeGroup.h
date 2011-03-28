@@ -55,7 +55,7 @@ public:
 	bool isVisible() const;
 	void toggleContent(bool flag);
 	bool isClusterable() const;
-	AbstractNode* cluster();
+	AbstractNode* clusterToParent();
 	AbstractNode* uncluster();
 
 	void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax);

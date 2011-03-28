@@ -48,7 +48,7 @@ public:
 	virtual bool isVisible() const = 0;
 	virtual void toggleContent(bool flag) = 0;
 	virtual bool isClusterable() const = 0;
-	virtual AbstractNode* cluster() = 0;
+	virtual AbstractNode* clusterToParent() = 0;
 	virtual AbstractNode* uncluster() = 0;
 
 	virtual void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) = 0;

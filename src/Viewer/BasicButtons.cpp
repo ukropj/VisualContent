@@ -131,7 +131,7 @@ ClusterButton::ClusterButton(ControlFrame* parentFrame, int x, int y)
 }
 void ClusterButton::handlePush() {
 	bool v = frame->getSceneGraph()->setUpdatingNodes(false);
-	AbstractNode* topCluster = frame->getNode()->cluster();
+	AbstractNode* topCluster = frame->getNode()->clusterToParent();
 	frame->addNode(topCluster);
 	frame->getSceneGraph()->setUpdatingNodes(v);
 }

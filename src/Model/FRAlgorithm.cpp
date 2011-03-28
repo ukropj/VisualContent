@@ -246,7 +246,7 @@ void FRAlgorithm::addStandardForces(Node* realU, Node* realV) {
 		v = realV;
 	}
 
-//	if (u->equals(v)) // XXX why is this causong problems ??
+//	if (u->equals(v)) // XXX why is this causing problems ??
 //		return;
 
 	// compute factors (use original input nodes)

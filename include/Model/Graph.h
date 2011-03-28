@@ -20,6 +20,7 @@ namespace Model  {
 class Node;
 class Edge;
 class Type;
+class Cluster;
 
 typedef QMap<qlonglong, Node*>::const_iterator NodeIt;
 typedef QMap<qlonglong, Edge*>::const_iterator EdgeIt;
@@ -47,7 +48,7 @@ public:
 	qlonglong getEleIdCounter() const {return ele_id_counter;}
 
 	Node* addNode(Type* type = NULL, QMap<QString, QString>* data = NULL);
-	Node* addCluster(Type* type = NULL);
+	Cluster* addCluster(Type* type = NULL);
 
 	Edge* addEdge(Node* srcNode, Node* dstNode, Type* type = NULL, QMap<QString, QString>* data = NULL);
 	Edge* addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type = NULL, QMap<QString, QString>* data = NULL);
