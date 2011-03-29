@@ -1,11 +1,11 @@
 /*
- * NodeCluster.cpp
+ * Cluster.cpp
  *
  *  Created on: 9.3.2011
  *      Author: jakub
 */
 
-#include "Model/NodeCluster.h"
+#include "Model/Cluster.h"
 #include "Model/Type.h"
 #include "Model/Edge.h"
 #include "Model/Graph.h"

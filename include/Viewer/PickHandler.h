@@ -47,15 +47,13 @@ public:
 		mode = mode == DEBUG ? NORMAL : DEBUG;
 	}
 
-	osg::Vec3 getSelectionCenter() const;
-	QList<OsgNode* > getSelectedNodes() const;
+	osg::Vec3f getSelectionCenter() const;
+	AbstractNode* getSelectedNodes() const;
 
 private:
 	// Store mouse xy location for button press & move events.
 	osg::Vec2f lastPos;
 	osg::Vec2f originPos;
-
-	bool leftButtonPressed; // not used now
 
 	// Perform a pick operation.
 	OsgNode* pickOne(osgViewer::Viewer* viewer,
@@ -77,18 +75,15 @@ private:
 
 	SceneGraph * sceneGraph;
 
-	QList<OsgNode* > selectedNodes;
-
 	osg::ref_ptr<osg::Geode> selectionQuad;
 	osg::ref_ptr<ControlFrame> nodeFrame;
 
 	// flags
 	bool multiPickEnabled;
 	bool isDrawingSelectionQuad;
-	bool isResizingNode;
 	char pressedKey;
 	InputMode mode;
-	static float MIN_SEL_DIAG;
+	static float MIN_DRAG_DIST;
 
 	osgViewer::Viewer* getViewer(osgGA::GUIActionAdapter& aa) {
 		return dynamic_cast<osgViewer::Viewer*> (&aa);
@@ -145,7 +140,7 @@ private:
 	 *  QTimer timer
 	 *  \brief timer for detecting double click
 	 */
-	QTimer * timer;
+//	QTimer * timer;
 
 public slots:
 	void mouseTimerTimeout(); // not used now

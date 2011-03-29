@@ -6,7 +6,7 @@
 #include "Model/Type.h"
 #include "Model/Edge.h"
 #include "Model/Node.h"
-#include "Model/NodeCluster.h"
+#include "Model/Cluster.h"
 
 using namespace Model;
 

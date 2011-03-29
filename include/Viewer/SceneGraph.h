@@ -41,7 +41,7 @@ public:
 	bool setUpdatingNodes(bool val);
 
 	osg::ref_ptr<osg::Group> getRoot() const;
-	osg::ref_ptr<ControlFrame> getNodeFrame() const;
+	osg::ref_ptr<ControlFrame> getControlFrame() const;
 
 	void addPermanentNode(osg::ref_ptr<osg::Node> node);
 

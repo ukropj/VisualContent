@@ -15,7 +15,7 @@
 #include "Util/CameraHelper.h"
 #include "Model/Type.h"
 #include "Model/Node.h"
-#include "Model/NodeCluster.h"
+#include "Model/Cluster.h"
 
 #include <math.h>
 #include <osgText/FadeText>
@@ -278,6 +278,8 @@ osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 
 void OsgNode::resize(float factor) {
 	if (factor == 1)
+		return;
+	if (!expanded) // only visual part is affected by resize()
 		return;
 	osg::Vec3f oldSize = getSize();
 	osg::Vec3d newScale = visualG->getScale() * factor;

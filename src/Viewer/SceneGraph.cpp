@@ -152,7 +152,7 @@ osg::ref_ptr<osg::Group> SceneGraph::getRoot() const {
 	return root;
 }
 
-osg::ref_ptr<ControlFrame> SceneGraph::getNodeFrame() const{
+osg::ref_ptr<ControlFrame> SceneGraph::getControlFrame() const{
 	return controlFrame;
 }
 

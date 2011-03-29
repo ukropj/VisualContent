@@ -3,7 +3,7 @@
 #include "Viewer/OsgEdge.h"
 #include "Viewer/OsgCluster.h"
 #include "Model/Node.h"
-#include "Model/NodeCluster.h"
+#include "Model/Cluster.h"
 #include "Model/Edge.h"
 #include "Util/Config.h"
 

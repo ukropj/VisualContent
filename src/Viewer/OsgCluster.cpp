@@ -1,6 +1,6 @@
 #include "Viewer/OsgCluster.h"
 #include "Viewer/OsgNodeGroup.h"
-#include "Model/NodeCluster.h"
+#include "Model/Cluster.h"
 
 #include <QDebug>
 

@@ -6,7 +6,7 @@
  * nemam cas, takze sa raz k tomu vratim 8)
  */
 #include "Model/Node.h"
-#include "Model/NodeCluster.h"
+#include "Model/Cluster.h"
 #include "Model/Edge.h"
 #include "Model/Type.h"
 #include "Model/Graph.h"
