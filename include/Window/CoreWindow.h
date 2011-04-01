@@ -57,10 +57,14 @@ private slots:
 	void toggleLayouting(bool checked);
 	void toggleFixNodes();
 	void captureScreen();
-	void sliderValueChanged(int value);
+	void setAlpha(int value);
+
+	void toggleAutoCluster(bool checked);
+	void setClusterThreshold(int value);
 
 	void toggleDebug();
 	void showMessageBox(QString title, QString message, bool isError);
+
 private:
 	void loadFile(QString fileName);
 	void readSettings();
@@ -85,9 +89,13 @@ private:
 	QSlider* slider;
 	QAction* debugAction;
 
+	QAction* autoClusterAction;
+	QSlider* clusterSlider;
+
 	QMenu* fileMenu;
 	QMenu* editMenu;
 	QToolBar* toolBar;
+	QToolBar* clusteringBar;
 
 	Window::ViewerQT* viewerWidget;
 	Model::FRAlgorithm* layouter;

@@ -18,15 +18,16 @@ Cluster::Cluster(qlonglong id, Type* type, Graph* graph)
 	: Node(id, type, NULL, graph) {
 	weight = 0;
 	expandedChClusters = 0;
+	expanded = true;
 }
 
-void Cluster::setIgnored(bool flag) {
-	if (isIgnored() == flag)
+void Cluster::setExpanded(bool flag) {
+	if (expanded == flag)
 		return;
-	Node::setIgnored(flag);
+	expanded = flag;
 	if (parent != NULL) {
-		parent->expandedChClusters += flag ? +1 : -1;
-//		qDebug() << parent->toString() << " " << parent->expandedChClusters;
+		parent->expandedChClusters += expanded ? +1 : -1;
+		qDebug() << parent->toString() << " " << parent->expandedChClusters;
 	}
 }
 
@@ -52,12 +53,12 @@ QSet<Node*> Cluster::getIncidentNodes(bool getClusters) const {
 
 void Cluster::setParent(Cluster* newParent) {
 	Node::setParent(newParent);
-	if (this->isIgnored())
+	if (isExpanded())
 		newParent->expandedChClusters++;
 }
 
 bool Cluster::canCluster() {
-	if (!isIgnored())
+	if (!isIgnored() || !isExpanded())
 		return false;
 	if (expandedChClusters > 0) {
 //		qDebug() << "Unable to cluster, ecc: " << parent->expandedChClusters;
@@ -67,10 +68,12 @@ bool Cluster::canCluster() {
 }
 
 bool Cluster::clusterChildren() {
-	if (expandedChClusters > 0)
+	if (!canCluster())
 		return false;
 
 	setIgnored(false);
+	// NOTE: don't call setExpanded(false) here - wait for all children to reach this cluster
+	// see OsgCluster::moveChildIn()
 	osg::Vec3f pos(0, 0, 0);
 	QSetIterator<Node*> nodeIt = getChildrenIterator();
 	while (nodeIt.hasNext()) {
@@ -84,7 +87,7 @@ bool Cluster::clusterChildren() {
 }
 
 bool Cluster::unclusterChildren() {
-	if (children.isEmpty())
+	if (isIgnored() || isExpanded() || children.isEmpty())
 		return false;
 	QSetIterator<Node*> nodeIt = getChildrenIterator();
 	while (nodeIt.hasNext()) {
@@ -93,6 +96,7 @@ bool Cluster::unclusterChildren() {
 		n->setIgnored(false);
 	}
 	setIgnored(true);
+	setExpanded(true);
 	graph->setFrozen(false);
 	return true;
 }

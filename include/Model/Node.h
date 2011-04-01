@@ -62,7 +62,7 @@ public:
 	bool isFixed() const {return fixed;}
 	void setFrozen(bool flag) {frozen = flag;}
 	bool isFrozen() const {return frozen;}
-	virtual void setIgnored(bool flag);
+	void setIgnored(bool flag);
 	bool isIgnored() const {return ignore;}
 
 	bool equals(const Node* node) const;

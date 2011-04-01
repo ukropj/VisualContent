@@ -222,14 +222,14 @@ osg::ref_ptr<OsgNode> SceneElements::wrapNode(Node* node) {
 	return osgNode;
 }
 
-void SceneElements::updateNodes(float interpolationSpeed) {
+void SceneElements::updateNodes(float interpolationSpeed, float maxClusterSize) {
 	QList<OsgNode* >::const_iterator i = nodes.constBegin();
 
 	while (i != nodes.constEnd()) {
 		OsgNode* n = *i;
-//		n->updateClusterVisibility();
 		if (n->isVisible()) {
 			n->updatePosition(interpolationSpeed);
+			n->updateClusterState(maxClusterSize);
 		}
 		++i;
 	}

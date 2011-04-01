@@ -10,6 +10,7 @@
 #include <QMap>
 #include <QList>
 #include <QProgressDialog>
+#include <QMutex>
 
 #include <osg/ref_ptr>
 #include <osg/CullFace>
@@ -39,6 +40,7 @@ public:
 
 	void update(bool forceIdeal = false);
 	bool setUpdatingNodes(bool val);
+	void setClusterThreshold(float value);
 
 	osg::ref_ptr<osg::Group> getRoot() const;
 	osg::ref_ptr<ControlFrame> getControlFrame() const;
@@ -67,6 +69,12 @@ private:
 
 	bool updateNodes;
 	int elementsPosition;
+
+	float interpolationSpeed;
+	float maxClusterSize;
+	bool autoClustering;
+
+	QMutex mutex;
 
 };
 }

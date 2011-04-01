@@ -231,13 +231,14 @@ void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int
 			if (c != NULL) {
 				u->setParent(c);
 				c->setIgnored(!clustersVisible);
+				c->setExpanded(!clustersVisible);
 				u->setIgnored(clustersVisible);
 //				qDebug() << "u added to c";
 			}
 		}
 	}
 	nodes.unite(clusters);
-	if (clusters.size() > 1 && maxLevels > 0) {
+	if (clusters.size() > 1 && maxLevels != 0) {
 		QMap<qlonglong, Node*> newNodes(clusters);
 		clusters.clear();
 		cluster(newNodes, clustersVisible, maxLevels - 1);

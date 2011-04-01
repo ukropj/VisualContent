@@ -70,7 +70,8 @@ public:
 
 	void acceptVisitor(AbstractVisitor* visitor);
 
-	QString toString() const;
+	virtual QString toString() const;
+	virtual QString debugInfo() const;
 
 	void setColor(osg::Vec4 color);
 	osg::Vec4 getColor() const {return color;}
@@ -90,13 +91,14 @@ public:
 
 	Model::Node* getNode() const {return node;}
 
+	virtual bool updateClusterState(float maxClusterSize = -1);
 	virtual bool isClusterable() const;
+	virtual bool isClustering() const;
 	virtual AbstractNode* clusterToParent();
-	virtual AbstractNode* uncluster();
+	virtual AbstractNode* uncluster(bool returnResult = true);
 
 	void setMovingToCluster(bool flag) {movingToCluster = flag;}
 	bool isMovingToCluster() const {return movingToCluster;}
-	virtual bool isClustering() const;
 
 	void resolveParent();
 protected:

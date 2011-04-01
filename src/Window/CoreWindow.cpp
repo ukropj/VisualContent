@@ -106,6 +106,14 @@ void CoreWindow::createActions() {
 	centerAction->setToolTip(tr("Center view to current selection"));
 	connect(centerAction, SIGNAL(triggered()), this, SLOT(centerView()));
 
+	QIcon clusterIcon("img/icons/autocluster.png");
+	autoClusterAction = new QAction(clusterIcon, tr("Toggle auto-&clustering"), this);
+	autoClusterAction->setToolTip(tr("Toggle automatic clustering"));
+//	autoClusterAction->setShortcut(tr(""));
+	autoClusterAction->setCheckable(true);
+	autoClusterAction->setChecked(true);
+	connect(autoClusterAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoCluster(bool)));
+
     // recent files
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActions[i] = new QAction(this);
@@ -158,10 +166,11 @@ void CoreWindow::createToolBars() {
 	slider = new QSlider(Qt::Vertical, this);
 	slider->setTickPosition(QSlider::TicksLeft);
 	slider->setTickInterval(5);
+	slider->setSingleStep(5);
 	slider->setToolTip("Layouting speed");
 	slider->setValue(Util::Config::getValue("Layout.Algorithm.Alpha").toFloat() * 1000);
 	connect(slider, SIGNAL(valueChanged(int)), this,
-			SLOT(sliderValueChanged(int)));
+			SLOT(setAlpha(int)));
 	slider->setFixedHeight(180);
 	toolBar->addWidget(slider);
 
@@ -170,6 +179,23 @@ void CoreWindow::createToolBars() {
 
 	toolBar->setMovable(false);
 	addToolBar(Qt::LeftToolBarArea, toolBar);
+
+	clusteringBar = new QToolBar("Clustering", this);
+	clusteringBar->addAction(autoClusterAction);
+
+	clusterSlider = new QSlider(Qt::Vertical, this);
+	clusterSlider->setTickPosition(QSlider::TicksRight);
+	clusterSlider->setTickInterval(5);
+	clusterSlider->setSingleStep(5);
+	clusterSlider->setToolTip("Auto-clustering threshold");
+	clusterSlider->setValue(Util::Config::getValue("Viewer.Clustering.ClusterThreshold").toFloat() * 100);
+	connect(clusterSlider, SIGNAL(valueChanged(int)), this,
+			SLOT(setClusterThreshold(int)));
+	clusterSlider->setFixedHeight(200);
+	clusteringBar->addWidget(clusterSlider);
+
+	clusteringBar->setMovable(false);
+	addToolBar(Qt::RightToolBarArea, clusteringBar);
 }
 
 void CoreWindow::openFile() {
@@ -236,7 +262,9 @@ void CoreWindow::loadFile(QString filePath) {
 		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar);	// deletes original scene graph
 		layouter->setGraph(graph); 			// deletes original graph
+
 		progressBar->setValue(progressBar->maximum());
+
 
 		//reset camera
 		viewerWidget->getCameraManipulator()->home(0);
@@ -253,6 +281,8 @@ void CoreWindow::loadFile(QString filePath) {
 		sceneGraph->setNodeLabelsVisible(true);
 	if (playAction->isChecked())
 		layouter->play();
+	if (autoClusterAction->isChecked())
+		setClusterThreshold(clusterSlider->value());
 }
 
 void CoreWindow::showOptions() {
@@ -295,15 +325,31 @@ void CoreWindow::toggleLabels(bool checked) {
 	sceneGraph->setEdgeLabelsVisible(checked);
 }
 
-void CoreWindow::sliderValueChanged(int value) {
-	layouter->setAlphaValue((float) (value + 1) * 0.001); // dont allow 0
+void CoreWindow::setAlpha(int value) {
+	layouter->setAlphaValue((value + 1) / 1000.0f); // don't allow 0
 	layouter->wakeUp();
+}
+
+void CoreWindow::setClusterThreshold(int value) {
+	viewerWidget->setRendering(false);
+	sceneGraph->setClusterThreshold(value / 100.0f);
+	layouter->wakeUp();
+	viewerWidget->setRendering(true);
+}
+
+void CoreWindow::toggleAutoCluster(bool checked) {
+	clusterSlider->setEnabled(checked);
+	if (checked) {
+		sceneGraph->setClusterThreshold((clusterSlider->value() + 1) / 100.0f);
+	} else {
+		sceneGraph->setClusterThreshold(-1);
+	}
 }
 
 void CoreWindow::captureScreen() {
 	 QString fileName = QFileDialog::getSaveFileName(this, "Save image", QString(), "*.png");
 	 if (fileName.isEmpty())
-	        return;
+		 return;
 	 if (!fileName.endsWith(".png", Qt::CaseInsensitive))
 		 fileName += ".png";
 

@@ -11,7 +11,8 @@ class Cluster : public Node {
 public:
 	Cluster(qlonglong id, Type* type, Graph* graph);
 
-	void setIgnored(bool flag);
+	void setExpanded(bool flag);
+	bool isExpanded() const {return expanded;}
 	void setParent(Cluster* newParent);
 	QSet<Node*> getIncidentNodes(bool getClusters) const;
 	QSetIterator<Node*> getChildrenIterator() const {return QSetIterator<Node*>(children);}
@@ -25,9 +26,9 @@ public:
 
 private:
 
-
 	QSet<Node*> children;
 	int expandedChClusters;		// number of children that are expanded (ignored) clusters
+	bool expanded;
 
 	friend class Node; // XXX
 };

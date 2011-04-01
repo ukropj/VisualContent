@@ -38,7 +38,7 @@ public:
 			QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar = 0);
 	~SceneElements();
 
-	void updateNodes(float interpolationSpeed);
+	void updateNodes(float interpolationSpeed, float maxClusterSize);
 	void updateEdges();
 	void setEdgeLabelsVisible(bool visible);
 

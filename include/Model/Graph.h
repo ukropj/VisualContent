@@ -70,7 +70,7 @@ public:
 	void setFrozen(bool val) {frozen = val;}
 	QString toString() const;
 
-	void cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int maxLevels = 0);
+	void cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int maxLevels = -1);
 
 private:
 	qlonglong incEleIdCounter() {return ++ele_id_counter;}

@@ -14,16 +14,22 @@ public:
 	OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping = NULL);
 	~OsgCluster();
 
-	AbstractNode* cluster();
-	AbstractNode* uncluster();
+	bool updateClusterState(float maxClusterSize = -1);
 	bool isClustering() const;
+	AbstractNode* cluster();
+	AbstractNode* uncluster(bool returnResult = true);
 	void moveChildIn();
+	void allowAutocluster(bool flag) {autocluster = flag;}
+	bool canAutocluster() const {return autocluster;}
+
+	QString debugInfo() const;
 
 protected:
 
 private:
 	Model::Cluster* nodeCluster;
 	int childrenMovingIn;
+	bool autocluster;
 
 };
 

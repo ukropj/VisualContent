@@ -49,7 +49,7 @@ public:
 	virtual void toggleContent(bool flag) = 0;
 	virtual bool isClusterable() const = 0;
 	virtual AbstractNode* clusterToParent() = 0;
-	virtual AbstractNode* uncluster() = 0;
+	virtual AbstractNode* uncluster(bool returnResult = true) = 0;
 
 	virtual void getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) = 0;
 

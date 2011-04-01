@@ -399,6 +399,8 @@ void OsgNode::setSelected(bool flag) {
 	} else {
 		contentSwitch->setChildValue(closedFrame, selected);
 	}
+	if (parent != NULL)
+		parent->allowAutocluster(!selected);
 }
 
 bool OsgNode::isSelected() const {
@@ -477,7 +479,7 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 		osg::Vec3 directionVector = osg::Vec3(targetPos - currentPos);
 		float step = 4;
 
-		if (movingToCluster && directionVector.length() * interpolationSpeed < step) {
+		if (isMovingToCluster() && directionVector.length() * interpolationSpeed < step) {
 			if (directionVector.length() > step) {
 				directionVector.normalize();
 				directionVector *= step;
@@ -559,6 +561,10 @@ QString OsgNode::toString() const {
 	return node->toString();
 }
 
+QString OsgNode::debugInfo() const {
+	return toString();
+}
+
 bool OsgNode::equals(const AbstractNode* other) const {
 	if (this == other) {
 		return true;
@@ -592,6 +598,9 @@ void OsgNode::setVisible(bool flag) {
 		if (!visible) {
 			setFixed(false);
 			setExpanded(false);
+			setPickable(false);
+		} else {
+			setPickable(true);
 		}
 		if (node->isIgnored() == visible) {
 			qWarning() << "inconsistnt view! " << toString() << "visible: " << visible;
@@ -601,6 +610,22 @@ void OsgNode::setVisible(bool flag) {
 
 bool OsgNode::isVisible() const {
 	return visible;
+}
+
+bool OsgNode::updateClusterState(float maxClusterSize) {
+	if (isSelected())
+		return true; // selected is immune
+	if (maxClusterSize < 0)
+		return true; // no autoclustering
+	if (isClustering())
+		return true;
+	if (parent != NULL && parent->canAutocluster() &&
+			parent->getNode()->getWeight() <= maxClusterSize) {
+		qDebug() << toString() << " autoin";
+		parent->cluster();
+		return true;
+	}
+	return false;
 }
 
 bool OsgNode::isClusterable() const {
@@ -627,7 +652,7 @@ AbstractNode* OsgNode::clusterToParent() {
 	}
 }
 
-AbstractNode* OsgNode::uncluster() {
+AbstractNode* OsgNode::uncluster(bool returnResult) {
 	return this;
 }
 

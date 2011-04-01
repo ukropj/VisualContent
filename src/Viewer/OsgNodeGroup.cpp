@@ -31,7 +31,7 @@ OsgNodeGroup::OsgNodeGroup() {
 OsgNodeGroup::~OsgNodeGroup() {
 	disconnect(this, 0, 0, 0);
 	removeAll();
-//	qDebug() << "NodeGroup deleted " << id;
+	qDebug() << "NodeGroup deleted " << id;
 }
 
 /*
@@ -313,17 +313,18 @@ AbstractNode* OsgNodeGroup::clusterToParent() {
 	return clusterGroup;
 }
 
-AbstractNode* OsgNodeGroup::uncluster() {
-	OsgNodeGroup* unclusterGroup = new OsgNodeGroup();
-
+AbstractNode* OsgNodeGroup::uncluster(bool returnResult) {
+	OsgNodeGroup* unclusterGroup = NULL;
+	if (returnResult)
+		unclusterGroup = new OsgNodeGroup();
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		AbstractNode* ch = (*i)->uncluster();
-		if (ch != NULL)
+		if (returnResult && ch != NULL)
 			unclusterGroup->addNode(ch, false, false);
 		++i;
 	}
-	if (unclusterGroup->isEmpty()) {
+	if (!returnResult || unclusterGroup->isEmpty()) {
 		delete unclusterGroup;
 		return NULL;
 	}
