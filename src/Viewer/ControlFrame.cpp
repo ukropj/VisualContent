@@ -131,12 +131,12 @@ void ControlFrame::updateButtons(AbstractNode* node, bool nodeAdded) {
 void ControlFrame::show() {
 	if (!isNodeSet())
 		return;
-	qDebug() << "show";
+//	qDebug() << "show";
 	setNodeMask(true);
 }
 
 void ControlFrame::hide() {
-	qDebug() << "hide";
+//	qDebug() << "hide";
 	setNodeMask(false);
 	if (isActive())
 		deactivateAction();
@@ -183,7 +183,7 @@ void ControlFrame::setNode(AbstractNode* node) {
 	myNode = node;
 	updateButtons(node);
 	deactivateAction();
-	qDebug() << "Node set " << (myNode ? myNode->toString() : "NULL");
+//	qDebug() << "Node set " << (myNode ? myNode->toString() : "NULL");
 }
 
 bool ControlFrame::isNodeSet() const {

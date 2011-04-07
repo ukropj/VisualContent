@@ -48,7 +48,6 @@ public:
 	qlonglong getEleIdCounter() const {return ele_id_counter;}
 
 	Node* addNode(Type* type = NULL, QMap<QString, QString>* data = NULL);
-	Cluster* addCluster(Type* type = NULL);
 
 	Edge* addEdge(Node* srcNode, Node* dstNode, Type* type = NULL, QMap<QString, QString>* data = NULL);
 	Edge* addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type = NULL, QMap<QString, QString>* data = NULL);
@@ -70,8 +69,6 @@ public:
 	void setFrozen(bool val) {frozen = val;}
 	QString toString() const;
 
-	void cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int maxLevels = -1);
-
 private:
 	qlonglong incEleIdCounter() {return ++ele_id_counter;}
 	qlonglong getMaxEleIdFromElements();
@@ -84,7 +81,6 @@ private:
 	bool frozen;
 
 	QMap<qlonglong, Node* > nodes;
-	QMap<qlonglong, Node* > clusters;
 	QMap<qlonglong, Edge* > edges;
 	QMap<qlonglong, Type*> types;
 
@@ -92,6 +88,7 @@ private:
 	QMultiMap<qlonglong, Edge* > edgesByType;
 	QMultiMap<qlonglong, Node* > nodesByType;
 
+	friend class Clusterer;
 };
 }
 

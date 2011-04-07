@@ -31,7 +31,7 @@ OsgNodeGroup::OsgNodeGroup() {
 OsgNodeGroup::~OsgNodeGroup() {
 	disconnect(this, 0, 0, 0);
 	removeAll();
-	qDebug() << "NodeGroup deleted " << id;
+//	qDebug() << "NodeGroup deleted " << id;
 }
 
 /*
@@ -115,7 +115,7 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 void OsgNodeGroup::removeAll() {
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
-		disconnect(*i, 0, this, 0);// TODO removeFromNodes
+		disconnect(*i, 0, this, 0);
 		emit nodeRemoved(*i);
 		++i;
 	}
@@ -283,7 +283,6 @@ void OsgNodeGroup::toggleContent(bool flag) {
 }
 
 bool OsgNodeGroup::isClusterable() const {
-	//TODO
 	return false;
 }
 

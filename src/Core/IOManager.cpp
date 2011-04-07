@@ -5,6 +5,7 @@
 
 #include "Core/IOManager.h"
 #include "Model/Graph.h"
+#include "Model/Clusterer.h"
 #include "Model/Node.h"
 #include "Model/Type.h"
 #include "Model/Edge.h"
@@ -22,9 +23,14 @@ IOManager::IOManager() {
 	graph = NULL;
 	progress = NULL;
 	defaultDirection = false;
+	clusterer = new Clusterer();
 }
 
 IOManager::~IOManager() {
+}
+
+bool IOManager::setClusteringAlg(int i) {
+	return clusterer->setClusteringAlg(i);
 }
 
 Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
@@ -49,6 +55,8 @@ Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
 	}
 	if (progress->wasCanceled())
 		return NULL;
+
+	clusterer->cluster(graph);
 	return graph;
 }
 

@@ -45,6 +45,7 @@ signals:
 	void windowResized();
 private slots:
 	void openFile();
+	void reloadFile();
 	void setDataMapping();
 	void openRecentFile();
 	void showOptions();
@@ -55,12 +56,12 @@ private slots:
 	void randomize();
 	void toggleLabels(bool checked);
 	void toggleLayouting(bool checked);
-	void toggleFixNodes();
 	void captureScreen();
 	void setAlpha(int value);
 
 	void toggleAutoCluster(bool checked);
 	void setClusterThreshold(int value);
+	void setClusteringAlg(QAction* action);
 
 	void toggleDebug();
 	void showMessageBox(QString title, QString message, bool isError);
@@ -74,6 +75,7 @@ private:
 	enum { MaxRecentFiles = 10 };
 
 	QAction* loadAction;
+	QAction* reloadAction;
 	QAction* remapAction;
 	QAction* quitAction;
 	QAction* optionsAction;
@@ -81,7 +83,6 @@ private:
 	QAction* recentFileActions[MaxRecentFiles];
 
 	QAction* playAction;
-	QAction* fixAction;
 	QAction* randomizeAction;
 	QAction* centerAction;
 	QAction* labelsAction;
@@ -90,10 +91,14 @@ private:
 	QAction* debugAction;
 
 	QAction* autoClusterAction;
+	QAction* cluster0Action;
+	QAction* cluster1Action;
+	QAction* cluster2Action;
+	QAction* cluster3Action;
 	QSlider* clusterSlider;
 
 	QMenu* fileMenu;
-	QMenu* editMenu;
+	QMenu* clusteringMenu;
 	QToolBar* toolBar;
 	QToolBar* clusteringBar;
 

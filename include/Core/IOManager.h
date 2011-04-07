@@ -18,6 +18,7 @@ namespace Model {
 class Graph;
 class Node;
 class Type;
+class Clusterer;
 }
 
 namespace AppCore {
@@ -27,6 +28,7 @@ public:
 	IOManager();
 	~IOManager();
 
+	bool setClusteringAlg(int i);
 	Model::Graph* loadGraph(QIODevice* device, QProgressDialog* progressBar);
 
 private:
@@ -45,6 +47,7 @@ private:
 	QMap<QString, qlonglong > readNodes;
 
 	bool defaultDirection;
+	Model::Clusterer* clusterer;
 };
 }
 

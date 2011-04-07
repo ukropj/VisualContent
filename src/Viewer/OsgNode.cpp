@@ -46,7 +46,8 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	maxScale = Util::Config::getValue("Viewer.Node.MaxScale").toFloat();
 	size = osg::Vec3f(0, 0, 0);
 
-	closedG = createTextureNode(Util::TextureWrapper::getNodeTexture(),
+	closedG = createTextureNode(node->isCluster() ? Util::TextureWrapper::getClusterTexture() :
+			Util::TextureWrapper::getNodeTexture(),
 			NODE_SIZE, NODE_SIZE);
 	visualG = ContentFactory::createContent(mapping->getContentType(), getMappingValue(DataMapping::CONTENT));
 	visualGBorder = initFrame();
@@ -621,7 +622,6 @@ bool OsgNode::updateClusterState(float maxClusterSize) {
 		return true;
 	if (parent != NULL && parent->canAutocluster() &&
 			parent->getNode()->getWeight() <= maxClusterSize) {
-		qDebug() << toString() << " autoin";
 		parent->cluster();
 		return true;
 	}

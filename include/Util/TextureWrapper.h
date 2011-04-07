@@ -26,7 +26,6 @@ class TextureWrapper {
 public:
 	/**
 	 * Nacita textury vo formate PNG.
-	 *
 	 **/
 	static osg::ref_ptr<osg::Texture2D> readTextureFromFile(QString path, bool repeat = false);
 
@@ -39,6 +38,7 @@ public:
 	static osg::ref_ptr<osg::Texture2D> createTexture(osg::Image* image, bool repeat = false);
 
 	static osg::ref_ptr<osg::Texture2D> getNodeTexture();
+	static osg::ref_ptr<osg::Texture2D> getClusterTexture();
 	static osg::ref_ptr<osg::Texture2D> getFrameTexture();
 	static osg::ref_ptr<osg::Texture2D> getDirectedEdgeTexture();
 	static osg::ref_ptr<osg::Texture2D> getEdgeTexture();
@@ -65,6 +65,7 @@ public:
 private:
 
 	static osg::ref_ptr<osg::Texture2D> nodeTexture;
+	static osg::ref_ptr<osg::Texture2D> clusterTexture;
 	static osg::ref_ptr<osg::Texture2D> frameTexture;
 	static osg::ref_ptr<osg::Texture2D> edgeTexture;
 	static osg::ref_ptr<osg::Texture2D> directedEdgeTexture;

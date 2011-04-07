@@ -73,13 +73,29 @@ Edge* Node::getEdgeTo(const Node* otherNode) const {
 	return NULL;
 }
 
-QSet<Node*> Node::getIncidentNodes(bool getClusters) const {
+QSet<Node*> Node::getIncidentNodes(bool noClusters) const {
 	QSet<Node*> nodes;
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
 		Edge* edge = i.value();
 		nodes.insert(edge->getOtherNode(this));
 	}
-	return nodes;
+
+//	if (noClusters) {
+//		return nodes;
+//	} else {
+		QSet<Node*> visibleNodes;
+		QSetIterator<Node*> nodeIt(nodes);
+		while (nodeIt.hasNext()) {
+			Node* node = nodeIt.next();
+			Node* cluster = node->getTopCluster();
+			if (cluster != NULL && cluster != this) {
+				visibleNodes.insert(cluster);
+			} else {
+				visibleNodes.insert(node);
+			}
+		}
+		return visibleNodes;
+//	}
 }
 
 void Node::setOsgNode(Vwr::OsgNode* osgNode) {

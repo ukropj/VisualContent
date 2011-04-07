@@ -2,6 +2,7 @@
 #include "Window/ViewerQT.h"
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
+#include "Model/Clusterer.h"
 #include "Core/IOManager.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/PickHandler.h"
@@ -43,6 +44,10 @@ void CoreWindow::createActions() {
 	loadAction->setToolTip(tr("Load graph from file"));
 	connect(loadAction, SIGNAL(triggered()), this, SLOT(openFile()));
 
+	reloadAction = new QAction(tr("&Reload"), this);
+	reloadAction->setToolTip(tr("Reload currently loaded graph"));
+	connect(reloadAction, SIGNAL(triggered()), this, SLOT(reloadFile()));
+
 	QIcon mapIcon("img/icons/map.png");
 	remapAction = new QAction(mapIcon, tr("&Set mapping"), this);
 	remapAction->setShortcut(tr("CTRL+M"));
@@ -75,12 +80,6 @@ void CoreWindow::createActions() {
 	debugAction->setChecked(false);
 	connect(debugAction, SIGNAL(triggered()), this, SLOT(toggleDebug()));
 
-	QIcon fixIcon("img/icons/fix.png");
-	fixAction = new QAction(fixIcon, tr("&Fix/Unfix"), this);
-	fixAction->setShortcut(tr("CTRL+F"));
-	fixAction->setToolTip(tr("Fix or unfix selected nodes"));
-	connect(fixAction, SIGNAL(triggered()), this, SLOT(toggleFixNodes()));
-
 	QIcon labelsIcon("img/icons/labels.png");
 	labelsAction = new QAction(labelsIcon, tr("&Toggle labels"), this);
 	labelsAction->setToolTip(tr("Toggle node labels"));
@@ -109,12 +108,33 @@ void CoreWindow::createActions() {
 	QIcon clusterIcon("img/icons/autocluster.png");
 	autoClusterAction = new QAction(clusterIcon, tr("Toggle auto-&clustering"), this);
 	autoClusterAction->setToolTip(tr("Toggle automatic clustering"));
-//	autoClusterAction->setShortcut(tr(""));
 	autoClusterAction->setCheckable(true);
 	autoClusterAction->setChecked(true);
 	connect(autoClusterAction, SIGNAL(triggered(bool)), this, SLOT(toggleAutoCluster(bool)));
 
-    // recent files
+	cluster0Action = new QAction(tr("No clustering"), this);
+	cluster0Action->setCheckable(true);
+	cluster0Action->setData(QVariant(0));
+	cluster1Action = new QAction(tr("Cluster neighbors"), this);
+	cluster1Action->setCheckable(true);
+	cluster1Action->setData(QVariant(1));
+	cluster2Action = new QAction(tr("Cluster leafs"), this);
+	cluster2Action->setCheckable(true);
+	cluster2Action->setData(QVariant(2));
+	cluster3Action = new QAction(tr("Cluster Min-Cut"), this);
+	cluster3Action->setCheckable(true);
+	cluster3Action->setData(QVariant(3));
+	cluster3Action->setEnabled(false); // TODO
+
+	QActionGroup* clusteringTypes = new QActionGroup(this);
+	clusteringTypes->addAction(cluster0Action);
+	clusteringTypes->addAction(cluster1Action);
+	clusteringTypes->addAction(cluster2Action);
+	clusteringTypes->addAction(cluster3Action);
+	cluster1Action->setChecked(true);
+	connect(clusteringTypes, SIGNAL(triggered(QAction*)), this, SLOT(setClusteringAlg(QAction*)));
+
+	// recent files
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActions[i] = new QAction(this);
         recentFileActions[i]->setVisible(false);
@@ -136,6 +156,7 @@ void CoreWindow::createActions() {
 void CoreWindow::createMenus() {
 	fileMenu = menuBar()->addMenu(tr("&File"));
 	fileMenu->addAction(loadAction);
+	fileMenu->addAction(reloadAction);
 	fileMenu->addAction(remapAction);
 	fileMenu->addAction(captureAction);
 
@@ -146,8 +167,13 @@ void CoreWindow::createMenus() {
 	fileMenu->addSeparator();
 	fileMenu->addAction(quitAction);
 
-	editMenu = menuBar()->addMenu(tr("Edit"));
-	editMenu->addAction(optionsAction);
+	clusteringMenu = menuBar()->addMenu(tr("&Clustering"));
+	clusteringMenu->addAction(autoClusterAction);
+	clusteringMenu->addSeparator();
+	clusteringMenu->addAction(cluster0Action);
+	clusteringMenu->addAction(cluster1Action);
+	clusteringMenu->addAction(cluster2Action);
+	clusteringMenu->addAction(cluster3Action);
 }
 
 void CoreWindow::createToolBars() {
@@ -155,7 +181,6 @@ void CoreWindow::createToolBars() {
 
 	toolBar->addAction(playAction);
 	toolBar->addAction(randomizeAction);
-//	toolBar->addAction(fixAction);
 	toolBar->addAction(labelsAction);
 	toolBar->addAction(centerAction);
 	toolBar->addSeparator();
@@ -211,6 +236,10 @@ void CoreWindow::openRecentFile() {
     }
 }
 
+void CoreWindow::reloadFile() {
+    loadFile(recentFileActions[0]->data().toString());
+}
+
 void CoreWindow::setDataMapping() {
 	layouter->pause();
 	sceneGraph->setUpdatingNodes(false);
@@ -257,7 +286,6 @@ void CoreWindow::loadFile(QString filePath) {
 		remapAction->setEnabled(true);
 		currentFile = filePath;
 
-		graph->cluster(*(graph->getNodes()), true, 2);
 		// reload
 		viewerWidget->getPickHandler()->reset();
 		sceneGraph->reload(graph, progressBar);	// deletes original scene graph
@@ -312,10 +340,6 @@ void CoreWindow::centerView() {
 	viewerWidget->getCameraManipulator()->setCenter(center);
 }
 
-void CoreWindow::toggleFixNodes() {
-	// Unused
-}
-
 void CoreWindow::toggleDebug() {
 	viewerWidget->getPickHandler()->changeMode();
 }
@@ -343,6 +367,20 @@ void CoreWindow::toggleAutoCluster(bool checked) {
 		sceneGraph->setClusterThreshold((clusterSlider->value() + 1) / 100.0f);
 	} else {
 		sceneGraph->setClusterThreshold(-1);
+	}
+}
+
+void CoreWindow::setClusteringAlg(QAction* action) {
+	bool changed = ioManager->setClusteringAlg(action->data().toInt());
+	if (changed) {
+		QMessageBox::StandardButton reply;
+		reply = QMessageBox::question(this, tr("Clustering type changed"),
+				"<p>Change of clustering algorithm will take effect only "
+				"after reloading graph.</p><p>Reload now?</p>",
+				QMessageBox::Yes | QMessageBox::No);
+		if (reply == QMessageBox::Yes) {
+			reloadFile();
+		}
 	}
 }
 

@@ -12,7 +12,6 @@ OsgCluster::OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping)
 
 	childrenMovingIn = 0;
 	autocluster = true;
-	setColor(osg::Vec4f(0,0,1,1)); // XXX
 	setScale(sqrt(nodeCluster->getWeight()));
 }
 
@@ -21,18 +20,14 @@ OsgCluster::~OsgCluster() {
 }
 
 bool OsgCluster::updateClusterState(float maxClusterSize) {
-//	if (nodeCluster->getId() == 25) qDebug() << debugInfo();
 	if (!canAutocluster())
 		return true;
 	if (OsgNode::updateClusterState(maxClusterSize))
 		return true;
 	if (nodeCluster->getWeight() > maxClusterSize) {
-		qDebug() << toString() << " autoout";
 		uncluster(false);
-		qDebug() << "uncluster finished2";
 		return true;
 	}
-//	if (nodeCluster->getId() == 25) qDebug() << "?";
 	return false;
 }
 
@@ -45,11 +40,8 @@ bool OsgCluster::isClustering() const {
 }
 
 AbstractNode* OsgCluster::cluster() {
-//		qDebug() << toString() << " " << nodeCluster->canCluster()
-//		<< " " << nodeCluster->isExpanded() << nodeCluster->isIgnored();
 	if (isClustering())
 		return NULL;
-qDebug() << toString() << " cluster";
 	if (nodeCluster->clusterChildren()) {
 		QSetIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
 		while (nodeIt.hasNext()) {
@@ -69,30 +61,23 @@ AbstractNode* OsgCluster::uncluster(bool returnResult) {
 	if (isClustering())
 		return this;
 
-	qDebug() << toString() << " uncluster";
 	if (nodeCluster->unclusterChildren()) {
-	qDebug() << toString() << " visual uncluster";
 		setVisible(false);
-	qDebug() << toString() << " a";
 		OsgNodeGroup* unclusterGroup = NULL;
 		if (returnResult)
 			unclusterGroup = new OsgNodeGroup();
 		QSetIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
-	qDebug() << toString() << " b";
 		while (nodeIt.hasNext()) {
 			OsgNode* child = nodeIt.next()->getOsgNode();
 			child->setVisible(true);
 			child->updatePosition();
 			if (returnResult)
 				unclusterGroup->addNode(child, false, false);
-	qDebug() << toString() << " c";
 		}
 		if (returnResult)
 			unclusterGroup->updateSizeAndPos();
-		qDebug() << "uncluster finished yes";
 		return unclusterGroup;
 	} else {
-		qDebug() << "uncluster finished no";
 		return this;
 	}
 }

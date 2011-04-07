@@ -5,10 +5,11 @@
 
 using namespace Util;
 
-osg::ref_ptr<osg::Texture2D> TextureWrapper::nodeTexture;
-osg::ref_ptr<osg::Texture2D> TextureWrapper::frameTexture;
-osg::ref_ptr<osg::Texture2D> TextureWrapper::edgeTexture;
-osg::ref_ptr<osg::Texture2D> TextureWrapper::directedEdgeTexture;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::nodeTexture = NULL;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::clusterTexture = NULL;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::frameTexture = NULL;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::edgeTexture = NULL;
+osg::ref_ptr<osg::Texture2D> TextureWrapper::directedEdgeTexture = NULL;
 
 osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path, bool repeat) {
 	osg::ref_ptr<osg::Texture2D> texture = NULL;
@@ -42,6 +43,13 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::getNodeTexture() {
 		nodeTexture = readTextureFromFile(Config::getValue(
 				"Viewer.Textures.Node"));
 	return nodeTexture;
+}
+
+osg::ref_ptr<osg::Texture2D> TextureWrapper::getClusterTexture() {
+	if (clusterTexture == NULL)
+		clusterTexture = readTextureFromFile(Config::getValue(
+				"Viewer.Textures.Cluster"));
+	return clusterTexture;
 }
 
 osg::ref_ptr<osg::Texture2D> TextureWrapper::getFrameTexture() {
@@ -92,6 +100,7 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::getDirectedEdgeTexture() {
 
 void TextureWrapper::reloadTextures() {
 	nodeTexture = NULL;
+	clusterTexture = NULL;
 	edgeTexture = NULL;
 	directedEdgeTexture = NULL;
 }

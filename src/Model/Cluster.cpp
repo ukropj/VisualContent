@@ -27,28 +27,40 @@ void Cluster::setExpanded(bool flag) {
 	expanded = flag;
 	if (parent != NULL) {
 		parent->expandedChClusters += expanded ? +1 : -1;
-		qDebug() << parent->toString() << " " << parent->expandedChClusters;
+//		qDebug() << parent->toString() << " " << parent->expandedChClusters;
 	}
 }
 
-QSet<Node*> Cluster::getIncidentNodes(bool getClusters) const {
+QSet<Node*> Cluster::getIncidentNodes(bool noClusters) const {
 	QSet<Node*> nodes;
+	if (isExpanded())
+		return nodes;
 	QSetIterator<Node*> nodeIt = getChildrenIterator();
 	while (nodeIt.hasNext()) {
-		nodes.unite(nodeIt.next()->getIncidentNodes());
+		nodes.unite(nodeIt.next()->getIncidentNodes(noClusters));
 	}
 	nodes.subtract(children);
-	if (getClusters) {
-		QSet<Node*> clusters;
-		QSetIterator<Node*> nodeIt(nodes);
-		while (nodeIt.hasNext()) {
-			Node* parentN = nodeIt.next()->getParent();
-			if (parentN != NULL && parentN != this && parentN != parent)
-				clusters.insert(parentN);
-		}
-		nodes.unite(clusters);
-	}
-	return nodes;
+
+	Cluster* n = const_cast<Cluster*>(this);
+	nodes.remove(n);
+	nodes.remove(n);
+
+//	if (noClusters) {
+		return nodes;
+//	} else {
+//		QSet<Node*> visibleNodes;
+//		QSetIterator<Node*> nodeIt(nodes);
+//		while (nodeIt.hasNext()) {
+//			Node* node = nodeIt.next();
+//			Node* cluster = node->getTopCluster();
+//			if (cluster != NULL && cluster != this) {
+//				visibleNodes.insert(cluster);
+//			} else {
+//				visibleNodes.insert(node);
+//			}
+//		}
+//		return visibleNodes;
+//	}
 }
 
 void Cluster::setParent(Cluster* newParent) {

@@ -55,8 +55,6 @@ SceneGraph::SceneGraph() {
 	maxClusterSize = -1;
 	autoClustering = Util::Config::getValue(
 			"Viewer.Clustering.AutoClustering").toFloat() != 0;
-
-	qDebug() << autoClustering;
 }
 
 SceneGraph::~SceneGraph() {
@@ -222,7 +220,6 @@ void SceneGraph::setClusterThreshold(float value) {
 		return;
 //	QMutexLocker locker(&mutex);
 	maxClusterSize = value * sceneElements->getNodes().size();
-	qDebug() << maxClusterSize;
 }
 
 void SceneGraph::setFrozen(bool val) {

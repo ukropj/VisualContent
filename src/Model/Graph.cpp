@@ -45,17 +45,6 @@ Node* Graph::addNode(Type* type, QMap<QString, QString>* data) {
 	return node;
 }
 
-Cluster* Graph::addCluster(Type* type) { // TODO cluster type
-	if (type == NULL) {
-		type = addType("new_type_cluster" + incEleIdCounter());
-	}
-	Cluster* node = new Cluster(incEleIdCounter(), type, this);
-
-	clusters.insert(node->getId(), node);
-	nodesByType.insert(type->getId(), node);
-	return node;
-}
-
 Edge* Graph::addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, QMap<QString, QString>* data) {
 	return addEdge(nodes.value(srcNodeId), nodes.value(dstNodeId), type, data);
 }
@@ -204,47 +193,6 @@ int parent[], color[];
 double min_capacity[];
 double max_flow;*/
 
-void Graph::cluster(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int maxLevels) {
-	qDebug() << "clustering starts " << someNodes.size();
-	clusters.clear();
-	for (NodeIt ui = someNodes.begin(); ui != someNodes.end(); ++ui) {
-		Node* u = ui.value();
-//		qDebug() << "u: " << u->getId();
-		if (u->getParent() == NULL) {
-			Cluster* c = NULL;
-			QSet<Node*> in = u->getIncidentNodes();
-			QSet<Node*>::const_iterator i = in.begin();
-			while (i != in.end()) {
-				Node* v = *i;
-//				qDebug() << "v: " << v->getId();
-				if (v->getParent() == NULL) {
-					if (c == NULL) {
-						c = addCluster(u->getType()); // TODO cluster type
-//						qDebug() << "new c: " << c->getId();
-					}
-					v->setParent(c);
-					v->setIgnored(clustersVisible);
-//					qDebug() << "v added to c";
-				}
-				++i;
-			}
-			if (c != NULL) {
-				u->setParent(c);
-				c->setIgnored(!clustersVisible);
-				c->setExpanded(!clustersVisible);
-				u->setIgnored(clustersVisible);
-//				qDebug() << "u added to c";
-			}
-		}
-	}
-	nodes.unite(clusters);
-	if (clusters.size() > 1 && maxLevels != 0) {
-		QMap<qlonglong, Node*> newNodes(clusters);
-		clusters.clear();
-		cluster(newNodes, clustersVisible, maxLevels - 1);
-	}
-	qDebug() << "clustering ends " << clusters.size() << "/" <<  nodes.size();
-}
 
 /*void Graph::maxFlow(Node* source, Node* sink) {
 	flow = new double[size][size];

@@ -21,6 +21,7 @@ Viewer.Node.Scale=2
 Viewer.Edge.Scale=1
 Viewer.Textures.Edge=img/texture/edge.png
 Viewer.Textures.Node=img/texture/node.png
+Viewer.Textures.Cluster=img/texture/cluster.png
 Viewer.Textures.Frame=img/texture/frame.png
 Viewer.Textures.DirectedEdgePrefix=img/texture/arrows/arrow
 Viewer.Textures.DirectedEdgeSuffix=.png
