@@ -30,7 +30,7 @@ public:
 	~OsgContent();
 
 	virtual bool load() = 0;
-	std::string getGeodeName() const;
+	virtual std::string getGeodeName() const;
 	virtual const osg::BoundingBox& getBoundingBox() const;
 
 protected:
@@ -44,6 +44,17 @@ public:
 	bool load();
 private:
 	bool loaded;
+
+};
+
+class ObjectContent : public OsgContent {
+public:
+	ObjectContent(QString osgPath);
+	~ObjectContent() {}
+	bool load();
+private:
+	bool loaded;
+	QString osgPath;
 
 };
 

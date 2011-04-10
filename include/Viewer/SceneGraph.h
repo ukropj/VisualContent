@@ -35,7 +35,7 @@ public:
 	SceneGraph();
 	~SceneGraph();
 
-	void reload(Model::Graph* graph, QProgressDialog* pd);
+	void reload(Model::Graph* graph, int origNodeCount, QProgressDialog* pd);
 	void reloadConfig();
 
 	void update(bool forceIdeal = false);
@@ -71,7 +71,8 @@ private:
 	int elementsPosition;
 
 	float interpolationSpeed;
-	float maxClusterSize;
+	int maxClusterSize;
+	float maxAllowedClusterSize;
 	bool autoClustering;
 
 };

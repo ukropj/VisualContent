@@ -201,11 +201,11 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 
 	i = 0;
 	float maxW = -1;
-//	QString str = "\n";
+	QString str = "\n     ";
 	for (NIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 		pd->setValue(step++);
 		Node* u = *ui;
-//		str += QString("%1").arg(u->getId(), 5) + " ";
+		str += QString("%1").arg(u->getId(), 5) + " ";
 		w[i][i] = 0;
 		int degU = u->getIncidentNodes().size();
 		j = i+1;
@@ -227,30 +227,34 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 	}
 //	qDebug() << "maxW: " << maxW;
 
-//	str += "\n";
-//	for (i=0; i < n; i++) {
-//		float s = 0;
-//		for (j=0; j < n; j++) {
-//			str += QString("%1").arg(w[i][j], 5) + " ";
-//			s += w[i][j];
-//		}
-//		str += "\n";
-//	}
+	str += "\n";
+	NIt qi = someNodes.constBegin();
+	for (i=0; i < n; i++) {
+		float s = 0;
+		Node* q = *qi;
+		str += QString("%1").arg(q->getId(), 5) + " ";
+		for (j=0; j < n; j++) {
+			str += QString("%1").arg(w[i][j], 5) + " ";
+			s += w[i][j];
+		}
+		str += "\n";
+		++qi;
+	}
 //	qDebug() << str;
 
 	float t = qMin(1.0f, maxW) * K;
 
-	while (t > 0.6f * K && someNodes.size() > 2) {
-		t *= 0.8f;
-		//	qDebug() << "t: " << t;
+	while (t > 0.7f * K && someNodes.size() > 2) {
+//			qDebug() << "t: " << t;
+		t *= 0.9f;
 		i = 0;
 
 		QSet<Node*> clustered;
 		for (NIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 			Node* u = *ui;
 
-			if (u->getParent() == NULL) {
-				//							qDebug() << "u: " << u->getId();
+//			if (u->getParent() == NULL) {
+//											qDebug() << "u: " << u->getId();
 				j = i+1;
 				Cluster* c = u->getParent();
 				QSet<Node*> toCluster;
@@ -258,49 +262,54 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 					if (pd->wasCanceled()) return;
 					Node* v = *vi;
 					if (w[i][j] >= t) {
-						//					qDebug() << "v: " << v->getId() << " w=" << w[i][j];
+//											qDebug() << "v: " << v->getId() << " w=" << w[i][j];
 						if (c == NULL) {
 							c = v->getParent();
+//								qDebug() << "c = v->getParent()";
+//								qDebug() << "c: " << (c == NULL ? "NULL" : QString("%1").arg(c->getId()));
 						} else {
-							if (v->getParent() != NULL)
+							if (v->getParent() != NULL) {
+//								qDebug() << "v has other parent!";
 								continue;
+							}
 						}
 						toCluster.insert(v);
 						clustered.insert(v);
 						pd->setValue(step++);
-						//					qDebug() << "is clusterable";
+//											qDebug() << "is clusterable";
 					}
 				}
 				if (!toCluster.isEmpty()) {
 					if (c == NULL) {
 						c = addCluster();
-						//					qDebug() << "c: " << c->getId();
+//											qDebug() << "new c: " << c->getId();
 						c->setIgnored(!clustersVisible);
 						c->setExpanded(!clustersVisible);
 					}
 					NIt i = toCluster.constBegin();
 					while (i != toCluster.constEnd()) {
 						Node* v = *i;
-						//					qDebug() << "v': " << v->getId();
+//											qDebug() << "v': " << v->getId();
 						if (v->getParent() == NULL) {
 							v->setParent(c);
 							v->setIgnored(clustersVisible);
-							//				qDebug() << "v' added to c";
+//											qDebug() << "v' added to c";
 						}
 						i++;
 					}
 					if (u->getParent() == NULL) {
 						u->setParent(c);
 						u->setIgnored(clustersVisible);
-						//					qDebug() << "u added to c";
+//											qDebug() << "u added to c";
 						clustered.insert(u);
 						pd->setValue(step++);
 					}
 				}
-			}
+//			}
 		}
 		someNodes.subtract(clustered);
 	}
+//	qDebug() << "nodes: " << someNodes.size() << " clusters: " << clusters.size();
 
 	for (NodeIt ci = clusters.begin(); ci != clusters.end(); ++ci) {
 		Node* c = ci.value();
@@ -313,6 +322,7 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 		clusters.clear();
 		clusterAdjacency(someNodes, clustersVisible, maxLevels - 1);
 	}
+
 }
 
 Cluster* Clusterer::addCluster() { // TODO cluster type

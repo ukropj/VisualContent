@@ -21,7 +21,7 @@ DataMapping::DataMapping() {
 
 QList<DataMapping::ContentType> DataMapping::getContentTypes() {
 	QList<ContentType> contentTypes;
-	contentTypes << RANDOM << IMAGE << TEXT << WEB; // << WEB << OSG;
+	contentTypes << RANDOM << IMAGE << TEXT << WEB << OSG;
 	return contentTypes;
 }
 

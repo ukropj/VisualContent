@@ -108,7 +108,7 @@ void ControlFrame::createBorder() {
 	rect->addDrawable(geometry);
 	rect->setStateSet(stateSet);
 
-	addChild(rect);
+//	addChild(rect);
 }
 
 void ControlFrame::updateButtons(AbstractNode* node, bool nodeAdded) {

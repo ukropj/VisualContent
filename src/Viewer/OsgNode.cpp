@@ -440,7 +440,8 @@ bool OsgNode::isPickable(osg::Geode* geode) const {
 	if (!pickable)
 		return false;
 	if (geode->getName() == closedG->getName() ||
-			geode->getName() == visualG->getGeodeName())
+			geode->getName() == visualG->getGeodeName() ||
+			geode->getName() == visualGBorder->getName())
 		return true;
 	else
 		return false;

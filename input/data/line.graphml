@@ -2,9 +2,19 @@
 <!-- This file was written by the JAVA GraphML Library.-->
 <graphml xmlns="http://graphml.graphdrawing.org/xmlns"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+ 	<key id="osg" for="node" attr.name="osg" attr.type="string">
+		<default>../../img/cow.osg</default>
+	</key>
+ 	<key id="url" for="node" attr.name="osg" attr.type="string">
+		<default>http://www.fiit.stuba.sk</default>
+	</key>
   <graph id="G" edgedefault="undirected">
-    <node id="n0"/>
-    <node id="n1"/>
+    <node id="n0">
+    	<data key="osg">../../img/cessna.osg</data>
+    </node>
+    <node id="n1">
+    	<data key="url">http://www.fmph.uniba.sk/</data>
+    </node>
     <node id="n2"/>
     <node id="n3"/>
     <node id="n4"/>

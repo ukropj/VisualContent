@@ -36,7 +36,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-	loadFile("input/data/line.graphml");
+//	loadFile("input/data/line.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -283,13 +283,14 @@ void CoreWindow::loadFile(QString filePath) {
 		if (!dialog->wasCanceled())
 			showMessageBox("Error", "Could not load graph from file" + filePath, true);
 	} else {
+		int origNodes = graph->getNodes()->size();
 		qDebug() << "GraphML parsed successfully.";
 		// cluster
 		clusterer->cluster(graph, dialog);
 
 		// reload
 		viewerWidget->getPickHandler()->reset();
-		sceneGraph->reload(graph, dialog);	// deletes original scene graph
+		sceneGraph->reload(graph, origNodes, dialog);	// deletes original scene graph
 		layouter->setGraph(graph); 	// deletes original graph
 
 		if (!dialog->wasCanceled()) {
@@ -366,7 +367,7 @@ void CoreWindow::setAlpha(int value) {
 
 void CoreWindow::setClusterThreshold(int value) {
 	viewerWidget->setRendering(false);
-	sceneGraph->setClusterThreshold(value / 100.0f);
+	sceneGraph->setClusterThreshold((value+1) / 100.0f);
 	layouter->wakeUp();
 	viewerWidget->setRendering(true);
 }

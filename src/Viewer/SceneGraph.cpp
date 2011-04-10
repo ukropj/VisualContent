@@ -52,7 +52,7 @@ SceneGraph::SceneGraph() {
 
 	interpolationSpeed = Util::Config::getValue(
 			"Viewer.Display.InterpolationSpeed").toFloat();
-	maxClusterSize = -1;
+	maxAllowedClusterSize = maxClusterSize = -1;
 	autoClustering = Util::Config::getValue(
 			"Viewer.Clustering.AutoClustering").toFloat() != 0;
 }
@@ -74,7 +74,7 @@ int SceneGraph::cleanUp() {
 	return root->getNumChildren();
 }
 
-void SceneGraph::reload(Model::Graph* newGraph, QProgressDialog* pd) {
+void SceneGraph::reload(Model::Graph* newGraph, int origNodeCount, QProgressDialog* pd) {
 	if (newGraph == NULL)
 		return;
 	int currentPos = cleanUp(); // first available pos
@@ -97,6 +97,7 @@ void SceneGraph::reload(Model::Graph* newGraph, QProgressDialog* pd) {
 
 	setClusterThreshold(Util::Config::getValue(
 			"Viewer.Clustering.ClusterThreshold").toFloat());
+	maxClusterSize = origNodeCount;
 
 	qDebug() << "Scene graph loaded: " << graph->toString();
 	//	osgDB::writeNodeFile(*root, "graph.osg");
@@ -181,7 +182,7 @@ void SceneGraph::update(bool forceIdeal) {
 	if (updateNodes || forceIdeal) {
 		sceneElements->updateNodes(
 				forceIdeal ? 1 :interpolationSpeed,
-				autoClustering ? maxClusterSize : -1);
+				autoClustering ? maxAllowedClusterSize : -1);
 	}
 	sceneElements->updateEdges();
 	controlFrame->updateGeometry();
@@ -226,7 +227,7 @@ void SceneGraph::setClusterThreshold(float value) {
 	if (sceneElements == NULL)
 		return;
 //	QMutexLocker locker(&mutex);
-	maxClusterSize = value * sceneElements->getNodes().size();
+	maxAllowedClusterSize = value * maxClusterSize;
 }
 
 void SceneGraph::setFrozen(bool val) {
