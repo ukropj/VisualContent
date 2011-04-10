@@ -5,7 +5,6 @@
 
 #include "Core/IOManager.h"
 #include "Model/Graph.h"
-#include "Model/Clusterer.h"
 #include "Model/Node.h"
 #include "Model/Type.h"
 #include "Model/Edge.h"
@@ -13,39 +12,32 @@
 
 #include <QDebug>
 #include <QFile>
-#include <QMessageBox>
-#include <QProgressDialog>
 
 using namespace AppCore;
 using namespace Model;
 
 IOManager::IOManager() {
 	graph = NULL;
-	progress = NULL;
 	defaultDirection = false;
-	clusterer = new Clusterer();
 }
 
 IOManager::~IOManager() {
 }
 
-bool IOManager::setClusteringAlg(int i) {
-	return clusterer->setClusteringAlg(i);
-}
-
-Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
+Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* pd) {
 	graph = NULL;
 	QDomDocument doc("graphMLDocument");
 	doc.setContent(device);
 	int elementCount = 0;
 	elementCount += doc.elementsByTagName("node").size();
 	elementCount += doc.elementsByTagName("edge").size();
-	device->reset();
 
-	progress = progressBar;
-	progress->reset();
-	progress->setLabelText("Loading file...");
-	progress->setMaximum(elementCount);
+	this->pd = pd;
+	this->pd->reset();
+	this->pd->setLabelText("Parsing file ...");
+	this->pd->setMaximum(elementCount);
+	step = 0;
+	device->reset();
 
 	xml.setDevice(device);
 	if (xml.readNextStartElement()) {
@@ -53,10 +45,9 @@ Graph* IOManager::loadGraph(QIODevice* device, QProgressDialog* progressBar) {
 			readGraphML();
 		}
 	}
-	if (progress->wasCanceled())
+	if (pd->wasCanceled())
 		return NULL;
 
-	clusterer->cluster(graph);
 	return graph;
 }
 
@@ -117,20 +108,17 @@ void IOManager::readGraph() {
 	QString name = xml.attributes().value("id").toString();
 	graph->setName(name);
 	readNodes.clear();
-
 	defaultDirection = xml.attributes().value("edgedefault") == "directed";
 
-	int step = 0;
-
 	while (xml.readNextStartElement()) {
-		if (progress->wasCanceled())
+		if (pd->wasCanceled())
 			return;
 		if (xml.name() == "node") {
-			progress->setValue(step++);
 			readNode();
+			pd->setValue(++step);
 		} else if (xml.name() == "edge") {
-			progress->setValue(step++);
 			readEdge();
+			pd->setValue(++step);
 		} else {
 			qWarning() << "Element skipped: " << xml.name();
 			xml.skipCurrentElement();

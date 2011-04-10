@@ -15,13 +15,13 @@ using namespace Model;
 
 SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
 		Edge*>* edges, QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar) {
-
-	pd = progressBar;
-
 	elementsGroup = new osg::Group();
 	elementsGroup->setName("scene_elements");
 
+	pd = progressBar;
 	if (pd != NULL) {
+		if (pd->wasCanceled())
+			return;
 		pd->reset();
 		pd->setLabelText("Drawing graph ...");
 		pd->setMaximum(nodes->size() + edges->size());
@@ -63,6 +63,7 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 
 	QMapIterator<qlonglong, Node*> i(*inNodes);
 	while (i.hasNext()) {
+		if (pd != NULL && pd->wasCanceled()) return nodeGroup;
 		i.next();
 		osg::ref_ptr<osg::Group> g;
 
@@ -83,6 +84,7 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 
 osg::ref_ptr<osg::Group> SceneElements::initEdges(
 		QMap<qlonglong, Edge*>* inEdges) {
+	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
 	edgesGeometry = new osg::Geometry();
 	edgesOGeometry = new osg::Geometry();
 	edgeLabels = new osg::Geode();
@@ -94,8 +96,10 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	int index = 0;
 	int indexO = 0;
 	while (i.hasNext()) {
-		if (pd != NULL)
+		if (pd != NULL) {
+			if (pd->wasCanceled()) return allEdges;
 			pd->setValue(step++);
+		}
 		Model::Edge* edge = i.next();
 		OsgEdge* osgEdge = new OsgEdge(edge);
 		edges.append(osgEdge);
@@ -131,7 +135,6 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 	edgeGeode->addDrawable(edgesGeometry);
 	edgeGeode->addDrawable(edgesOGeometry);
 
-	osg::ref_ptr<osg::Group> allEdges = new osg::Group;
 	allEdges->addChild(edgeGeode);
 	allEdges->addChild(edgeLabels);
 	//	allEdges->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
@@ -149,6 +152,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup1(Node* node,
 
 		QMap<qlonglong, Edge*>::const_iterator i = node->getEdges()->begin();
 		while (i != node->getEdges()->end()) {
+			if (pd != NULL && pd->wasCanceled()) return NULL;
 			Edge* e = *i;
 			if (e != parentEdge) {
 				Node* otherNode = e->getOtherNode(node);
@@ -179,6 +183,7 @@ osg::ref_ptr<osg::Group> SceneElements::getNodeGroup2(Node* firstNode) { // alte
 		osg::ref_ptr<osg::Group> uberGroup = NULL;
 
 		for (int i = index; i < size; i++) {
+			if (pd != NULL && pd->wasCanceled()) return NULL;
 			osg::ref_ptr<osg::Group> group = NULL;
 			Node* node = nodeList[i];
 

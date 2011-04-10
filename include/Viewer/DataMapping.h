@@ -19,13 +19,13 @@ namespace Vwr {
 class DataMapping {
 public:
 	enum ContentType {
-		NO_CONTENT, TEXT, WEB, IMAGE, OSG, RANDOM, CLUSTER
+		NO_CONTENT, TEXT, WEB, IMAGE, OSG, RANDOM, COMPOSITE
 	};
 	enum ValueType {
 		LABEL, COLOR, CONTENT, DIRECTION
 	};
 	enum PropertyType {
-		NODE, EDGE, ALL
+		NODE, EDGE, CLUSTER, ALL
 	};
 
 	DataMapping();

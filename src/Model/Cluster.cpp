@@ -31,13 +31,13 @@ void Cluster::setExpanded(bool flag) {
 	}
 }
 
-QSet<Node*> Cluster::getIncidentNodes(bool noClusters) const {
+QSet<Node*> Cluster::getIncidentNodes(bool ignoreClusters) const {
 	QSet<Node*> nodes;
 	if (isExpanded())
 		return nodes;
 	QSetIterator<Node*> nodeIt = getChildrenIterator();
 	while (nodeIt.hasNext()) {
-		nodes.unite(nodeIt.next()->getIncidentNodes(noClusters));
+		nodes.unite(nodeIt.next()->getIncidentNodes(ignoreClusters));
 	}
 	nodes.subtract(children);
 
@@ -45,22 +45,7 @@ QSet<Node*> Cluster::getIncidentNodes(bool noClusters) const {
 	nodes.remove(n);
 	nodes.remove(n);
 
-//	if (noClusters) {
-		return nodes;
-//	} else {
-//		QSet<Node*> visibleNodes;
-//		QSetIterator<Node*> nodeIt(nodes);
-//		while (nodeIt.hasNext()) {
-//			Node* node = nodeIt.next();
-//			Node* cluster = node->getTopCluster();
-//			if (cluster != NULL && cluster != this) {
-//				visibleNodes.insert(cluster);
-//			} else {
-//				visibleNodes.insert(node);
-//			}
-//		}
-//		return visibleNodes;
-//	}
+	return nodes;
 }
 
 void Cluster::setParent(Cluster* newParent) {

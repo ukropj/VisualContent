@@ -12,6 +12,9 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdr
     <node id="n6"/>
     <node id="n7"/>
     <node id="n8"/>
+    <node id="n9"/>
+    <node id="n10"/>
+    <node id="n11"/>
     <edge source="n0" target="n1"/>
     <edge source="n0" target="n2"/>
     <edge source="n0" target="n3"/>
@@ -20,5 +23,8 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdr
     <edge source="n5" target="n6"/>
     <edge source="n5" target="n7"/>
     <edge source="n5" target="n8"/>
+    <edge source="n5" target="n9"/>
+    <edge source="n5" target="n10"/>
+    <edge source="n5" target="n11"/>
   </graph>
 </graphml>

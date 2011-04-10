@@ -11,14 +11,13 @@
 #include <QString>
 #include <QtXml/QDomElement>
 #include <QFile>
-#include <QProgressDialog>
 #include <QXmlStreamReader>
+#include <QProgressDialog>
 
 namespace Model {
 class Graph;
 class Node;
 class Type;
-class Clusterer;
 }
 
 namespace AppCore {
@@ -27,9 +26,7 @@ class IOManager {
 public:
 	IOManager();
 	~IOManager();
-
-	bool setClusteringAlg(int i);
-	Model::Graph* loadGraph(QIODevice* device, QProgressDialog* progressBar);
+	Model::Graph* loadGraph(QIODevice* device, QProgressDialog* pd);
 
 private:
 	void readGraphML();
@@ -40,14 +37,15 @@ private:
 	QMap<QString, QString>* readData(Model::Type* type);
 
 	QXmlStreamReader xml;
-	QProgressDialog* progress;
 	Model::Graph* graph;
 	Model::Type* nodeType;
 	Model::Type* edgeType;
 	QMap<QString, qlonglong > readNodes;
 
 	bool defaultDirection;
-	Model::Clusterer* clusterer;
+
+	int step;
+	QProgressDialog* pd;
 };
 }
 

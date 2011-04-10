@@ -35,7 +35,7 @@ class SceneElements {
 public:
 
 	SceneElements(QMap<qlonglong, Model::Node* > *nodes, QMap<qlonglong, Model::Edge* > *edges,
-			QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar = 0);
+			QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar = NULL);
 	~SceneElements();
 
 	void updateNodes(float interpolationSpeed, float maxClusterSize);

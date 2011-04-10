@@ -51,11 +51,11 @@ Edge* Graph::addEdge(qlonglong srcNodeId, qlonglong dstNodeId, Type* type, QMap<
 
 Edge* Graph::addEdge(Node* srcNode, Node* dstNode, Type* type, QMap<QString, QString>* data) {
 	if (srcNode == NULL || dstNode == NULL) {
-		qWarning() << "Trying to add edge to NULL node!";
+//		qWarning() << "Trying to add edge to NULL node!";
 		return NULL;
 	}
 	if (srcNode->equals(dstNode)) {
-		qWarning() << "Trying to add edge to self on node: " << srcNode->toString();
+//		qWarning() << "Trying to add edge to self on node: " << srcNode->toString();
 		return NULL;
 	}
 	if (areIncident(srcNode, dstNode)) {
@@ -182,7 +182,7 @@ void Graph::removeType(Type* type) {
 bool Graph::areIncident(Node* u, Node* v) const {
 	if (u == NULL || v == NULL)
 		return false;
-	Edge* e = v->getEdgeTo(u);
+	Edge* e = v->getEdgeTo(u, true);
 	return e != NULL && !e->isIgnored();
 }
 

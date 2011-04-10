@@ -65,24 +65,31 @@ SceneGraph::~SceneGraph() {
 
 int SceneGraph::cleanUp() {
 	root->removeChildren(elementsPosition, root->getNumChildren() - elementsPosition);
-	if (sceneElements != NULL)
+	if (sceneElements != NULL) {
 		delete sceneElements;
+	}
 	sceneElements = NULL;
 	graph = NULL; // graph is not deleted here, it may be still used even if graphics is gone
 	actualMappings.clear();
 	return root->getNumChildren();
 }
 
-void SceneGraph::reload(Model::Graph* newGraph, QProgressDialog* progressBar) {
+void SceneGraph::reload(Model::Graph* newGraph, QProgressDialog* pd) {
 	if (newGraph == NULL)
 		return;
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
-	sceneElements = new SceneElements(graph->getNodes(), graph->getEdges(), graph->getTypes(), progressBar);
-
+	sceneElements = new SceneElements(graph->getNodes(),
+			graph->getEdges(), graph->getTypes(), pd);
 	elementsPosition = currentPos++;
 	root->addChild(sceneElements->getElementsGroup());
+
+	if (pd->wasCanceled()) { // loading canceled
+		qDebug() << "Drawing graph canceled in progress!";
+		cleanUp();
+		return;
+	}
 
 	osgUtil::Optimizer opt;
 	opt.optimize(root, osgUtil::Optimizer::CHECK_GEOMETRY);
@@ -223,10 +230,8 @@ void SceneGraph::setClusterThreshold(float value) {
 }
 
 void SceneGraph::setFrozen(bool val) {
-	if (graph == NULL) {
-		qWarning("No graph set in SceneGraph::setFrozen()");
+	if (sceneElements == NULL)
 		return;
-	}
 	graph->setFrozen(val);
 }
 

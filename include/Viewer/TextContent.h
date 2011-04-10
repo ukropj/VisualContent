@@ -12,7 +12,7 @@
 
 namespace Vwr {
 
-class TextContent: public Vwr::WidgetContent {
+class TextContent: public WidgetContent {
 public:
 	TextContent(QString text);
 	~TextContent();
@@ -20,6 +20,16 @@ public:
 private:
 	bool loaded;
 	QString text;
+};
+
+class WebContent: public WidgetContent {
+public:
+	WebContent(QString text);
+	~WebContent();
+	bool load();
+private:
+	bool loaded;
+	QString url;
 };
 
 }

@@ -657,6 +657,7 @@ AbstractNode* OsgNode::uncluster(bool returnResult) {
 }
 
 void OsgNode::resolveParent() {
-	if (node->getParent() != NULL)
+	if (node->getParent() != NULL) {
 		parent = dynamic_cast<OsgCluster*>(node->getParent()->getOsgNode());
+	}
 }

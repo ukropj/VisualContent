@@ -1,5 +1,6 @@
 #include "Window/CoreWindow.h"
 #include "Window/ViewerQT.h"
+#include "Window/ProgressManager.h"
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
 #include "Model/Clusterer.h"
@@ -14,15 +15,17 @@
 using namespace Window;
 CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	createStatusBar();
+//	pm = new ProgressManager(this); // not used
 
 	// initialize moduls
 	layouter = new Model::FRAlgorithm();
 	ioManager = new AppCore::IOManager();
+	clusterer = new Model::Clusterer();
 	sceneGraph = new Vwr::SceneGraph();
-//	sceneGraph->reload(new Model::Graph("empty"));
 	viewerWidget = new ViewerQT(sceneGraph, this);
 	setCentralWidget(viewerWidget);
 	connect(this, SIGNAL(windowResized()), viewerWidget->getPickHandler(), SLOT(windowResized()));
+	currentFile = "";
 
 	// create GUI
 	createActions();
@@ -31,10 +34,9 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 
 	readSettings();
 	updateRecentFileActions();
-	currentFile = "";
 
 	qDebug("App initialized");
-	loadFile("input/data/grid3.graphml");
+	loadFile("input/data/line.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -121,18 +123,17 @@ void CoreWindow::createActions() {
 	cluster2Action = new QAction(tr("Cluster leafs"), this);
 	cluster2Action->setCheckable(true);
 	cluster2Action->setData(QVariant(2));
-	cluster3Action = new QAction(tr("Cluster Min-Cut"), this);
+	cluster3Action = new QAction(tr("Cluster by adjacency"), this);
 	cluster3Action->setCheckable(true);
 	cluster3Action->setData(QVariant(3));
-	cluster3Action->setEnabled(false); // TODO
 
 	QActionGroup* clusteringTypes = new QActionGroup(this);
 	clusteringTypes->addAction(cluster0Action);
 	clusteringTypes->addAction(cluster1Action);
 	clusteringTypes->addAction(cluster2Action);
 	clusteringTypes->addAction(cluster3Action);
-	cluster1Action->setChecked(true);
 	connect(clusteringTypes, SIGNAL(triggered(QAction*)), this, SLOT(setClusteringAlg(QAction*)));
+	cluster3Action->trigger();
 
 	// recent files
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -142,15 +143,16 @@ void CoreWindow::createActions() {
         		this, SLOT(openRecentFile()));
     }
 
-    // progress dialog
-	progressBar = new QProgressDialog("", "", 0, 10, this, Qt::Dialog);
-	progressBar->setWindowTitle("Loading");
-	progressBar->setCancelButton(NULL);
-	Qt::WindowFlags flags = progressBar->windowFlags();
+	dialog = new QProgressDialog("", "", 0, 10, this, Qt::Dialog);
+	dialog->setWindowTitle("Loading");
+//	dialog->setCancelButton(NULL);
+	dialog->setCancelButtonText("Abort");
+	Qt::WindowFlags flags = dialog->windowFlags();
 	flags = flags & (~Qt::WindowContextHelpButtonHint);
-	progressBar->setWindowFlags(flags);
-	progressBar->setModal(true);
-	progressBar->setMinimumDuration(500);
+	dialog->setWindowFlags(flags);
+	dialog->setModal(true); // TODO make this work
+	dialog->setMinimumDuration(400);
+	dialog->setAutoReset(false);
 }
 
 void CoreWindow::createMenus() {
@@ -237,7 +239,7 @@ void CoreWindow::openRecentFile() {
 }
 
 void CoreWindow::reloadFile() {
-    loadFile(recentFileActions[0]->data().toString());
+    loadFile(currentFile);
 }
 
 void CoreWindow::setDataMapping() {
@@ -273,26 +275,34 @@ void CoreWindow::loadFile(QString filePath) {
 	viewerWidget->setRendering(false);
 
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-	Model::Graph* graph = ioManager->loadGraph(&file, progressBar);
+
+	Model::Graph* graph = ioManager->loadGraph(&file, dialog);
 	file.close();
 
 	if (graph == NULL) {
-		if (!progressBar->wasCanceled())
+		if (!dialog->wasCanceled())
 			showMessageBox("Error", "Could not load graph from file" + filePath, true);
 	} else {
-		progressBar->setValue(progressBar->maximum());
 		qDebug() << "GraphML parsed successfully.";
-		setWindowFilePath(filePath);
-		remapAction->setEnabled(true);
-		currentFile = filePath;
+		// cluster
+		clusterer->cluster(graph, dialog);
 
 		// reload
 		viewerWidget->getPickHandler()->reset();
-		sceneGraph->reload(graph, progressBar);	// deletes original scene graph
-		layouter->setGraph(graph); 			// deletes original graph
+		sceneGraph->reload(graph, dialog);	// deletes original scene graph
+		layouter->setGraph(graph); 	// deletes original graph
 
-		progressBar->setValue(progressBar->maximum());
-
+		if (!dialog->wasCanceled()) {
+			setWindowFilePath(filePath);
+			remapAction->setEnabled(true);
+			currentFile = filePath;
+		} else {
+			setWindowFilePath("");
+			remapAction->setEnabled(false);
+			currentFile = "";
+			// TODO graph was still loaded into layouter
+		}
+		dialog->reset();
 
 		//reset camera
 		viewerWidget->getCameraManipulator()->home(0);
@@ -371,12 +381,12 @@ void CoreWindow::toggleAutoCluster(bool checked) {
 }
 
 void CoreWindow::setClusteringAlg(QAction* action) {
-	bool changed = ioManager->setClusteringAlg(action->data().toInt());
-	if (changed) {
+	bool changed = clusterer->setClusteringAlg(action->data().toInt());
+	if (changed && !currentFile.isEmpty()) {
 		QMessageBox::StandardButton reply;
 		reply = QMessageBox::question(this, tr("Clustering type changed"),
-				"<p>Change of clustering algorithm will take effect only "
-				"after reloading graph.</p><p>Reload now?</p>",
+				"<p>Change of clustering algorithm will take effect<br>"
+				"only after reloading graph.</p><p>Reload now?</p>",
 				QMessageBox::Yes | QMessageBox::No);
 		if (reply == QMessageBox::Yes) {
 			reloadFile();
@@ -512,16 +522,13 @@ void CoreWindow::updateRecentFileActions(QString fileName) {
     separatorAction->setVisible(numRecentFiles > 0);
 }
 
-void CoreWindow::readSettings()
-{
+void CoreWindow::readSettings() {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     if (settings.value("maximized", false).toBool())
         showMaximized();
 }
 
-void CoreWindow::writeSettings()
-{
+void CoreWindow::writeSettings() {
     QSettings settings(QApplication::organizationName(), QApplication::applicationName());
     settings.setValue("maximized", isMaximized());
 }
-

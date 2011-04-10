@@ -62,9 +62,10 @@ void Node::removeAllEdges() {
 	edges.clear();
 }
 
-Edge* Node::getEdgeTo(const Node* otherNode) const {
+Edge* Node::getEdgeTo(const Node* otherNode, bool ignoreClusters) const {
 	if (edges.size() > otherNode->edges.size())
-		return otherNode->getEdgeTo(this);
+		return otherNode->getEdgeTo(this, ignoreClusters);
+
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
 		Edge* edge = i.value();
 		if (this->equals(edge->getOtherNode(otherNode)))
@@ -73,16 +74,16 @@ Edge* Node::getEdgeTo(const Node* otherNode) const {
 	return NULL;
 }
 
-QSet<Node*> Node::getIncidentNodes(bool noClusters) const {
+QSet<Node*> Node::getIncidentNodes(bool ignoreClusters) const {
 	QSet<Node*> nodes;
 	for (EdgeIt i = edges.constBegin(); i != edges.constEnd(); ++i) {
 		Edge* edge = i.value();
 		nodes.insert(edge->getOtherNode(this));
 	}
 
-//	if (noClusters) {
-//		return nodes;
-//	} else {
+	if (ignoreClusters) {
+		return nodes;
+	} else {
 		QSet<Node*> visibleNodes;
 		QSetIterator<Node*> nodeIt(nodes);
 		while (nodeIt.hasNext()) {
@@ -95,7 +96,7 @@ QSet<Node*> Node::getIncidentNodes(bool noClusters) const {
 			}
 		}
 		return visibleNodes;
-//	}
+	}
 }
 
 void Node::setOsgNode(Vwr::OsgNode* osgNode) {

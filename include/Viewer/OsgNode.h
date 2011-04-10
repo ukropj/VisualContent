@@ -105,6 +105,7 @@ protected:
 //	OsgCluster* getParentCluster() const;
 	void setScale(float scale);
 	OsgCluster* parent;
+	osg::ref_ptr<OsgContent> visualG;
 
 private:
 	Model::Node* node;
@@ -146,7 +147,6 @@ private:
 
 	osg::ref_ptr<osg::Switch> contentSwitch;
 	osg::ref_ptr<osg::Geode> closedG;
-	osg::ref_ptr<OsgContent> visualG;
 	osg::ref_ptr<osg::Geode> visualGBorder;
 
 	static osg::ref_ptr<osg::Geode> closedFrame;

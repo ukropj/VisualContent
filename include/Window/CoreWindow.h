@@ -7,7 +7,9 @@
 
 #include <QMainWindow>
 #include <QtGui>
+#include <QMutex>
 #include <QDebug>
+#include <QProgressDialog>
 
 namespace AppCore {
 class IOManager;
@@ -15,6 +17,7 @@ class IOManager;
 namespace Model {
 class Graph;
 class FRAlgorithm;
+class Clusterer;
 }
 namespace Vwr {
 class SceneGraph;
@@ -22,6 +25,7 @@ class SceneGraph;
 
 namespace Window {
 class ViewerQT;
+class ProgressManager;
 
 /**
  *  \class CoreWindow
@@ -105,8 +109,10 @@ private:
 	Window::ViewerQT* viewerWidget;
 	Model::FRAlgorithm* layouter;
 	Vwr::SceneGraph* sceneGraph;
-	AppCore::IOManager *ioManager;
+	AppCore::IOManager* ioManager;
+	Model::Clusterer* clusterer;
 	QString currentFile;
+	ProgressManager* pm;
 
 	void createActions();
 	void createMenus();
@@ -121,7 +127,7 @@ private:
 	QLabel* keyStatus;
 	QLabel* mainStatus;
 
-	QProgressDialog* progressBar;
+	QProgressDialog* dialog;
 };
 
 }

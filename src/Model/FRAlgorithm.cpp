@@ -251,7 +251,7 @@ void FRAlgorithm::addStandardForces(Node* realU, Node* realV) {
 
 	// compute factors (use original input nodes)
 	float repFactor = (realU->getWeight() + realV->getWeight()) / 2.0f;
-	Edge* e = realU->getEdgeTo(realV);
+	Edge* e = realU->getEdgeTo(realV, true);
 	float attrFactor = e == NULL ? 0 : e->getWeight();
 	osg::Vec3f vec = getVector(u, v);
 
@@ -305,6 +305,10 @@ bool FRAlgorithm::applyForces(Node* node) {
 		node->setPosition(node->getPosition() + fv);
 		// save new velocity
 		node->setVelocity(fv * flexibility);
+
+		if (node->getId() == 1597) {
+//			QDebug() << node.
+		}
 		return true;
 	} else {
 		return false;

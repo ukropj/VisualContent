@@ -37,6 +37,16 @@ protected:
 	osg::ref_ptr<osg::Geode> contentGeode;
 };
 
+class EmptyContent : public OsgContent {
+public:
+	EmptyContent();
+	~EmptyContent() {}
+	bool load();
+private:
+	bool loaded;
+
+};
+
 class ContentFactory {
 public:
 	static OsgContent* createContent(DataMapping::ContentType type, QString data);

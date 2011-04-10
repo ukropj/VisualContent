@@ -8,10 +8,11 @@ class Cluster;
 }
 
 namespace Vwr {
+class CompositeContent;
 
 class OsgCluster : public OsgNode {
 public:
-	OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping = NULL);
+	OsgCluster(Model::Cluster* nodeCluster);
 	~OsgCluster();
 
 	bool updateClusterState(float maxClusterSize = -1);
@@ -31,6 +32,7 @@ private:
 	int childrenMovingIn;
 	bool autocluster;
 
+	friend class CompositeContent;
 };
 
 }

@@ -38,8 +38,8 @@ public:
 	void addEdge(Edge* edge);
 	void removeEdge(Edge* edge);
 	void removeAllEdges();
-	Edge* getEdgeTo(const Node* otherNode) const;
-	virtual QSet<Node*> getIncidentNodes(bool noClusters = false) const;
+	Edge* getEdgeTo(const Node* otherNode, bool ignoreClusters = false) const;
+	virtual QSet<Node*> getIncidentNodes(bool ignoreClusters = false) const;
 
 	qlonglong getId() const {return id;}
 	Graph* getGraph() const {return graph;}

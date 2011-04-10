@@ -31,7 +31,7 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 
 	QSize size = widget->geometry().size();
 	float width = size.width()*150 / ((float)size.height());
-	float height = 150;
+	float height = 150; // XXX magic numbers
 
 	width *= scale;
 	height *= scale;

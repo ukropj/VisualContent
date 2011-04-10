@@ -40,7 +40,7 @@ public:
 	void setIgnored(bool b) {ignore = b;}
 	bool isIgnored() const {return ignore;}
 	float getWeight() {return weight;}
-	void addWeight() {weight += 1;}
+	void setWeight(float weight) {this->weight = weight;}
 
 	QString toString() const;
 

@@ -9,8 +9,8 @@
 
 #include <QMap>
 #include <QList>
+#include <QObject>
 #include <QProgressDialog>
-#include <QMutex>
 
 #include <osg/ref_ptr>
 #include <osg/CullFace>
@@ -35,7 +35,7 @@ public:
 	SceneGraph();
 	~SceneGraph();
 
-	void reload(Model::Graph* graph, QProgressDialog* progressBar = 0);
+	void reload(Model::Graph* graph, QProgressDialog* pd);
 	void reloadConfig();
 
 	void update(bool forceIdeal = false);
@@ -54,8 +54,8 @@ public:
 	void setDataMapping();
 
 	void createExperiment();
-private:
 
+private:
 	int cleanUp();
 	osg::ref_ptr<osg::Node> createSkyBox();
 	osg::ref_ptr<osg::Node> createControlFrame();
@@ -73,8 +73,6 @@ private:
 	float interpolationSpeed;
 	float maxClusterSize;
 	bool autoClustering;
-
-	QMutex mutex;
 
 };
 }

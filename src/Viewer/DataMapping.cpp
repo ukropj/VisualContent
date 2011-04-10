@@ -21,7 +21,7 @@ DataMapping::DataMapping() {
 
 QList<DataMapping::ContentType> DataMapping::getContentTypes() {
 	QList<ContentType> contentTypes;
-	contentTypes << RANDOM << IMAGE << TEXT; // << WEB << OSG;
+	contentTypes << RANDOM << IMAGE << TEXT << WEB; // << WEB << OSG;
 	return contentTypes;
 }
 
@@ -57,6 +57,7 @@ osg::Vec4f DataMapping::getColor(QString key, PropertyType type) {
 osg::Vec4f DataMapping::getDefaultColor(PropertyType type) {
 	switch (type) {
 	case NODE :
+	case CLUSTER :
 	default :
 		return Util::Config::getColorF("Viewer.Node.Color");
 	case EDGE :
@@ -67,6 +68,7 @@ osg::Vec4f DataMapping::getDefaultColor(PropertyType type) {
 float DataMapping::getScale(PropertyType type) {
 	switch (type) {
 	case NODE :
+	case CLUSTER :
 	default :
 		return Util::Config::getValue("Viewer.Node.Scale").toFloat();
 	case EDGE :

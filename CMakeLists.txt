@@ -96,6 +96,7 @@ SET(SOURCES_H
 	./include/OsgQtBrowser/QGraphicsViewAdapter.h 
 	./include/Window/CoreWindow.h
 	./include/Window/OptionsWindow.h
+	./include/Window/ProgressManager.h
 	./include/Window/CheckBoxList.h
 	./include/Window/DataMappingDialog.h	
 	./include/Viewer/PickHandler.h

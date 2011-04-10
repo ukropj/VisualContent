@@ -14,7 +14,7 @@ public:
 	void setExpanded(bool flag);
 	bool isExpanded() const {return expanded;}
 	void setParent(Cluster* newParent);
-	QSet<Node*> getIncidentNodes(bool noClusters = false) const;
+	QSet<Node*> getIncidentNodes(bool ignoreClusters = false) const;
 	QSetIterator<Node*> getChildrenIterator() const {return QSetIterator<Node*>(children);}
 
 

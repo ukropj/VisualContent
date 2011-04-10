@@ -1,14 +1,20 @@
 #include "Viewer/OsgCluster.h"
 #include "Viewer/OsgNodeGroup.h"
+#include "Viewer/CompositeContent.h"
 #include "Model/Cluster.h"
 
 #include <QDebug>
 
 using namespace Vwr;
 
-OsgCluster::OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping)
-		: OsgNode(nodeCluster, dataMapping){ // TODO data mapping
+OsgCluster::OsgCluster(Model::Cluster* nodeCluster)
+		: OsgNode(nodeCluster, NULL){ // TODO data mapping
 	this->nodeCluster = nodeCluster;
+	DataMapping* dm = new DataMapping();
+	dm->setContentType(DataMapping::COMPOSITE);
+	setDataMapping(dm);
+
+	visualG = new CompositeContent(this);
 
 	childrenMovingIn = 0;
 	autocluster = true;
