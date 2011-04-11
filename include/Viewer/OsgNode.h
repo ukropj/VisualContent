@@ -40,7 +40,7 @@ public:
 	OsgNode(Model::Node* modelNode, DataMapping* dataMapping = NULL);
 	~OsgNode();
 
-	void setDataMapping(DataMapping* dataMapping = NULL);
+	virtual void setDataMapping(DataMapping* dataMapping = NULL);
 	QString getMappingValue(DataMapping::ValueType prop);
 	QSet<AbstractNode*> getIncidentNodes();
 
@@ -101,13 +101,14 @@ public:
 	bool isMovingToCluster() const {return movingToCluster;}
 
 	void resolveParent();
+
+	OsgContent* getVisualContent() const {return visualG;}
 protected:
 //	OsgCluster* getParentCluster() const;
 	void setScale(float scale);
 	OsgCluster* parent;
 	osg::ref_ptr<OsgContent> visualG;
 
-private:
 	Model::Node* node;
 	osg::Vec3f size;
 	osg::Vec4 color;

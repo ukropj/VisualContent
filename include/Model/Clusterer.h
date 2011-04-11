@@ -38,7 +38,7 @@ private:
 	QMap<qlonglong, Node* > clusters;
 	void clusterNghbrs(QMap<qlonglong, Node* > someNodes, bool clustersVisible = true, int maxLevels = 1);
 	void clusterLeafs(QMap<qlonglong, Node* > someNodes, bool clustersVisible = true, int maxLevels = 1);
-	void clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible = true, int maxLevels = 1);
+	void clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool clustersVisible = true, int maxLevels = 1);
 
 	Cluster* addCluster();
 

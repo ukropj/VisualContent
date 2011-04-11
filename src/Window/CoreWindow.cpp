@@ -36,7 +36,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-//	loadFile("input/data/line.graphml");
+	loadFile("input/data/line.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -367,7 +367,7 @@ void CoreWindow::setAlpha(int value) {
 
 void CoreWindow::setClusterThreshold(int value) {
 	viewerWidget->setRendering(false);
-	sceneGraph->setClusterThreshold((value+1) / 100.0f);
+	sceneGraph->setClusterThreshold((value + 1) / 100.0f);
 	layouter->wakeUp();
 	viewerWidget->setRendering(true);
 }

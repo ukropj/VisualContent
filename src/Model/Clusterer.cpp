@@ -44,6 +44,7 @@ void Clusterer::cluster(Graph* graph, QProgressDialog* pd) {
 	this->pd = pd;
 	level = 0;
 	this->graph = graph;
+	clusterType = NULL;
 	clusters.clear();
 
 	switch (alg) {
@@ -57,7 +58,7 @@ void Clusterer::cluster(Graph* graph, QProgressDialog* pd) {
 		clusterLeafs(*(graph->getNodes()), true, -1);
 		break;
 	case ADJACENCY:
-		clusterAdjacency(QSet<Node*>::fromList(graph->getNodes()->values()), true, 3);
+		clusterAdjacency(*(graph->getNodes()), true, 6);
 		break;
 	}
 }
@@ -168,7 +169,7 @@ void Clusterer::clusterLeafs(QMap<qlonglong, Node* > someNodes, bool clustersVis
 	//	qDebug() << "clustering ends, clusters=" << clusters.size() << " level=" << maxLevels << " " << clusters.size() << "/" <<  graph->nodes.size();
 }
 
-void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, int maxLevels) {
+void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool clustersVisible, int maxLevels) {
 	pd->reset();
 	pd->setLabelText(QString("Clustering graph ... (%1)").arg(++level));
 	pd->setMaximum(someNodes.size() * 3); //XXX
@@ -181,14 +182,14 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 	// we don't use float, floats are multiplied by K and stored as unsigned char;
 	unsigned char K = 100;
 	int i = 0, j = 0;
-	for (NIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
+	for (NodeIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 		pd->setValue(step++);
-		Node* u = *ui;
+		Node* u = ui.value();
 		matrix[i][i] = true;
 		QSet<Node*> nghbrs = u->getIncidentNodes();
 		j = i+1;
-		for (NIt vi = ui+1; vi != someNodes.constEnd(); ++vi, j++) {
-			Node* v = *vi;
+		for (NodeIt vi = ui+1; vi != someNodes.constEnd(); ++vi, j++) {
+			Node* v = vi.value();
 			if (nghbrs.contains(v)) {
 				matrix[i][j] = true;
 				matrix[j][i] = true;
@@ -202,16 +203,16 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 	i = 0;
 	float maxW = -1;
 	QString str = "\n     ";
-	for (NIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
+	for (NodeIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 		pd->setValue(step++);
-		Node* u = *ui;
+		Node* u = ui.value();
 		str += QString("%1").arg(u->getId(), 5) + " ";
 		w[i][i] = 0;
 		int degU = u->getIncidentNodes().size();
 		j = i+1;
-		for (NIt vi = ui+1; vi != someNodes.constEnd(); ++vi, j++) {
+		for (NodeIt vi = ui+1; vi != someNodes.constEnd(); ++vi, j++) {
 			if (pd->wasCanceled()) return;
-			Node* v = *vi;
+			Node* v = vi.value();
 			int degV = v->getIncidentNodes().size();
 
 			float sum = 0;
@@ -221,17 +222,17 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 			float wij = ((float)((n * sum) - (degU * degV))) /
 					sqrt(degU * degV * (n - degU) * (n - degV));
 			w[j][i] = w[i][j] = qMax(0.0f, wij * K);
-			if (wij > maxW)
-				maxW = wij;
+			if (w[j][i] > maxW)
+				maxW = w[j][i];
 		}
 	}
-//	qDebug() << "maxW: " << maxW;
+	qDebug() << "maxW: " << maxW;
 
 	str += "\n";
-	NIt qi = someNodes.constBegin();
+	NodeIt qi = someNodes.constBegin();
 	for (i=0; i < n; i++) {
 		float s = 0;
-		Node* q = *qi;
+		Node* q = qi.value();
 		str += QString("%1").arg(q->getId(), 5) + " ";
 		for (j=0; j < n; j++) {
 			str += QString("%1").arg(w[i][j], 5) + " ";
@@ -240,27 +241,28 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 		str += "\n";
 		++qi;
 	}
-//	qDebug() << str;
+	qDebug() << str;
 
-	float t = qMin(1.0f, maxW) * K;
+	float t = qMin(1.0f * K, maxW);
 
-	while (t > 0.7f * K && someNodes.size() > 2) {
-//			qDebug() << "t: " << t;
+//	while (t > 0.8f * K && someNodes.size() > 2)
+	{
 		t *= 0.9f;
+		qDebug() << "t: " << t;
 		i = 0;
 
-		QSet<Node*> clustered;
-		for (NIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
-			Node* u = *ui;
+		QSet<qlonglong> clustered;
+		for (NodeIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
+			Node* u = ui.value();
 
 //			if (u->getParent() == NULL) {
 //											qDebug() << "u: " << u->getId();
 				j = i+1;
 				Cluster* c = u->getParent();
 				QSet<Node*> toCluster;
-				for (NIt vi = ui+1; vi != someNodes.constEnd(); ++vi, j++) {
+				for (NodeIt vi = ui+1; vi != someNodes.constEnd(); ++vi, j++) {
 					if (pd->wasCanceled()) return;
-					Node* v = *vi;
+					Node* v = vi.value();
 					if (w[i][j] >= t) {
 //											qDebug() << "v: " << v->getId() << " w=" << w[i][j];
 						if (c == NULL) {
@@ -274,8 +276,36 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 							}
 						}
 						toCluster.insert(v);
-						clustered.insert(v);
+						clustered.insert(v->getId());
 						pd->setValue(step++);
+
+						int link = -1;
+						for (int k = 0; k < n; k++) {
+							if(matrix[i][k] && matrix[j][k]) {
+								if (link < 0 && link != i && link != j) {
+									link = k;
+								} else if (link >= 0) {
+									link = -1;
+									break;
+								}
+							}
+						}
+						if (link >= 0) {
+							qDebug() << "link = " << link;
+							Node* x = someNodes.value(someNodes.keys().at(link));
+							if (!clustered.contains(x->getId())) {
+								qDebug() << "x: " << x->getId();
+								if (c = NULL) {
+									c = x->getParent();
+								} else if (x->getParent() != NULL) {
+									continue;
+								}
+								toCluster.insert(x);
+								clustered.insert(x->getId());
+								pd->setValue(step++);
+							}
+						}
+
 //											qDebug() << "is clusterable";
 					}
 				}
@@ -301,13 +331,16 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 						u->setParent(c);
 						u->setIgnored(clustersVisible);
 //											qDebug() << "u added to c";
-						clustered.insert(u);
+						clustered.insert(u->getId());
 						pd->setValue(step++);
 					}
 				}
 //			}
 		}
-		someNodes.subtract(clustered);
+		for (QSet<qlonglong>::const_iterator i = clustered.constBegin();
+				i != clustered.constEnd(); ++i) {
+			someNodes.remove(*i);
+		}
 	}
 //	qDebug() << "nodes: " << someNodes.size() << " clusters: " << clusters.size();
 
@@ -317,9 +350,9 @@ void Clusterer::clusterAdjacency(QSet<Node*> someNodes, bool clustersVisible, in
 		graph->nodesByType.insert(c->getType()->getId(), c);
 	}
 
-	if (clusters.size() > 1 && maxLevels != 0) {
-		someNodes.unite(QSet<Node*>::fromList(clusters.values()));
-		clusters.clear();
+	someNodes.unite(clusters);
+	clusters.clear();
+	if (someNodes.size() > 2 && maxLevels != 0) {
 		clusterAdjacency(someNodes, clustersVisible, maxLevels - 1);
 	}
 

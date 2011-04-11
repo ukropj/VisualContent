@@ -15,6 +15,7 @@ public:
 	OsgCluster(Model::Cluster* nodeCluster);
 	~OsgCluster();
 
+	void setDataMapping(DataMapping* dataMapping = NULL);
 	bool updateClusterState(float maxClusterSize = -1);
 	bool isClustering() const;
 	AbstractNode* cluster();

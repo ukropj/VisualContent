@@ -409,8 +409,10 @@ OsgNode* PickHandler::getNode(osg::NodePath nodePath) {
 			node = dynamic_cast<OsgNode* > (*i);
 			i--;
 		}
-		if (node != NULL && node->isPickable(g))
+		if (node != NULL && node->isPickable(g)) {
+//			qDebug() << "Picked geode: " << g->getName().c_str();
 			return node;
+		}
 	} else {
 //		qDebug() << "Picked geode: " << "null";
 	}

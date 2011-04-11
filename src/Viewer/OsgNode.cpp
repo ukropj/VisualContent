@@ -366,13 +366,15 @@ void OsgNode::setExpanded(bool flag) {
 
 	expanded = flag;
 	if (expanded) {
-		if (visualG->load()) {
+//		if(visualG->load())
+		visualG->load(); // calling load() by CompositeContent would prevent frame initialization
+		{
 			updateFrame(visualGBorder, visualG->getBoundingBox(),
 					visualG->getScale().x(), FRAME_WIDTH);
 			updateFrame(visualFrame, visualG->getBoundingBox(),
 					visualG->getScale().x(), FRAME_WIDTH, FRAME_WIDTH);
 		}
-		setSize(visualGBorder->getBoundingBox());
+		setSize(visualG->getBoundingBox());
 	} else {
 		setSize(closedG->getBoundingBox());
 	}
@@ -402,6 +404,10 @@ void OsgNode::setSelected(bool flag) {
 	}
 	if (parent != NULL)
 		parent->allowAutocluster(!selected);
+
+	qDebug() << size.x();
+	qDebug() << getScale().x();
+	qDebug() << visualG->getScale().x();
 }
 
 bool OsgNode::isSelected() const {

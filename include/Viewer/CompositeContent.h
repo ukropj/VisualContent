@@ -13,15 +13,19 @@
 namespace Vwr {
 class OsgCluster;
 
-class CompositeContent : public WidgetContent {
+class CompositeContent : public OsgContent {
 public:
 	CompositeContent(OsgCluster* cluster);
 	~CompositeContent();
+	const osg::BoundingBox& getBoundingBox() const;
 	bool load();
 
 private:
+	osg::ref_ptr<osg::Geometry> createGeometry(osg::BoundingBox box);
+
 	bool loaded;
 	OsgCluster* cluster;
+	osg::BoundingBox box;
 };
 
 }

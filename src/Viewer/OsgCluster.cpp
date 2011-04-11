@@ -14,8 +14,6 @@ OsgCluster::OsgCluster(Model::Cluster* nodeCluster)
 	dm->setContentType(DataMapping::COMPOSITE);
 	setDataMapping(dm);
 
-	visualG = new CompositeContent(this);
-
 	childrenMovingIn = 0;
 	autocluster = true;
 	setScale(sqrt(nodeCluster->getWeight()));
@@ -24,6 +22,19 @@ OsgCluster::OsgCluster(Model::Cluster* nodeCluster)
 OsgCluster::~OsgCluster() {
 //	qDebug() << "OsgCluster deleted";
 }
+
+void OsgCluster::setDataMapping(DataMapping* dataMapping) {
+	OsgNode::setDataMapping(dataMapping);
+	mapping->setContentType(DataMapping::COMPOSITE);
+
+	bool f = isExpanded();
+	setExpanded(false);
+	contentSwitch->removeChild(visualG);
+	visualG = new CompositeContent(this); // this is diferent from parent!
+	contentSwitch->addChild(visualG);
+	setExpanded(f);
+}
+
 
 bool OsgCluster::updateClusterState(float maxClusterSize) {
 	if (!canAutocluster())
@@ -48,15 +59,18 @@ bool OsgCluster::isClustering() const {
 AbstractNode* OsgCluster::cluster() {
 	if (isClustering())
 		return NULL;
+	bool expand = false;
 	if (nodeCluster->clusterChildren()) {
 		QSetIterator<Model::Node*> nodeIt = nodeCluster->getChildrenIterator();
 		while (nodeIt.hasNext()) {
 			OsgNode* child = nodeIt.next()->getOsgNode();
 			child->setMovingToCluster(true);
 			child->setPickable(false);
+			expand = expand || child->isExpanded();
 			// TODO temporarily change color of moving-to-cluster child
 			childrenMovingIn++;
 		}
+		setExpanded(expand);
 		return this;
 	} else {
 		return NULL;
@@ -66,7 +80,7 @@ AbstractNode* OsgCluster::cluster() {
 AbstractNode* OsgCluster::uncluster(bool returnResult) {
 	if (isClustering())
 		return this;
-
+	bool expand = isExpanded();
 	if (nodeCluster->unclusterChildren()) {
 		setVisible(false);
 		OsgNodeGroup* unclusterGroup = NULL;
@@ -79,6 +93,7 @@ AbstractNode* OsgCluster::uncluster(bool returnResult) {
 			child->updatePosition();
 			if (returnResult)
 				unclusterGroup->addNode(child, false, false);
+			child->setExpanded(expand);
 		}
 		if (returnResult)
 			unclusterGroup->updateSizeAndPos();

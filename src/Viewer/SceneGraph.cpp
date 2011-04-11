@@ -226,7 +226,8 @@ bool SceneGraph::setUpdatingNodes(bool val) {
 void SceneGraph::setClusterThreshold(float value) {
 	if (sceneElements == NULL)
 		return;
-//	QMutexLocker locker(&mutex);
+
+	if (value == 0.1f) value = 0;
 	maxAllowedClusterSize = value * maxClusterSize;
 }
 
@@ -238,6 +239,7 @@ void SceneGraph::setFrozen(bool val) {
 
 void SceneGraph::setDataMapping() {
 	QList<Model::Type*> types = graph->getTypes()->values();
+	qDebug() << "No of types: " << types.size();
 	if (types.size() > 0) {
 		QListIterator<Model::Type*> ti(types);
 		while (ti.hasNext()) {

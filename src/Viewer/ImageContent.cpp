@@ -49,6 +49,7 @@ osg::ref_ptr<osg::Geometry> ImageContent::createGeometry(QString imagePath) {
 	osg::ref_ptr<osg::StateSet> stateSet = getOrCreateStateSet();
 	stateSet->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
 	g->setStateSet(stateSet);
+	g->setName("image drawable");
 
 	return g;
 }

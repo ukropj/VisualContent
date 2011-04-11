@@ -123,7 +123,6 @@ bool ObjectContent::load() {
 		} else {
 			contentGeode->setName("node_content_osg");
 			osg::BoundingBox box = contentGeode->getBoundingBox();
-
 			osg::PositionAttitudeTransform* tr = new osg::PositionAttitudeTransform();
 			osg::Quat rot;
 			rot.makeRotate(osg::Vec3f(0, 0, 1), osg::Vec3f(0, 1, 0));

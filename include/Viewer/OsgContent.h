@@ -33,6 +33,7 @@ public:
 	virtual std::string getGeodeName() const;
 	virtual const osg::BoundingBox& getBoundingBox() const;
 
+	osg::Geode* getGeode() const {return contentGeode;}
 protected:
 	osg::ref_ptr<osg::Geode> contentGeode;
 };

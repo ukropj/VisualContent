@@ -31,5 +31,5 @@ Viewer.Node.Color=240,240,240,255
 Viewer.Edge.Color=240,240,240,230
 Viewer.Selected.Color=0,255,0,150
 Viewer.Node.MaxScale=6
-Viewer.Clustering.ClusterThreshold=1
+Viewer.Clustering.ClusterThreshold=0.5
 Viewer.Clustering.AutoClustering=1
