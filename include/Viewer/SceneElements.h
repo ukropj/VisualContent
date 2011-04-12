@@ -24,6 +24,7 @@ class Type;
 namespace Vwr {
 class OsgEdge;
 class OsgNode;
+class DataMapping;
 
 /**
  *  \class SceneElements 
@@ -34,8 +35,8 @@ class OsgNode;
 class SceneElements {
 public:
 
-	SceneElements(QMap<qlonglong, Model::Node* > *nodes, QMap<qlonglong, Model::Edge* > *edges,
-			QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar = NULL);
+	SceneElements(QMap<qlonglong, Model::Node*>* nodes, QMap<qlonglong, Model::Edge*>* edges,
+			QMap<qlonglong, DataMapping*>* dataMappings, QProgressDialog* progressBar = NULL);
 	~SceneElements();
 
 	void updateNodes(float interpolationSpeed, float maxClusterSize);
@@ -51,6 +52,7 @@ private:
 	QSet<qlonglong> nodeIds;
 	QList<OsgNode* > nodes;
 	QList<OsgEdge* > edges;
+	QMap<qlonglong, DataMapping*>* dataMappings;
 
 	osg::ref_ptr<osg::Group> elementsGroup;
 

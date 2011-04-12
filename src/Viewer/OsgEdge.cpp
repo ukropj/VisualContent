@@ -22,7 +22,8 @@ float OsgEdge::EDGE_VOLUME = -1;
 OsgEdge::OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping) {
 	if (modelNode == NULL) qWarning() << "NULL reference to Edge in OsgEdge!";
 	this->edge = modelNode;
-	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
+	this->mapping = (dataMapping != NULL) ? dataMapping :
+		new DataMapping(edge->getType()->getKeys());
 	visible = true;
 
 	edgeCoords = new osg::Vec3Array(4);
@@ -49,7 +50,8 @@ OsgEdge::~OsgEdge() {
 }
 
 void OsgEdge::setDataMapping(DataMapping* dataMapping) {
-	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
+	this->mapping = (dataMapping != NULL) ? dataMapping :
+		new DataMapping(edge->getType()->getKeys());
 	// change label
 	label->setText(getMappingValue(DataMapping::LABEL).toStdString());
 	// change color

@@ -80,15 +80,15 @@ void OsgNodeGroup::addToNodes(AbstractNode* node) {
 			this, SLOT(childPosChanged(osg::Vec3f, osg::Vec3f)));
 	connect(node, SIGNAL(changedSize(osg::Vec3f, osg::Vec3f)),
 			this, SLOT(childSizeChanged(osg::Vec3f, osg::Vec3f)));
-	connect(node, SIGNAL(changedVisibility(AbstractNode*, bool)),
-			this, SLOT(childHidden(AbstractNode*, bool)));
+	connect(node, SIGNAL(changedVisibility(bool)),
+			this, SLOT(childHidden(bool)));
 	if (nodes.size() == 1) {
 		selected = node->isSelected();
 		expanded = node->isExpanded();
 		frozen = node->isFrozen();
 		fixed = node->isFixed();
 	}
-
+//qDebug() << "G" << id << " + " << nodes.size();
 	emit nodeAdded(node);
 }
 
@@ -109,7 +109,6 @@ void OsgNodeGroup::removeNode(AbstractNode* node, bool recalc) {
 	if (recalc) {
 		updateSizeAndPos();
 	}
-//	qDebug() << "node " << node->toString() << " removed from group " << this->toString();
 }
 
 void OsgNodeGroup::removeAll() {
@@ -121,6 +120,7 @@ void OsgNodeGroup::removeAll() {
 	}
 	nodes.clear();
 	updateSizeAndPos();
+//	qDebug() << "G" << id << " -- " << nodes.size();
 }
 
 void OsgNodeGroup::removeFromNodes(AbstractNode* node) {
@@ -128,6 +128,7 @@ void OsgNodeGroup::removeFromNodes(AbstractNode* node) {
 		return;
 	nodes.remove(node);
 	disconnect(node, 0, this, 0);
+//	qDebug() << "G" << id << " - " << nodes.size();
 	emit nodeRemoved(node);
 }
 
@@ -339,8 +340,11 @@ void OsgNodeGroup::childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize) {
 	updateSizeAndPos();
 }
 
-void OsgNodeGroup::childHidden(AbstractNode* child, bool visible) {
-//	qDebug() << "child hidden " << child->toString() << " - " << visible;
+void OsgNodeGroup::childHidden(bool visible) {
+	const QObject* sender = QObject::sender();
+	AbstractNode* child = (AbstractNode*)sender;
+	Q_ASSERT(child != NULL);
+
 	if (nodes.contains(child) && ! visible) {
 		removeNode(child, true);
 	}

@@ -21,6 +21,8 @@ public:
 	bool load();
 
 private:
+	void loadInCircle(float radius, float scale);
+	void loadInGrid(float margin, float rowHeight);
 	osg::ref_ptr<osg::Geometry> createGeometry(osg::BoundingBox box);
 
 	bool loaded;

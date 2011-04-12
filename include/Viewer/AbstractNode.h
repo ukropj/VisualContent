@@ -22,7 +22,7 @@ Q_OBJECT
 signals:
 	void changedPosition(osg::Vec3f oldPos, osg::Vec3f newPos);
 	void changedSize(osg::Vec3f oldSize, osg::Vec3f newSize);
-	void changedVisibility(AbstractNode* node, bool visible);
+	void changedVisibility(bool visible);
 public:
 
 	AbstractNode() {}

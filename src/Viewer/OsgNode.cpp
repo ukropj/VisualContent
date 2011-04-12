@@ -26,7 +26,7 @@
 using namespace Vwr;
 
 float OsgNode::NODE_SIZE = 8;
-float OsgNode::FRAME_WIDTH = 1;
+float OsgNode::FRAME_WIDTH = 0.6;
 osg::ref_ptr<osg::Geode> OsgNode::closedFrame = NULL;
 
 OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
@@ -35,7 +35,9 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	node->setOsgNode(this);
 	setName("node" + node->getId());
 	setAutoRotateMode(osg::AutoTransform::ROTATE_TO_SCREEN);
-	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
+	this->mapping = (dataMapping != NULL) ? dataMapping :
+		new DataMapping(node->getType()->getKeys());
+
 	selected = false;
 	expanded = false;
 	usingInterpolation = true;
@@ -102,7 +104,8 @@ OsgNode::~OsgNode() {
 }
 
 void OsgNode::setDataMapping(DataMapping* dataMapping) {
-	this->mapping = (dataMapping != NULL) ? dataMapping : new DataMapping();
+	this->mapping = (dataMapping != NULL) ? dataMapping :
+		new DataMapping(node->getType()->getKeys());
 	// change label
 	osgText::FadeText* ft = dynamic_cast<osgText::FadeText*>(labelG->getDrawable(0));
 	ft->setText(getMappingValue(DataMapping::LABEL).toStdString());
@@ -134,6 +137,13 @@ osg::ref_ptr<osg::Geode> OsgNode::initFrame() {
 	geode->setStateSet(getOrCreateStateSet());
 	geode->addDrawable(frameQuad);
 	return geode;
+}
+
+void OsgNode::updateFrames() {
+	updateFrame(visualGBorder, visualG->getBoundingBox(),
+			visualG->getScale().x(), FRAME_WIDTH);
+	updateFrame(visualFrame, visualG->getBoundingBox(),
+			visualG->getScale().x(), FRAME_WIDTH, FRAME_WIDTH);
 }
 
 // TODO refactor
@@ -341,6 +351,20 @@ void OsgNode::setColor(osg::Vec4 color) {
 	setDrawableColor(visualGBorder, 0, color);
 }
 
+void OsgNode::setDimmed(bool flag) {
+	if (flag) {
+		osg::Vec4f tempCol(color);
+		tempCol.x() /= 2;
+		tempCol.y() /= 2;
+		tempCol.z() /= 2;
+		tempCol.w() = 100;
+		setDrawableColor(closedG, 0, tempCol);
+		setDrawableColor(visualGBorder, 0, tempCol);
+	} else {
+		setColor(color);
+	}
+}
+
 void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
 		osg::Vec4 color) {
 	osg::Geometry* geometry =
@@ -366,13 +390,8 @@ void OsgNode::setExpanded(bool flag) {
 
 	expanded = flag;
 	if (expanded) {
-//		if(visualG->load())
-		visualG->load(); // calling load() by CompositeContent would prevent frame initialization
-		{
-			updateFrame(visualGBorder, visualG->getBoundingBox(),
-					visualG->getScale().x(), FRAME_WIDTH);
-			updateFrame(visualFrame, visualG->getBoundingBox(),
-					visualG->getScale().x(), FRAME_WIDTH, FRAME_WIDTH);
+		if(visualG->load()) {
+			updateFrames();
 		}
 		setSize(visualG->getBoundingBox());
 	} else {
@@ -405,9 +424,9 @@ void OsgNode::setSelected(bool flag) {
 	if (parent != NULL)
 		parent->allowAutocluster(!selected);
 
-	qDebug() << size.x();
-	qDebug() << getScale().x();
-	qDebug() << visualG->getScale().x();
+//	qDebug() << size.x();
+//	qDebug() << getScale().x();
+//	qDebug() << visualG->getScale().x();
 }
 
 bool OsgNode::isSelected() const {
@@ -474,10 +493,9 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 	float eps = 1;
 	if ((currentPos - targetPos).length() < eps) { // don't interpolate if distance is small
 		if (isMovingToCluster()) {	// finish clustering
-			setMovingToCluster(false);
-			parent->moveChildIn();
+			parent->moveChildIn(this);
 			setVisible(false);
-			emit changedVisibility(this, false);
+			emit changedVisibility(false);
 		}
 		return;
 	}

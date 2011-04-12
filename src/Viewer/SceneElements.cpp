@@ -2,6 +2,7 @@
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
 #include "Viewer/OsgCluster.h"
+#include "Model/Type.h"
 #include "Model/Node.h"
 #include "Model/Cluster.h"
 #include "Model/Edge.h"
@@ -14,7 +15,9 @@ using namespace Vwr;
 using namespace Model;
 
 SceneElements::SceneElements(QMap<qlonglong, Node*>* nodes, QMap<qlonglong,
-		Edge*>* edges, QMap<qlonglong, Model::Type* > *types, QProgressDialog* progressBar) {
+		Edge*>* edges, QMap<qlonglong, DataMapping*>* dataMappings, QProgressDialog* progressBar) {
+
+	this->dataMappings = dataMappings;
 	elementsGroup = new osg::Group();
 	elementsGroup->setName("scene_elements");
 
@@ -101,7 +104,8 @@ osg::ref_ptr<osg::Group> SceneElements::initEdges(
 			pd->setValue(step++);
 		}
 		Model::Edge* edge = i.next();
-		OsgEdge* osgEdge = new OsgEdge(edge);
+		DataMapping* mapping = dataMappings->value(edge->getType()->getId());
+		OsgEdge* osgEdge = new OsgEdge(edge, mapping);
 		edges.append(osgEdge);
 		if (!osgEdge->isDirected()) {
 			edgesGeometry->addPrimitiveSet(new osg::DrawArrays(
@@ -216,10 +220,11 @@ osg::ref_ptr<OsgNode> SceneElements::wrapNode(Node* node) {
 	}
 	OsgNode* osgNode;
 	Cluster* cluster = dynamic_cast<Cluster*>(node);
+	DataMapping* mapping = dataMappings->value(node->getType()->getId());
 	if (cluster != NULL) {
-		osgNode = new OsgCluster(cluster);
+		osgNode = new OsgCluster(cluster, mapping);
 	} else {
-		osgNode = new OsgNode(node);
+		osgNode = new OsgNode(node, mapping);
 	}
 	nodes.append(osgNode);
 	nodeIds.insert(node->getId());

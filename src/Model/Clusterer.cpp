@@ -226,7 +226,7 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 				maxW = w[j][i];
 		}
 	}
-	qDebug() << "maxW: " << maxW;
+//	qDebug() << "maxW: " << maxW;
 
 	str += "\n";
 	NodeIt qi = someNodes.constBegin();
@@ -241,14 +241,14 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 		str += "\n";
 		++qi;
 	}
-	qDebug() << str;
+//	qDebug() << str;
 
 	float t = qMin(1.0f * K, maxW);
 
 //	while (t > 0.8f * K && someNodes.size() > 2)
 	{
 		t *= 0.9f;
-		qDebug() << "t: " << t;
+//		qDebug() << "t: " << t;
 		i = 0;
 
 		QSet<qlonglong> clustered;
@@ -291,10 +291,10 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 							}
 						}
 						if (link >= 0) {
-							qDebug() << "link = " << link;
+//							qDebug() << "link = " << link;
 							Node* x = someNodes.value(someNodes.keys().at(link));
 							if (!clustered.contains(x->getId())) {
-								qDebug() << "x: " << x->getId();
+//								qDebug() << "x: " << x->getId();
 								if (c = NULL) {
 									c = x->getParent();
 								} else if (x->getParent() != NULL) {

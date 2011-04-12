@@ -100,6 +100,9 @@ public:
 		return osg::Matrix::ortho2D(windowX(), windowWidth(), windowY(), windowHeight());
 	}
 
+	static void printVec(osg::Vec4f vec, QString str = "") {
+		qDebug() << str << " [" << vec.x() << "," << vec.y() << "," << vec.z() << "," << vec.w() << "]";
+	}
 	static void printVec(osg::Vec3f vec, QString str = "") {
 		qDebug() << str << " [" << vec.x() << "," << vec.y() << "," << vec.z() << "]";
 	}

@@ -6,17 +6,40 @@
  */
 
 #include "Viewer/DataMapping.h"
+#include "Model/Type.h"
 #include "Util/Config.h"
+#include <QDebug>
 
 using namespace Vwr;
 
-QColor DataMapping::allColors[] = {Qt::white, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::magenta, Qt::cyan, Qt::darkGray};
+QColor DataMapping::allColors[] = {Qt::white, Qt::red, Qt::yellow, Qt::green, Qt::blue, Qt::magenta, Qt::cyan, Qt::gray,
+		Qt::darkRed, Qt::darkYellow, Qt::darkGreen, Qt::darkBlue, Qt::darkMagenta, Qt::darkCyan, Qt::darkGray};
 
-DataMapping::DataMapping() {
-	// default mappings
-	contentType = RANDOM;
-	insertMapping(LABEL, "id");
-	insertMapping(DIRECTION, "directed");
+DataMapping::DataMapping(QList<QString> keys) {
+	if (Util::Config::getValue("Viewer.Node.GenerateRandomContent") != "0") {
+		contentType = RANDOM;
+	} else {
+		contentType = NO_CONTENT;
+	}
+	// prepare some default mappings
+	if (keys.contains("label")) {
+		insertMapping(LABEL, "label");
+	} else {
+		insertMapping(LABEL, "id");
+	}
+	if (keys.contains("color")) {
+		insertMapping(COLOR, "color");
+	}
+	if (keys.contains("img")) {
+		insertMapping(CONTENT, "img");
+		contentType = IMAGE;
+	} else if (keys.contains("url")) {
+		insertMapping(CONTENT, "url");
+		contentType = WEB;
+	} else if (keys.contains("osg")) {
+		insertMapping(CONTENT, "osg");
+		contentType = OSG;
+	}
 }
 
 QList<DataMapping::ContentType> DataMapping::getContentTypes() {

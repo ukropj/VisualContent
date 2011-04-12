@@ -2,17 +2,17 @@
 #include "Viewer/OsgNodeGroup.h"
 #include "Viewer/CompositeContent.h"
 #include "Model/Cluster.h"
+#include "Model/Type.h"
 
 #include <QDebug>
 
 using namespace Vwr;
 
-OsgCluster::OsgCluster(Model::Cluster* nodeCluster)
-		: OsgNode(nodeCluster, NULL){ // TODO data mapping
+OsgCluster::OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping)
+		: OsgNode(nodeCluster, dataMapping) {
 	this->nodeCluster = nodeCluster;
-	DataMapping* dm = new DataMapping();
-	dm->setContentType(DataMapping::COMPOSITE);
-	setDataMapping(dm);
+	mapping->setContentType(DataMapping::COMPOSITE);
+	setDataMapping(mapping);
 
 	childrenMovingIn = 0;
 	autocluster = true;
@@ -67,7 +67,7 @@ AbstractNode* OsgCluster::cluster() {
 			child->setMovingToCluster(true);
 			child->setPickable(false);
 			expand = expand || child->isExpanded();
-			// TODO temporarily change color of moving-to-cluster child
+			child->setDimmed(true);
 			childrenMovingIn++;
 		}
 		setExpanded(expand);
@@ -103,7 +103,10 @@ AbstractNode* OsgCluster::uncluster(bool returnResult) {
 	}
 }
 
-void OsgCluster::moveChildIn() {
+void OsgCluster::moveChildIn(OsgNode* child) {
+	child->setMovingToCluster(false);
+	child->setDimmed(false);
+
 	childrenMovingIn--;
 	setScale(sqrt(nodeCluster->getWeight() - childrenMovingIn));
 
@@ -112,7 +115,7 @@ void OsgCluster::moveChildIn() {
 	if (!isVisible()) {
 		updatePosition();
 		setVisible(true);
-		emit changedVisibility(this, true);
+		emit changedVisibility(true);
 	}
 }
 

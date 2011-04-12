@@ -75,6 +75,7 @@ public:
 
 	void setColor(osg::Vec4 color);
 	osg::Vec4 getColor() const {return color;}
+	void setDimmed(bool flag);
 	void showLabel(bool visible);
 
 	bool isUsingInterpolation() const {return usingInterpolation;}
@@ -102,7 +103,9 @@ public:
 
 	void resolveParent();
 
+	void updateFrames();
 	OsgContent* getVisualContent() const {return visualG;}
+	osg::Geode* getVisualBorder() const {return visualGBorder;}
 protected:
 //	OsgCluster* getParentCluster() const;
 	void setScale(float scale);

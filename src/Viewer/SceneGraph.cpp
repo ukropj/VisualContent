@@ -80,8 +80,17 @@ void SceneGraph::reload(Model::Graph* newGraph, int origNodeCount, QProgressDial
 	int currentPos = cleanUp(); // first available pos
 
 	graph = newGraph;
+
+	QList<Model::Type*> types = graph->getTypes()->values();
+	QListIterator<Model::Type*> ti(types);
+	while (ti.hasNext()) {
+		Model::Type* type = ti.next();
+		if (!actualMappings.contains(type->getId()))
+			actualMappings.insert(type->getId(), new DataMapping(type->getKeys()));
+	}
+
 	sceneElements = new SceneElements(graph->getNodes(),
-			graph->getEdges(), graph->getTypes(), pd);
+			graph->getEdges(), &actualMappings, pd);
 	elementsPosition = currentPos++;
 	root->addChild(sceneElements->getElementsGroup());
 
@@ -241,13 +250,6 @@ void SceneGraph::setDataMapping() {
 	QList<Model::Type*> types = graph->getTypes()->values();
 	qDebug() << "No of types: " << types.size();
 	if (types.size() > 0) {
-		QListIterator<Model::Type*> ti(types);
-		while (ti.hasNext()) {
-			Model::Type* type = ti.next();
-			if (!actualMappings.contains(type->getId()))
-				actualMappings.insert(type->getId(), new DataMapping());
-		}
-
 		Window::DataMappingDialog* dialog =
 				new Window::DataMappingDialog(types, &actualMappings, QApplication::activeWindow());
 		dialog->exec();

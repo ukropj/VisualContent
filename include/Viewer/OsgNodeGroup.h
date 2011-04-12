@@ -24,7 +24,7 @@ signals:
 private slots:
 	void childPosChanged(osg::Vec3f oldPos, osg::Vec3f newPos);
 	void childSizeChanged(osg::Vec3f oldSize, osg::Vec3f newSize);
-	void childHidden(AbstractNode* child, bool visible);
+	void childHidden(bool visible);
 public:
 	OsgNodeGroup();
 	~OsgNodeGroup();

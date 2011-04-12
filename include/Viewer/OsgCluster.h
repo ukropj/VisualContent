@@ -12,7 +12,7 @@ class CompositeContent;
 
 class OsgCluster : public OsgNode {
 public:
-	OsgCluster(Model::Cluster* nodeCluster);
+	OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping = NULL);
 	~OsgCluster();
 
 	void setDataMapping(DataMapping* dataMapping = NULL);
@@ -20,7 +20,7 @@ public:
 	bool isClustering() const;
 	AbstractNode* cluster();
 	AbstractNode* uncluster(bool returnResult = true);
-	void moveChildIn();
+	void moveChildIn(OsgNode* child);
 	void allowAutocluster(bool flag) {autocluster = flag;}
 	bool canAutocluster() const {return autocluster;}
 

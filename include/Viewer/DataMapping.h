@@ -28,7 +28,7 @@ public:
 		NODE, EDGE, CLUSTER, ALL
 	};
 
-	DataMapping();
+	DataMapping(QList<QString> keys);
 
 	osg::Vec4f getColor(QString key = "", PropertyType type = NODE);
 
