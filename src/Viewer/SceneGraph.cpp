@@ -29,6 +29,7 @@
 
 #include <QDebug>
 #include <QtGui>
+#include <math.h>
 
 #include "OsgQtBrowser/QWidgetImage.h"
 
@@ -52,7 +53,7 @@ SceneGraph::SceneGraph() {
 
 	interpolationSpeed = Util::Config::getValue(
 			"Viewer.Display.InterpolationSpeed").toFloat();
-	maxAllowedClusterSize = maxClusterSize = -1;
+	maxAllowedClusterSize = nodeCount = -1;
 	autoClustering = Util::Config::getValue(
 			"Viewer.Clustering.AutoClustering").toFloat() != 0;
 }
@@ -106,7 +107,7 @@ void SceneGraph::reload(Model::Graph* newGraph, int origNodeCount, QProgressDial
 
 	setClusterThreshold(Util::Config::getValue(
 			"Viewer.Clustering.ClusterThreshold").toFloat());
-	maxClusterSize = origNodeCount;
+	nodeCount = origNodeCount;
 
 	qDebug() << "Scene graph loaded: " << graph->toString();
 	//	osgDB::writeNodeFile(*root, "graph.osg");
@@ -236,8 +237,7 @@ void SceneGraph::setClusterThreshold(float value) {
 	if (sceneElements == NULL)
 		return;
 
-	if (value == 0.1f) value = 0;
-	maxAllowedClusterSize = value * maxClusterSize;
+	maxAllowedClusterSize = exp(log(nodeCount) * value);
 }
 
 void SceneGraph::setFrozen(bool val) {

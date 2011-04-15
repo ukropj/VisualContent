@@ -352,17 +352,7 @@ void OsgNode::setColor(osg::Vec4 color) {
 }
 
 void OsgNode::setDimmed(bool flag) {
-	if (flag) {
-		osg::Vec4f tempCol(color);
-		tempCol.x() /= 2;
-		tempCol.y() /= 2;
-		tempCol.z() /= 2;
-		tempCol.w() = 100;
-		setDrawableColor(closedG, 0, tempCol);
-		setDrawableColor(visualGBorder, 0, tempCol);
-	} else {
-		setColor(color);
-	}
+	// TODO
 }
 
 void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,

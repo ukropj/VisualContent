@@ -71,7 +71,7 @@ private:
 	int elementsPosition;
 
 	float interpolationSpeed;
-	int maxClusterSize;
+	int nodeCount;
 	float maxAllowedClusterSize;
 	bool autoClustering;
 

@@ -56,6 +56,7 @@ bool WebContent::load() {
 		QSize size(200, 150); // XXX magic
 
 		QWebView* view = new QWebView();
+		view->setZoomFactor(0.2);
 		view->setGeometry(QRect(QPoint(1, 1), size));
 		view->load(QUrl(url));
 

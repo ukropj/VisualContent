@@ -191,6 +191,8 @@ void CoreWindow::createToolBars() {
 	toolBar->addSeparator();
 
 	slider = new QSlider(Qt::Vertical, this);
+	slider->setMinimum(1);
+	slider->setMaximum(100);
 	slider->setTickPosition(QSlider::TicksLeft);
 	slider->setTickInterval(5);
 	slider->setSingleStep(5);
@@ -211,6 +213,8 @@ void CoreWindow::createToolBars() {
 	clusteringBar->addAction(autoClusterAction);
 
 	clusterSlider = new QSlider(Qt::Vertical, this);
+	clusterSlider->setMinimum(0);
+	clusterSlider->setMaximum(100);
 	clusterSlider->setTickPosition(QSlider::TicksRight);
 	clusterSlider->setTickInterval(5);
 	clusterSlider->setSingleStep(5);
@@ -361,13 +365,13 @@ void CoreWindow::toggleLabels(bool checked) {
 }
 
 void CoreWindow::setAlpha(int value) {
-	layouter->setAlphaValue((value + 1) / 1000.0f); // don't allow 0
+	layouter->setAlphaValue(value / 1000.0f); // don't allow 0
 	layouter->wakeUp();
 }
 
 void CoreWindow::setClusterThreshold(int value) {
 	viewerWidget->setRendering(false);
-	sceneGraph->setClusterThreshold((value + 1) / 100.0f);
+	sceneGraph->setClusterThreshold(value / 100.0f);
 	layouter->wakeUp();
 	viewerWidget->setRendering(true);
 }
@@ -375,7 +379,7 @@ void CoreWindow::setClusterThreshold(int value) {
 void CoreWindow::toggleAutoCluster(bool checked) {
 	clusterSlider->setEnabled(checked);
 	if (checked) {
-		sceneGraph->setClusterThreshold((clusterSlider->value() + 1) / 100.0f);
+		sceneGraph->setClusterThreshold((clusterSlider->value()) / 100.0f);
 	} else {
 		sceneGraph->setClusterThreshold(-1);
 	}

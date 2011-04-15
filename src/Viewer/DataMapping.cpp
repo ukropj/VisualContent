@@ -70,7 +70,7 @@ osg::Vec4f DataMapping::getColor(QString key, PropertyType type) {
 	}
 
 	if (!colors.contains(key)) {
-		QColor c = allColors[colors.size() % 7];
+		QColor c = allColors[colors.size() % 13];
 		colors.insert(key, osg::Vec4f((float)c.red(), (float)c.green(), (float)c.blue(), (float)c.alpha()));
 	}
 	return colors.value(key);
