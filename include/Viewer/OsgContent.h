@@ -48,17 +48,6 @@ private:
 
 };
 
-class ObjectContent : public OsgContent {
-public:
-	ObjectContent(QString osgPath);
-	~ObjectContent() {}
-	bool load();
-private:
-	bool loaded;
-	QString osgPath;
-
-};
-
 class ContentFactory {
 public:
 	static OsgContent* createContent(DataMapping::ContentType type, QString data);

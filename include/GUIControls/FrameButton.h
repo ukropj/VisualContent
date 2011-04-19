@@ -13,7 +13,7 @@
 
 #include <QString>
 
-namespace Vwr {
+namespace Controls {
 class ControlFrame;
 
 class FrameButton : public osg::Geode {

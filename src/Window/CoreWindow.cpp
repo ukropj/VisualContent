@@ -1,6 +1,5 @@
 #include "Window/CoreWindow.h"
 #include "Window/ViewerQT.h"
-#include "Window/ProgressManager.h"
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
 #include "Model/Clusterer.h"

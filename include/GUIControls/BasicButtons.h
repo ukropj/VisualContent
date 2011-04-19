@@ -8,11 +8,11 @@
 #ifndef BASICBUTTONS_H_
 #define BASICBUTTONS_H_
 
-#include "Viewer/FrameButton.h"
+#include "GUIControls/FrameButton.h"
 #include <osg/Vec2f>
 #include <osg/Vec3f>
 
-namespace Vwr {
+namespace Controls {
 
 class NullButton : public FrameButton {
 public:

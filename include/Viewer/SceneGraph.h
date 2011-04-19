@@ -25,9 +25,12 @@ namespace Model {
 class Graph;
 }
 
+namespace Controls {
+class ControlFrame;
+}
+
 namespace Vwr {
 class SceneElements;
-class ControlFrame;
 class DataMapping;
 
 class SceneGraph {
@@ -43,7 +46,7 @@ public:
 	void setClusterThreshold(float value);
 
 	osg::ref_ptr<osg::Group> getRoot() const;
-	osg::ref_ptr<ControlFrame> getControlFrame() const;
+	osg::ref_ptr<Controls::ControlFrame> getControlFrame() const;
 
 	void addPermanentNode(osg::ref_ptr<osg::Node> node);
 
@@ -63,7 +66,7 @@ private:
 	Model::Graph* graph;
 	Vwr::SceneElements* sceneElements;
 	osg::ref_ptr<osg::Group> root;
-	osg::ref_ptr<ControlFrame> controlFrame;
+	osg::ref_ptr<Controls::ControlFrame> controlFrame;
 	osg::ref_ptr<osg::Group> specialNodes;
 	QMap<qlonglong, DataMapping*> actualMappings;
 

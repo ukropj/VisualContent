@@ -17,12 +17,15 @@
 #include <QList>
 #include <QTimer>
 
+namespace Controls {
+class ControlFrame;
+}
+
 namespace Vwr {
 class SceneGraph;
 class OsgNode;
 class AbstractNode;
 class OsgEdge;
-class ControlFrame;
 
 /**
  *  \class PickHandler
@@ -76,7 +79,7 @@ private:
 	SceneGraph * sceneGraph;
 
 	osg::ref_ptr<osg::Geode> selectionQuad;
-	osg::ref_ptr<ControlFrame> nodeFrame;
+	osg::ref_ptr<Controls::ControlFrame> nodeFrame;
 
 	// flags
 	bool multiPickEnabled;

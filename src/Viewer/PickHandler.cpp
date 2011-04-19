@@ -10,7 +10,7 @@
 #include "Viewer/DataMapping.h"
 #include "Viewer/AbstractNode.h"
 #include "Viewer/OsgNodeGroup.h"
-#include "Viewer/ControlFrame.h"
+#include "GUIControls/ControlFrame.h"
 #include "Util/CameraHelper.h"
 
 #include <iostream>

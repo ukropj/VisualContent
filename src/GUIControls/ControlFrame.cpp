@@ -5,10 +5,10 @@
  *      Author: jakub
  */
 
-#include "Viewer/ControlFrame.h"
+#include "GUIControls/ControlFrame.h"
 #include "Viewer/AbstractNode.h"
 #include "Viewer/OsgNodeGroup.h"
-#include "Viewer/BasicButtons.h"
+#include "GUIControls/BasicButtons.h"
 #include "Util/TextureWrapper.h"
 #include "Util/CameraHelper.h"
 
@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <QDebug>
 
+using namespace Controls;
 using namespace Vwr;
 
 osg::Vec2f ControlFrame::MIN_SIZE = osg::Vec2f(60, 60);
@@ -53,10 +54,10 @@ void ControlFrame::createButtons() {
 	osg::ref_ptr<FrameButton> mb = new MoveButton(this, -2, 0);
 	osg::ref_ptr<FrameButton> eb = new ExpandButton(this, 0, -1);
 	osg::ref_ptr<FrameButton> cb = new CompactButton(this, 1, -1);
-	osg::ref_ptr<FrameButton> fb = new FixButton(this, -1, -1);
-	osg::ref_ptr<FrameButton> xb = new XRayButton(this, 0, -2);
-	osg::ref_ptr<FrameButton> uclb = new UnclusterButton(this, -2, 0);
-	osg::ref_ptr<FrameButton> clb = new ClusterButton(this, -1, 0);
+	osg::ref_ptr<FrameButton> uclb = new UnclusterButton(this, 0, -2);
+	osg::ref_ptr<FrameButton> clb = new ClusterButton(this, 1, -2);
+	osg::ref_ptr<FrameButton> xb = new XRayButton(this, 0, -3);
+	osg::ref_ptr<FrameButton> fb = new FixButton(this, 1, -3);
 
 	mt = new osg::AutoTransform();
 	mt2 = new osg::AutoTransform();
@@ -65,13 +66,13 @@ void ControlFrame::createButtons() {
 	insertButton(mb, mt);
 	insertButton(eb, mt);
 	insertButton(cb, mt);
-	insertButton(clb, mt2);
-	insertButton(uclb, mt2);
-	insertButton(fb, mt2);
+	insertButton(clb, mt);
+	insertButton(uclb, mt);
+	insertButton(fb, mt);
 	insertButton(xb, mt);
 
 	addChild(mt);
-	addChild(mt2);
+	addChild(mt2); // currently empty
 }
 
 void ControlFrame::insertButton(osg::ref_ptr<FrameButton> button, osg::Transform* tf) {

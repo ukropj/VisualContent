@@ -5,15 +5,15 @@
  *      Author: jakub
  */
 
-#include "Viewer/FrameButton.h"
-#include "Viewer/ControlFrame.h"
+#include "GUIControls/FrameButton.h"
+#include "GUIControls/ControlFrame.h"
 #include "Util/TextureWrapper.h"
 
 #include <QDebug>
 #include <osg/CullFace>
 #include <osg/BlendFunc>
 
-using namespace Vwr;
+using namespace Controls;
 
 float FrameButton::BUTTON_SIZE = 40;
 float FrameButton::BUTTON_MARGIN = 10;

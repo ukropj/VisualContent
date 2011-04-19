@@ -22,7 +22,11 @@
 namespace Vwr {
 class SceneGraph;
 class AbstractNode;
+}
+
+namespace Controls {
 class FrameButton;
+using namespace Vwr;
 
 class ControlFrame: public QObject, public osg::PositionAttitudeTransform {
 Q_OBJECT
@@ -30,13 +34,13 @@ public slots:
 	void nodeAdded(AbstractNode* node);
 	void nodeRemoved(AbstractNode* node);
 public:
-	ControlFrame(SceneGraph* sceneGraph);
+	ControlFrame(Vwr::SceneGraph* sceneGraph);
 	~ControlFrame();
 	void show();
 	void hide();
-	void addNode(AbstractNode* node);
-	void setNode(AbstractNode* node);
-	AbstractNode* getNode() const;
+	void addNode(Vwr::AbstractNode* node);
+	void setNode(Vwr::AbstractNode* node);
+	Vwr::AbstractNode* getNode() const;
 
 	bool isNodeSet() const;
 	bool isActive() const;
@@ -64,21 +68,21 @@ public:
 		return lastDragPos;
 	}
 
-	SceneGraph* getSceneGraph() const {
+	Vwr::SceneGraph* getSceneGraph() const {
 		return sceneGraph;
 	}
 private:
 	void createButtons();
 	void createBorder();
 	void insertButton(osg::ref_ptr<FrameButton> button, osg::Transform* transform);
-	void updateButtons(AbstractNode* node, bool nodeAdded = false);
+	void updateButtons(Vwr::AbstractNode* node, bool nodeAdded = false);
 
 	osg::Vec2f originPos;
 	osg::Vec2f currentPos;
 	osg::Vec2f lastDragPos;
 
-	AbstractNode* myNode;
-	SceneGraph* sceneGraph;
+	Vwr::AbstractNode* myNode;
+	Vwr::SceneGraph* sceneGraph;
 
 	QMap<std::string, osg::ref_ptr<FrameButton> > buttons;
 	osg::ref_ptr<FrameButton> activeButton;

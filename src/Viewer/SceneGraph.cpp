@@ -2,7 +2,7 @@
 #include "Viewer/SceneElements.h"
 #include "Viewer/OsgNode.h"
 #include "Viewer/OsgEdge.h"
-#include "Viewer/ControlFrame.h"
+#include "GUIControls/ControlFrame.h"
 #include "Viewer/SkyTransform.h"
 #include "Viewer/WidgetContent.h"
 #include "Util/Config.h"
@@ -114,7 +114,7 @@ void SceneGraph::reload(Model::Graph* newGraph, int origNodeCount, QProgressDial
 }
 
 osg::ref_ptr<osg::Node> SceneGraph::createControlFrame() {
-	controlFrame = new ControlFrame(this);
+	controlFrame = new Controls::ControlFrame(this);
 
     osg::Camera* hudCamera = new osg::Camera;
     hudCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
@@ -179,7 +179,7 @@ osg::ref_ptr<osg::Group> SceneGraph::getRoot() const {
 	return root;
 }
 
-osg::ref_ptr<ControlFrame> SceneGraph::getControlFrame() const{
+osg::ref_ptr<Controls::ControlFrame> SceneGraph::getControlFrame() const{
 	return controlFrame;
 }
 
@@ -236,6 +236,11 @@ bool SceneGraph::setUpdatingNodes(bool val) {
 void SceneGraph::setClusterThreshold(float value) {
 	if (sceneElements == NULL)
 		return;
+
+	if (value < 0)
+		autoClustering = false;
+	else
+		autoClustering = true;
 
 	maxAllowedClusterSize = exp(log(nodeCount) * value);
 }

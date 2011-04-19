@@ -26,6 +26,26 @@ private:
 	bool loaded;
 };
 
+class TextContent: public WidgetContent {
+public:
+	TextContent(QString text);
+	~TextContent();
+	bool load();
+private:
+	bool loaded;
+	QString text;
+};
+
+class WebContent: public WidgetContent {
+public:
+	WebContent(QString text);
+	~WebContent();
+	bool load();
+private:
+	bool loaded;
+	QString url;
+};
+
 }
 
 #endif /* WIDGETCONTENT_H_ */

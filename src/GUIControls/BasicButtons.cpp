@@ -5,8 +5,8 @@
  *      Author: jakub
  */
 
-#include "Viewer/BasicButtons.h"
-#include "Viewer/ControlFrame.h"
+#include "GUIControls/BasicButtons.h"
+#include "GUIControls/ControlFrame.h"
 #include "Viewer/AbstractNode.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/Visitors.h"
@@ -14,6 +14,7 @@
 #include "Util/CameraHelper.h"
 #include <QApplication>
 
+using namespace Controls;
 using namespace Vwr;
 
 NullButton::NullButton(ControlFrame* parentFrame) : FrameButton(parentFrame) {
