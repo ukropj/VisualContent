@@ -17,7 +17,7 @@ QColor DataMapping::allColors[] = {Qt::white, Qt::red, Qt::yellow, Qt::green, Qt
 
 DataMapping::DataMapping(QList<QString> keys) {
 	if (Util::Config::getValue("Viewer.Node.GenerateRandomContent") != "0") {
-		contentType = RANDOM;
+		contentType = GEN_ALPHABET;
 	} else {
 		contentType = NO_CONTENT;
 	}
@@ -44,7 +44,8 @@ DataMapping::DataMapping(QList<QString> keys) {
 
 QList<DataMapping::ContentType> DataMapping::getContentTypes() {
 	QList<ContentType> contentTypes;
-	contentTypes << RANDOM << IMAGE << TEXT << WEB << OSG;
+	contentTypes << IMAGE << TEXT << WEB << OSG
+			<< GEN_IMAGES << GEN_RANDOM << GEN_ALPHABET;
 	return contentTypes;
 }
 

@@ -19,8 +19,7 @@ using namespace Model;
 Clusterer::Clusterer() {
 	graph = NULL;
 	clusterType = NULL;
-	alg = NEIGHBORS;
-	//	alg = ADJACENCY;
+	alg = NONE;
 	step = level = 0;
 }
 
@@ -28,9 +27,9 @@ bool Clusterer::setClusteringAlg(int i) {
 	ClusteringAlg newAlg = NONE;
 	switch (i) {
 	case 0: newAlg = NONE; break;
-	case 1: newAlg = NEIGHBORS; break;
+	case 1: newAlg = ADJACENCY; break;
 	case 2: newAlg = LEAFS; break;
-	case 3: newAlg = ADJACENCY; break;
+	case 3: newAlg = NEIGHBORS; break;
 	}
 	if (newAlg == alg) {
 		return false;
@@ -182,6 +181,8 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 	// we don't use float, floats are multiplied by K and stored as unsigned char;
 	unsigned char K = 100;
 	int i = 0, j = 0;
+	
+	// prepare adjacency matrix 
 	for (NodeIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 		pd->setValue(step++);
 		Node* u = ui.value();
@@ -203,6 +204,7 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 	i = 0;
 	float maxW = -1;
 	QString str = "\n     ";
+	// prepare weight matrix w, using Pearson correlation
 	for (NodeIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 		pd->setValue(step++);
 		Node* u = ui.value();
@@ -219,14 +221,15 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 			for (int k = 0; k < n; k++) {
 				sum += matrix[i][k] && matrix[j][k] ? 1 : 0;
 			}
+			// apply Pearson
 			float wij = ((float)((n * sum) - (degU * degV))) /
 					sqrt(degU * degV * (n - degU) * (n - degV));
-			w[j][i] = w[i][j] = qMax(0.0f, wij * K);
-			if (w[j][i] > maxW)
+			// ignore negative values
+			w[j][i] = w[i][j] = qMax(0.0f, wij * K); // K is used to store 0-1 floats in uchar matrix
+			if (w[j][i] > maxW) // remember largest weight
 				maxW = w[j][i];
 		}
 	}
-//	qDebug() << "maxW: " << maxW;
 
 	str += "\n";
 	NodeIt qi = someNodes.constBegin();
@@ -243,8 +246,9 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 	}
 //	qDebug() << str;
 
-	float t = qMin(1.0f * K, maxW);
-
+	float t = qMin(1.0f * K, maxW); // set correlation threashold for clustering
+	
+	// start clustering
 //	while (t > 0.8f * K && someNodes.size() > 2)
 	{
 		t *= 0.9f;
@@ -254,8 +258,6 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 		QSet<qlonglong> clustered;
 		for (NodeIt ui = someNodes.constBegin(); ui != someNodes.constEnd(); ++ui, i++) {
 			Node* u = ui.value();
-
-//			if (u->getParent() == NULL) {
 //											qDebug() << "u: " << u->getId();
 				j = i+1;
 				Cluster* c = u->getParent();
@@ -335,7 +337,6 @@ void Clusterer::clusterAdjacency(QMap<qlonglong, Node* > someNodes, bool cluster
 						pd->setValue(step++);
 					}
 				}
-//			}
 		}
 		for (QSet<qlonglong>::const_iterator i = clustered.constBegin();
 				i != clustered.constEnd(); ++i) {

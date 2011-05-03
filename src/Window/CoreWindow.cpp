@@ -116,13 +116,13 @@ void CoreWindow::createActions() {
 	cluster0Action = new QAction(tr("No clustering"), this);
 	cluster0Action->setCheckable(true);
 	cluster0Action->setData(QVariant(0));
-	cluster1Action = new QAction(tr("Cluster neighbors"), this);
+	cluster1Action = new QAction(tr("Cluster by adjacency"), this);
 	cluster1Action->setCheckable(true);
 	cluster1Action->setData(QVariant(1));
 	cluster2Action = new QAction(tr("Cluster leafs"), this);
 	cluster2Action->setCheckable(true);
 	cluster2Action->setData(QVariant(2));
-	cluster3Action = new QAction(tr("Cluster by adjacency"), this);
+	cluster3Action = new QAction(tr("Cluster neighbors (pseudorandom)"), this);
 	cluster3Action->setCheckable(true);
 	cluster3Action->setData(QVariant(3));
 
@@ -132,7 +132,7 @@ void CoreWindow::createActions() {
 	clusteringTypes->addAction(cluster2Action);
 	clusteringTypes->addAction(cluster3Action);
 	connect(clusteringTypes, SIGNAL(triggered(QAction*)), this, SLOT(setClusteringAlg(QAction*)));
-	cluster3Action->trigger();
+	cluster1Action->trigger();
 
 	// recent files
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -202,8 +202,8 @@ void CoreWindow::createToolBars() {
 	slider->setFixedHeight(180);
 	toolBar->addWidget(slider);
 
-	toolBar->addSeparator();
-	toolBar->addAction(debugAction);
+//	toolBar->addSeparator();
+//	toolBar->addAction(debugAction);
 
 	toolBar->setMovable(false);
 	addToolBar(Qt::LeftToolBarArea, toolBar);

@@ -51,7 +51,7 @@ OsgNode::OsgNode(Model::Node* modelNode, DataMapping* dataMapping) {
 	closedG = createTextureNode(node->isCluster() ? Util::TextureWrapper::getClusterTexture() :
 			Util::TextureWrapper::getNodeTexture(),
 			NODE_SIZE, NODE_SIZE);
-	visualG = ContentFactory::createContent(mapping->getContentType(), getMappingValue(DataMapping::CONTENT));
+	visualG = ContentFactory::createContent(mapping->getContentType(), node->getId(), getMappingValue(DataMapping::CONTENT));
 	visualGBorder = initFrame();
 
 	if (closedFrame == NULL) {
@@ -104,18 +104,21 @@ OsgNode::~OsgNode() {
 }
 
 void OsgNode::setDataMapping(DataMapping* dataMapping) {
+	DataMapping::ContentType oldContentType = DataMapping::NO_CONTENT;
 	this->mapping = (dataMapping != NULL) ? dataMapping :
 		new DataMapping(node->getType()->getKeys());
 	// change label
 	osgText::FadeText* ft = dynamic_cast<osgText::FadeText*>(labelG->getDrawable(0));
 	ft->setText(getMappingValue(DataMapping::LABEL).toStdString());
 	// change content
-	bool f = isExpanded();
-	setExpanded(false);
-	contentSwitch->removeChild(visualG);
-	visualG = ContentFactory::createContent(mapping->getContentType(), getMappingValue(DataMapping::CONTENT));
-	contentSwitch->addChild(visualG);
-	setExpanded(f);
+	if (mapping->getContentType() != oldContentType) {
+		bool f = isExpanded();
+		setExpanded(false);
+		contentSwitch->removeChild(visualG);
+		visualG = ContentFactory::createContent(mapping->getContentType(), node->getId(), getMappingValue(DataMapping::CONTENT));
+		contentSwitch->addChild(visualG);
+		setExpanded(f);
+	}
 	// change color
 	setColor(mapping->getColor(getMappingValue(DataMapping::COLOR)));
 }
@@ -411,12 +414,9 @@ void OsgNode::setSelected(bool flag) {
 	} else {
 		contentSwitch->setChildValue(closedFrame, selected);
 	}
-	if (parent != NULL)
-		parent->allowAutocluster(!selected);
-
-//	qDebug() << size.x();
-//	qDebug() << getScale().x();
-//	qDebug() << visualG->getScale().x();
+	if (parent != NULL) {
+		parent->allowAutocluster(!node->isFixed() && !selected);
+	}
 }
 
 bool OsgNode::isSelected() const {

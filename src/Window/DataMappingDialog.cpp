@@ -18,7 +18,6 @@ DataMappingDialog::DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, 
 	setModal(true);
 	this->types = types;
 	this->mappings = mappings;
-
 	contentTypes = DataMapping::getContentTypes();
 	valueTypes = DataMapping::getValueTypes();
 	createControls();
@@ -29,6 +28,7 @@ void DataMappingDialog::createControls() {
 	QListIterator<DataMapping::ContentType> cti(contentTypes);
 	while (cti.hasNext()) {
 		typeNames.append(DataMapping::contentTypeToString(cti.next()));
+//		qDebug() << DataMapping::contentTypeToString(cti.next());
 	}
 	QTabWidget* tabWidget = new QTabWidget;
 

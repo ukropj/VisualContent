@@ -20,13 +20,18 @@ using namespace Vwr;
 
 WidgetContent::WidgetContent() : OsgContent() {
 	loaded = false;
+	widget = NULL;
 }
 
 WidgetContent::~WidgetContent() {
+	if (widget != NULL)
+		widget->close();
 }
 
 // TODO refactor
 void WidgetContent::setWidget(QWidget* widget, float scale) {
+	this->widget = widget;
+	widget->setAttribute(Qt::WA_DeleteOnClose);
 	osg::ref_ptr<QWidgetImage> widgetImage = new QWidgetImage(widget);
 	widgetImage->getQWidget()->setAttribute(Qt::WA_TranslucentBackground);
 	widgetImage->getQGraphicsViewAdapter()->setBackgroundColor(QColor(0, 0, 0, 0));
@@ -39,7 +44,7 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	height *= scale;
 
 	// determines size & ratio!
-	osg::Geometry* quad = osg::createTexturedQuadGeometry(
+	osg::ref_ptr<osg::Geometry> quad = osg::createTexturedQuadGeometry(
 			osg::Vec3(-width/2.0f, -height/2.0f, 0),
 			osg::Vec3(width, 0, 0), osg::Vec3(0, height, 0), 1, 1);
 	osg::ref_ptr<osg::StateSet> stateSet = getOrCreateStateSet();
@@ -65,7 +70,8 @@ void WidgetContent::setWidget(QWidget* widget, float scale) {
 	loaded = true;
 }
 
-TextContent::TextContent(QString text) : text(text) {
+TextContent::TextContent(QString text,  int width, int height)
+	: text(text), width(width), height(height) {
 	loaded = false;
 }
 
@@ -80,7 +86,7 @@ bool TextContent::load() {
 
 		QTextEdit* l = new QTextEdit();
 		l->setText(text);
-		QSize size(200, 150);	// XXX magic
+		QSize size(width, height);	// XXX magic
 		l->setGeometry(QRect(QPoint(1, 1), size));
 
 //		QWebView* view = new QWebView();

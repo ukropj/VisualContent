@@ -51,6 +51,9 @@ bool ObjectContent::load() {
 			addChild(contentGeode);
 		} else {
 			contentGeode->setName("node_content_osg");
+			osg::StateSet* ss = contentGeode->getOrCreateStateSet();
+			ss->setMode(GL_LIGHTING, osg::StateAttribute::ON);
+			contentGeode->setStateSet(ss);
 			osg::BoundingBox box = contentGeode->getBoundingBox();
 			osg::PositionAttitudeTransform* tr = new osg::PositionAttitudeTransform();
 			osg::Quat rot;
@@ -63,7 +66,7 @@ bool ObjectContent::load() {
 			tr2->setAutoRotateMode(osg::AutoTransform::ROTATE_TO_CAMERA);
 			tr2->addChild(tr);
 			addChild(tr2);
-//			setScale(osg::Vec3d(3, 3, 3));
+			setScale(osg::Vec3d(5, 5, 5));
 		}
 		return true;
 	}

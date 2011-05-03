@@ -19,7 +19,9 @@ namespace Vwr {
 class DataMapping {
 public:
 	enum ContentType {
-		NO_CONTENT, TEXT, WEB, IMAGE, OSG, RANDOM, COMPOSITE
+		NO_CONTENT, TEXT, WEB, IMAGE, OSG,
+		GEN_RANDOM, GEN_IMAGES, GEN_ALPHABET,
+		COMPOSITE
 	};
 	enum ValueType {
 		LABEL, COLOR, CONTENT, DIRECTION
@@ -57,7 +59,10 @@ public:
 		case TEXT : return "Text";
 		case WEB : return "HTML page";
 		case OSG : return "3D object";
-		case RANDOM : return "Generate";
+		case COMPOSITE : return "cluster";
+		case GEN_RANDOM : return "Random contents";
+		case GEN_IMAGES : return "Random images";
+		case GEN_ALPHABET : return "Random alphabet";
 		default : return QString("%1").arg((int)ct);
 		}
 	};

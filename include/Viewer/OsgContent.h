@@ -50,7 +50,9 @@ private:
 
 class ContentFactory {
 public:
-	static OsgContent* createContent(DataMapping::ContentType type, QString data);
+	static OsgContent* createContent(DataMapping::ContentType type, int id, QString data);
+	static OsgContent* createRandomContent(int id);
+	static OsgContent* createAlphabetContent(int id);
 private:
 };
 }

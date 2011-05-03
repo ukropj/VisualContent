@@ -23,17 +23,20 @@ public:
 
 	virtual bool load() = 0;
 private:
+	QWidget* widget;
 	bool loaded;
 };
 
 class TextContent: public WidgetContent {
 public:
-	TextContent(QString text);
+	TextContent(QString text, int width = 200, int height = 150);
 	~TextContent();
 	bool load();
 private:
 	bool loaded;
 	QString text;
+	int width;
+	int height;
 };
 
 class WebContent: public WidgetContent {
