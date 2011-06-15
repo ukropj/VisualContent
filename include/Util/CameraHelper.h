@@ -1,7 +1,3 @@
-/**
- *  DataHelper.h
- *  Projekt 3DVisual
- */
 #ifndef CAMERA_HELPER_DEF
 #define CAMERA_HELPER_DEF 1
 
@@ -10,8 +6,11 @@
 #include <qDebug>
 
 namespace Util {
+
+/// Utility class for camera operations and coordinate transformations.
 class CameraHelper {
 public:
+	/// Camera must be set in this method.
 	static void setCamera(osg::Camera* camera);
 	static osg::ref_ptr<osg::Camera> getCamera() {
 		return camera;

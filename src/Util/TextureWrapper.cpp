@@ -25,7 +25,7 @@ osg::ref_ptr<osg::Texture2D> TextureWrapper::readTextureFromFile(QString path, b
 osg::ref_ptr<osg::Texture2D> TextureWrapper::createTexture(osg::Image* image, bool repeat) {
 	osg::ref_ptr<osg::Texture2D> texture = new osg::Texture2D(image);
 	texture->setResizeNonPowerOfTwoHint(false);
-	texture->setDataVariance(osg::Object::STATIC);
+	texture->setDataVariance(osg::Object::DYNAMIC);
 
 	osg::Texture::WrapMode wrapMode;
 	if (repeat) {

@@ -114,6 +114,7 @@ void ControlFrame::createBorder() {
 
 void ControlFrame::updateButtons(AbstractNode* node, bool nodeAdded) {
 	return;
+	// TODO implement
 	// TODO how to call this when node state changes?
 	// TODO how to handle groups, additions and removals?
 
@@ -126,7 +127,6 @@ void ControlFrame::updateButtons(AbstractNode* node, bool nodeAdded) {
 
 	buttons.value(ClusterButton::name())->setEnabled(node->isClusterable());
 //	buttons.value(UnclusterButton::name())->setEnabled(node->hasParent());
-	// TODO
 }
 
 void ControlFrame::show() {
@@ -244,7 +244,7 @@ bool ControlFrame::activateAction(osg::Geode* button) {
 	} else if (newButton != activeButton) {
 //		activeButton->deactivate();
 		activeButton = newButton;
-//		activeButton->activate();
+		activeButton->activate();
 	}
 //	qDebug() << "act:" << activeButton->getName().c_str();
 	return isActive();

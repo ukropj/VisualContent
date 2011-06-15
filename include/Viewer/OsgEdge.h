@@ -1,10 +1,3 @@
-/*
- * OsgEdge.h
- *
- *  Created on: 12.11.2010
- *      Author: jakub
- */
-
 #ifndef OSGEDGE_H_
 #define OSGEDGE_H_
 
@@ -24,6 +17,7 @@ class Edge;
 
 namespace Vwr {
 
+/// Class used to compute edge coordinates.
 class OsgEdge {
 	// OsgEdge is not Geode (for performance reasons),
 	// just an empty shell that provides all data by getEdgeData and renders nothing

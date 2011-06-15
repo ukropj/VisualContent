@@ -1,23 +1,7 @@
-/**
- *  ViewerQT.h
- *  Projekt 3DVisual
- */
 #ifndef Window_VIEWER_QT_DEF
 #define Window_VIEWER_QT_DEF 1
 
 #include "Window/AdapterWidget.h"
-
-/*!
- * \brief
- * Widget, ktory zobrazuje OSG sceny.
- *
- * \author
- * Michal Paprcka
- * \version
- * 1.0
- * \date
- * 1.12.2009
- */
 
 namespace Vwr {
 	class SceneGraph;
@@ -26,11 +10,11 @@ namespace Vwr {
 }
 
 namespace Window {
-/**
- *  \class ViewerQT
- *  \brief
- *  \author Adam Pazitnaj
- *  \date 29. 4. 2010
+/*!
+ * \brief Widget used to display OSG scene.
+ *
+ * \author Michal Paprcka
+ * \author Adam Pazitnaj
  */
 class ViewerQT: public osgViewer::Viewer, public AdapterWidget {
 public:

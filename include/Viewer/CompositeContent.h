@@ -1,10 +1,3 @@
-/*
- * CompositeContent.h
- *
- *  Created on: 7.4.2011
- *      Author: jakub
- */
-
 #ifndef COMPOSITECONTENT_H_
 #define COMPOSITECONTENT_H_
 
@@ -13,6 +6,7 @@
 namespace Vwr {
 class OsgCluster;
 
+/// Content implementation for visual clusters.
 class CompositeContent : public OsgContent {
 public:
 	CompositeContent(OsgCluster* cluster);

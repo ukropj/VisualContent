@@ -1,8 +1,3 @@
-/*!
- * Graph.h
- * Projekt 3DVisual
- */
-
 #ifndef DATA_GRAPH_DEF
 #define DATA_GRAPH_DEF 1
 
@@ -16,6 +11,7 @@
 #include <osg/ref_ptr>
 #include <osg/Vec3f>
 
+/// Data representations of graph and its elements.
 namespace Model  {
 class Node;
 class Edge;
@@ -31,11 +27,10 @@ typedef QMap<qlonglong, Type*>::const_iterator TypeIt;
  *  \brief Object represents a graph structure.
  *
  *	Graph object is a representation of an graph. A graph is a set of Nodes connected via Edges. Each Node and/or Edge has its Type.
- *	A graph is layouted and displayed by the application. Each graph can have 1 or more GraphLayouts. A GraphLayout represents single layout of the Nodes and Edges. Each GraphLayout can have it's own meta-Edges and meta-Nodes
- * which can be used by the user to influence the layout of the graph.
+ *	A graph is layouted and displayed by the application.
  *
  *  \author Aurel Paulovic
- *  \date 29. 4. 2010
+ *  \author Jakub Ukrop
  */
 class Graph {
 public:

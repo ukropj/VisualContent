@@ -1,7 +1,3 @@
-/*!
- * IOManager.h
- * Projekt 3DVisual
- */
 #ifndef Manager_MANAGER_DEF
 #define Manager_MANAGER_DEF 1
 
@@ -20,8 +16,13 @@ class Node;
 class Type;
 }
 
-namespace AppCore {
+/// IO classes
+namespace GraphIO {
 
+/// GraphML parser
+/**
+ * \author Jakub Ukrop
+ */
 class IOManager {
 public:
 	IOManager();

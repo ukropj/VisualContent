@@ -1,7 +1,3 @@
-/*!
- * Type.cpp
- * Projekt 3DVisual
- */
 #include "Model/Type.h"
 
 using namespace Model;

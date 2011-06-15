@@ -1,10 +1,3 @@
-/*
- * AbstractNode.h
- *
- *  Created on: 11.1.2011
- *      Author: jakub
- */
-
 #ifndef ABSTRACTNODE_H_
 #define ABSTRACTNODE_H_
 
@@ -13,10 +6,11 @@
 #include <QSet>
 #include <osg/Vec3f>
 
-
+/// Graphic representations of graph elements, visualization control and other related classes.
 namespace Vwr {
 class AbstractVisitor;
 
+/// Abstract parent of OsgNode and OsgNodeGroup, base of the composite pattern.
 class AbstractNode : public QObject {
 Q_OBJECT
 signals:

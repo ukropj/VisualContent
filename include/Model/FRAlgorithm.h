@@ -1,14 +1,6 @@
-/**
- *  FRAlgorithm.h
- *  Projekt 3DVisual
- */
 #ifndef LAYOUT_FRALGORITHM_DEF
 #define LAYOUT_FRALGORITHM_DEF 1
 
-//#include <stdio.h>
-//#include <iostream>
-//#include <sstream>
-//#include <string.h>
 #include <math.h>
 #include <ctime>
 
@@ -29,9 +21,10 @@ class Node;
 class Edge;
 /**
  *  \class FRAlgorithm
- *  \brief Object represents Fruchterman-Reingold layout algorithm
- *  \author Michal Pavlik
- *  \date 28. 4. 2010
+ *  \brief Represents Fruchterman-Reingold layouting algorithm
+ *  extended with node-overlap removal.
+ *
+ * \author Jakub Ukrop
  */
 class FRAlgorithm: public QThread {
 

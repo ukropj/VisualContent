@@ -95,8 +95,6 @@ FILE(GLOB_RECURSE INCL "include/*.h")
 SET(SOURCES_H 
 	./include/OsgQtBrowser/QGraphicsViewAdapter.h 
 	./include/Window/CoreWindow.h
-	./include/Window/OptionsWindow.h
-	./include/Window/CheckBoxList.h
 	./include/Window/DataMappingDialog.h	
 	./include/Viewer/PickHandler.h
 	./include/Viewer/AbstractNode.h
@@ -107,27 +105,29 @@ SET(SOURCES_H
 # toto makro spracuje Q_OBJECT a vygeneruje novy cpp subor, ktory bude dostupny v ${SOURCES_H_MOC} premennej
 QT4_WRAP_CPP( SOURCES_H_MOC ${SOURCES_H} )
 
-ADD_EXECUTABLE(VisualContent ${INCL} ${SOURCES_H_MOC} ${SRC})
+ADD_EXECUTABLE(DataViz ${INCL} ${SOURCES_H_MOC} ${SRC})
 
-SOURCE_GROUP(\\src\\Viewer "^.*Viewer/.*$")
-SOURCE_GROUP(\\src\\Core "^.*Core/.*$")
-SOURCE_GROUP(\\src\\Model "^.*Model/.*$")
-SOURCE_GROUP(\\src\\Util "^.*Util/.*$")
-SOURCE_GROUP(\\src\\Window "^.*Window/.*$")
-SOURCE_GROUP(\\src\\OsgQtBrowser "^.*OsgQtBrowser/.*$")
-SOURCE_GROUP(\\src\\Noise "^.*Noise/.*$")
+# SOURCE_GROUP(\\src\\Viewer "^.*Viewer/.*$")
+# SOURCE_GROUP(\\src\\GraphIO "^.*GraphIO/.*$")
+# SOURCE_GROUP(\\src\\GUIControls "^.*GUIControls/.*$")
+# SOURCE_GROUP(\\src\\Model "^.*Model/.*$")
+# SOURCE_GROUP(\\src\\Util "^.*Util/.*$")
+# SOURCE_GROUP(\\src\\Window "^.*Window/.*$")
+# SOURCE_GROUP(\\src\\OsgQtBrowser "^.*OsgQtBrowser/.*$")
+# SOURCE_GROUP(\\src\\Noise "^.*Noise/.*$")
 
-SOURCE_GROUP(\\headers\\Viewer "^.*Viewer/.*h$")
-SOURCE_GROUP(\\headers\\Core "^.*Core/.*h$")
-SOURCE_GROUP(\\headers\\Model "^.*Model/.*h$")
-SOURCE_GROUP(\\headers\\Util "^.*Util/.*h$")
-SOURCE_GROUP(\\headers\\Window "^.*Window/.*h$")
-SOURCE_GROUP(\\headers\\Noise "^.*Noise/.*h$")
-SOURCE_GROUP(\\headers\\OsgQtBrowser "^.*OsgQtBrowser/.*h$")
+# SOURCE_GROUP(\\headers\\Viewer "^.*Viewer/.*h$")
+# SOURCE_GROUP(\\headers\\GraphIO "^.*GraphIO/.*$")
+# SOURCE_GROUP(\\headers\\GUIControls "^.*GUIControls/.*$")
+# SOURCE_GROUP(\\headers\\Model "^.*Model/.*h$")
+# SOURCE_GROUP(\\headers\\Util "^.*Util/.*h$")
+# SOURCE_GROUP(\\headers\\Window "^.*Window/.*h$")
+# SOURCE_GROUP(\\headers\\Noise "^.*Noise/.*h$")
+# SOURCE_GROUP(\\headers\\OsgQtBrowser "^.*OsgQtBrowser/.*h$")
 
-SOURCE_GROUP(\\MOC "^.*moc_.*$")
+# SOURCE_GROUP(\\MOC "^.*moc_.*$")
 
-TARGET_LINK_LIBRARIES(VisualContent
+TARGET_LINK_LIBRARIES(DataViz
 ${QT_LIBRARIES}  
 ${OPENSCENEGRAPH_LIBRARIES} 
 ${OSGVIEWER_LIBRARIES}
@@ -137,11 +137,3 @@ ${ZLIB_LIBRARY}
 ${PNG_LIBRARY}
 noise
 )
-
-#~ INSTALL(TARGETS 3DVisual DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/_INSTALL/Debug CONFIGURATIONS Debug) 
-#~ INSTALL(TARGETS 3DVisual DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/_install/Release CONFIGURATIONS Release) 
-#~ INSTALL(TARGETS 3DVisual RUNTIME DESTINATION ${INSTALL_BIN}) 
-
-
-#~ INSTALL(DIRECTORY img DESTINATION ${INSTALL_DATA} PATTERN ".svn" EXCLUDE)
-#~ INSTALL(DIRECTORY img DESTINATION ${CMAKE_CURRENT_BINARY_DIR} PATTERN ".svn" EXCLUDE)

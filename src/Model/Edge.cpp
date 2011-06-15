@@ -1,7 +1,3 @@
-/*!
- * Edge.cpp
- * Projekt 3DVisual
- */
 #include "Model/Edge.h"
 #include "Model/Graph.h"
 #include "Model/Node.h"

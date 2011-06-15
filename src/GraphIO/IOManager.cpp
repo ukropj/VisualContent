@@ -1,9 +1,4 @@
-/*!
- * Manager.cpp
- * Projekt 3DVisual
- */
-
-#include "Core/IOManager.h"
+#include "GraphIO/IOManager.h"
 #include "Model/Graph.h"
 #include "Model/Node.h"
 #include "Model/Type.h"
@@ -13,7 +8,7 @@
 #include <QDebug>
 #include <QFile>
 
-using namespace AppCore;
+using namespace GraphIO;
 using namespace Model;
 
 IOManager::IOManager() {

@@ -7,6 +7,10 @@ namespace Model {
 class Graph;
 class Type;
 
+/// Cluster of nodes.
+/**
+ * \author Jakub Ukrop
+ */
 class Cluster : public Node {
 public:
 	Cluster(qlonglong id, Type* type, Graph* graph);
@@ -27,10 +31,10 @@ public:
 private:
 
 	QSet<Node*> children;
-	int expandedChClusters;		// number of children that are expanded (ignored) clusters
+	int expandedChClusters;	// number of children that are expanded (ignored) clusters
 	bool expanded;
 
-	friend class Node; // XXX
+	friend class Node;
 };
 
 }

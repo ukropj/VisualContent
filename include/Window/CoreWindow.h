@@ -1,7 +1,3 @@
-/**
- *  CoreWindow.h
- *  Projekt 3DVisual
- */
 #ifndef Window_CORE_WINDOW
 #define Window_CORE_WINDOW 1
 
@@ -11,7 +7,7 @@
 #include <QDebug>
 #include <QProgressDialog>
 
-namespace AppCore {
+namespace GraphIO {
 class IOManager;
 }
 namespace Model {
@@ -23,15 +19,16 @@ namespace Vwr {
 class SceneGraph;
 }
 
+/// GUI
 namespace Window {
 class ViewerQT;
 class ProgressManager;
 
 /**
  *  \class CoreWindow
- *  \brief Main window of aplication
+ *  \brief Main window of aplication.
  *  \author Adam Pazitnaj
- *  \date 3. 5. 2010
+ *  \author Jakub Ukrop
  */
 class CoreWindow: public QMainWindow {
 Q_OBJECT
@@ -109,7 +106,7 @@ private:
 	Window::ViewerQT* viewerWidget;
 	Model::FRAlgorithm* layouter;
 	Vwr::SceneGraph* sceneGraph;
-	AppCore::IOManager* ioManager;
+	GraphIO::IOManager* ioManager;
 	Model::Clusterer* clusterer;
 	QString currentFile;
 	ProgressManager* pm;

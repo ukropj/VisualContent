@@ -1,10 +1,3 @@
-/*
- * AbstractVisitor.h
- *
- *  Created on: 31.1.2011
- *      Author: jakub
- */
-
 #ifndef ABSTRACTVISITOR_H_
 #define ABSTRACTVISITOR_H_
 

@@ -1,7 +1,3 @@
-/*!
- * Edge.h
- * Projekt 3DVisual
- */
 #ifndef DATA_EDGE_DEF
 #define DATA_EDGE_DEF 1
 
@@ -19,7 +15,7 @@ class Graph;
  *  \class Edge
  *  \brief Object represents an edge in a Graph.
  *  \author Aurel Paulovic, Michal Paprcka
- *  \date 29. 4. 2010
+ *  \author Jakub Ukrop
  */
 class Edge {
 public:

@@ -1,10 +1,3 @@
-/*
- * ExpanderVisitor.h
- *
- *  Created on: 31.1.2011
- *      Author: jakub
- */
-
 #ifndef EXPANDERVISITOR_H_
 #define EXPANDERVISITOR_H_
 

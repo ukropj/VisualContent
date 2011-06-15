@@ -1,10 +1,3 @@
-/*
- * DataMapping.h
- *
- *  Created on: 2.3.2011
- *      Author: jakub
- */
-
 #ifndef DataMapping_H_
 #define DataMapping_H_
 
@@ -16,6 +9,7 @@
 
 namespace Vwr {
 
+/// Used to store mappings between visual attributes (e.g. color) and data attributes.
 class DataMapping {
 public:
 	enum ContentType {

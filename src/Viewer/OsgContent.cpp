@@ -38,12 +38,12 @@ const osg::BoundingBox& OsgContent::getBoundingBox() const {
 }
 
 OsgContent* ContentFactory::createContent(DataMapping::ContentType type, int id, QString data) {
+	// TODO content validation
 	switch (type) {
 	case DataMapping::IMAGE :
 		return new ImageContent(data);
 	case DataMapping::TEXT :
 		return new TextContent(data);
-		// TODO other content, validation ?
 	case DataMapping::OSG :
 		return new ObjectContent(data);
 	case DataMapping::WEB :
@@ -63,7 +63,7 @@ OsgContent* ContentFactory::createContent(DataMapping::ContentType type, int id,
 }
 
 OsgContent* ContentFactory::createRandomContent(int id) {
-	switch (id % 8) {
+	switch (id % 9) {
 	case 0 :
 		return new ImageContent("img/sample data/devil.jpg");
 	case 1 :
@@ -106,8 +106,10 @@ OsgContent* ContentFactory::createRandomContent(int id) {
 	case 5 :
 		return new ObjectContent("img/sample data/cow.osg");
 	case 6 :
-		return new WebContent("http://www.fiit.sk");
+		return new ObjectContent("img/sample data/cessna.osg");
 	case 7 :
+		return new WebContent("http://www.fiit.sk");
+	case 8 :
 		return new WebContent("http://www.google.com");
 	}
 }

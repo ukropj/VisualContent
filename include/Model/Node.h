@@ -1,7 +1,3 @@
-/*!
- * Node.h
- * Projekt 3DVisual
- */
 #ifndef MODEL_NODE_DEF
 #define MODEL_NODE_DEF 1
 

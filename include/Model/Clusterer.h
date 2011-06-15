@@ -18,6 +18,10 @@ class Node;
 class Cluster;
 class Type;
 
+/// Class containing clustering algorithms.
+/**
+ * \author Jakub Ukrop
+ */
 class Clusterer {
 public:
 	enum ClusteringAlg {
@@ -25,6 +29,10 @@ public:
 	};
 
 	Clusterer();
+	/// Sets clustering alrogithm.
+	/*
+	 * 0 = no clustering, 1 = adjacency clustering, 2 = leaf clustering, 3 = neighbor psedo-clustering
+	 */
 	bool setClusteringAlg(int);
 
 	void cluster(Graph* graph, QProgressDialog* pd);

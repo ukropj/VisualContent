@@ -1,10 +1,3 @@
-/*
- * WidgetContent.h
- *
- *  Created on: 25.12.2010
- *      Author: jakub
- */
-
 #ifndef WIDGETCONTENT_H_
 #define WIDGETCONTENT_H_
 
@@ -13,12 +6,13 @@
 
 namespace Vwr {
 
+/// Content implementation for widgets.
 class WidgetContent : public OsgContent {
 public:
 	WidgetContent();
-//	WidgetContent(QString imagePath);
 	~WidgetContent();
 
+	/// Used to set widget. Inserted widget is not interactive.
 	void setWidget(QWidget* widget, float scale);
 
 	virtual bool load() = 0;
@@ -27,6 +21,7 @@ private:
 	bool loaded;
 };
 
+/// Content implementation for texts.
 class TextContent: public WidgetContent {
 public:
 	TextContent(QString text, int width = 200, int height = 150);
@@ -39,6 +34,7 @@ private:
 	int height;
 };
 
+/// Content implementation for web pages. Contains simple browser.
 class WebContent: public WidgetContent {
 public:
 	WebContent(QString text);

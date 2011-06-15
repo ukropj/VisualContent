@@ -3,11 +3,13 @@
 #include "Model/FRAlgorithm.h"
 #include "Model/Graph.h"
 #include "Model/Clusterer.h"
-#include "Core/IOManager.h"
+#include "GraphIO/IOManager.h"
 #include "Viewer/SceneGraph.h"
 #include "Viewer/PickHandler.h"
 #include "Viewer/CameraManipulator.h"
 #include "Util/Config.h"
+
+#include <QTime>
 
 #include "osgDB/WriteFile"
 
@@ -18,7 +20,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// initialize moduls
 	layouter = new Model::FRAlgorithm();
-	ioManager = new AppCore::IOManager();
+	ioManager = new GraphIO::IOManager();
 	clusterer = new Model::Clusterer();
 	sceneGraph = new Vwr::SceneGraph();
 	viewerWidget = new ViewerQT(sceneGraph, this);
@@ -35,7 +37,7 @@ CoreWindow::CoreWindow(QWidget *parent) : QMainWindow(parent) {
 	updateRecentFileActions();
 
 	qDebug("App initialized");
-	loadFile("input/data/line.graphml");
+//	loadFile("input/data/line.graphml");
 }
 
 void CoreWindow::createActions() {
@@ -144,12 +146,11 @@ void CoreWindow::createActions() {
 
 	dialog = new QProgressDialog("", "", 0, 10, this, Qt::Dialog);
 	dialog->setWindowTitle("Loading");
-//	dialog->setCancelButton(NULL);
 	dialog->setCancelButtonText("Abort");
 	Qt::WindowFlags flags = dialog->windowFlags();
 	flags = flags & (~Qt::WindowContextHelpButtonHint);
 	dialog->setWindowFlags(flags);
-	dialog->setModal(true); // TODO make this work
+	dialog->setModal(true);
 	dialog->setMinimumDuration(400);
 	dialog->setAutoReset(false);
 }
@@ -263,6 +264,9 @@ void CoreWindow::setDataMapping() {
 void CoreWindow::loadFile(QString filePath) {
 	if (filePath.isEmpty())
 		return;
+
+	QTime t;
+
 	QFile file(filePath);
 	updateRecentFileActions(filePath);
 	if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -279,8 +283,10 @@ void CoreWindow::loadFile(QString filePath) {
 
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
+	t.start();
 	Model::Graph* graph = ioManager->loadGraph(&file, dialog);
 	file.close();
+	qDebug() << "Parsing: " << t.elapsed();
 
 	if (graph == NULL) {
 		if (!dialog->wasCanceled())
@@ -289,11 +295,15 @@ void CoreWindow::loadFile(QString filePath) {
 		int origNodes = graph->getNodes()->size();
 		qDebug() << "GraphML parsed successfully.";
 		// cluster
+		t.restart();
 		clusterer->cluster(graph, dialog);
+		qDebug() << "Clustering: " << t.elapsed();
 
 		// reload
 		viewerWidget->getPickHandler()->reset();
+		t.restart();
 		sceneGraph->reload(graph, origNodes, dialog);	// deletes original scene graph
+		qDebug() << "Drawing: " << t.elapsed();
 		layouter->setGraph(graph); 	// deletes original graph
 
 		if (!dialog->wasCanceled()) {
@@ -304,7 +314,7 @@ void CoreWindow::loadFile(QString filePath) {
 			setWindowFilePath("");
 			remapAction->setEnabled(false);
 			currentFile = "";
-			// TODO graph was still loaded into layouter
+			// NOTE: graph was still loaded into layouter
 		}
 		dialog->reset();
 
@@ -312,6 +322,7 @@ void CoreWindow::loadFile(QString filePath) {
 		viewerWidget->getCameraManipulator()->home(0);
 		viewerWidget->getCameraManipulator()->setDistance(500);
 
+		qDebug() << "Orig nodes: " << origNodes;
 		log(NORMAL, "Graph loaded: " + graph->toString());
 	}
 	QApplication::restoreOverrideCursor();

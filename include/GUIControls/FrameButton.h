@@ -1,10 +1,3 @@
-/*
- * FrameButton.h
- *
- *  Created on: 7.1.2011
- *      Author: jakub
- */
-
 #ifndef FRAMEBUTTON_H_
 #define FRAMEBUTTON_H_
 
@@ -16,6 +9,10 @@
 namespace Controls {
 class ControlFrame;
 
+/// Base class for control buttons on ControlFrame.
+/**
+ * \author Jakub Ukrop
+ */
 class FrameButton : public osg::Geode {
 public:
 	FrameButton(ControlFrame* parentFrame);

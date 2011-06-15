@@ -1,10 +1,3 @@
-/*
- * OsgContent.h
- *
- *  Created on: 29.11.2010
- *      Author: jakub
- */
-
 #ifndef OSGCONTENT_H_
 #define OSGCONTENT_H_
 
@@ -24,6 +17,7 @@ namespace Model {
 
 namespace Vwr {
 
+/// Abstract visual content of OsgNode.
 class OsgContent : public osg::PositionAttitudeTransform {
 public:
 	OsgContent();
@@ -38,6 +32,7 @@ protected:
 	osg::ref_ptr<osg::Geode> contentGeode;
 };
 
+/// Empty content implementation.
 class EmptyContent : public OsgContent {
 public:
 	EmptyContent();
@@ -48,6 +43,7 @@ private:
 
 };
 
+/// Creates OsgContent implementations.
 class ContentFactory {
 public:
 	static OsgContent* createContent(DataMapping::ContentType type, int id, QString data);

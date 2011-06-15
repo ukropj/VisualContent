@@ -1,7 +1,3 @@
-/**
- *  NodeGroup.h
- *  Projekt 3DVisual
- */
 #ifndef VIEWER_NODEWRAPPER_DEF
 #define VIEWER_NODEWRAPPER_DEF 1
 
@@ -28,9 +24,9 @@ class DataMapping;
 
 /**
  *  \class SceneElements 
- *  \brief
+ *  \brief Constructs and updates visual nodes and edges.
  *  \author Michal Paprcka
- *  \date 29. 4. 2010
+ *  \author Jakub Ukrop
  */
 class SceneElements {
 public:

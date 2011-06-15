@@ -28,12 +28,12 @@ OsgEdge::OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping) {
 
 	edgeCoords = new osg::Vec3Array(4);
 	edgeTexCoords = new osg::Vec2Array(4);
-//	endPointCoords = new osg::Vec3Array(8);
 	selected = false;
-	if (Util::Config::getValue("Viewer.Edge.ShowDirected").toFloat() != 0)
+	if (Util::Config::getValue("Viewer.Edge.ShowDirected").toFloat() != 0) {
 		directed = getMappingValue(DataMapping::DIRECTION) == "true";
-	else
+	} else {
 		directed = false;
+	}
 
 	label = createLabel(getMappingValue(DataMapping::LABEL));
 
@@ -43,6 +43,7 @@ OsgEdge::OsgEdge(Model::Edge* modelNode, DataMapping* dataMapping) {
 	if (EDGE_VOLUME < 0)
 		EDGE_VOLUME = Util::Config::getValue("Viewer.Edge.Volume").toFloat() *
 		DataMapping::getScale(DataMapping::EDGE);
+	Q_ASSERT(EDGE_VOLUME > 0);
 }
 
 OsgEdge::~OsgEdge() {
@@ -87,7 +88,7 @@ void OsgEdge::updateGeometry() {
 
 	int repeatCnt = 1;
 	if (directed)
-		repeatCnt = edgeDir.length() / (2 * width); // TODO width == 0
+		repeatCnt = edgeDir.length() / (2 * width);
 
 	(*edgeTexCoords)[0].set(0.0f, 1.0f);
 	(*edgeTexCoords)[1].set(0.0f, 0.0f);

@@ -16,7 +16,8 @@ Config::Config() {
 
 	//sparsovanie dat a ich ulozenie do mapy
 	for (int i = 0; i < data.length(); i++) {
-		if (data[i].simplified().length() > 0) {
+		if (data[i].simplified().length() > 0 &&
+				!data[i].startsWith("//")) {
 			QList<QString> row = data[i].split("=");
 			add(row[0].simplified(), row[row.length() - 1].simplified());
 		}

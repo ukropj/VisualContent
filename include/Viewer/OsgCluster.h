@@ -10,6 +10,7 @@ class Cluster;
 namespace Vwr {
 class CompositeContent;
 
+/// Graphic representation of Cluster.
 class OsgCluster : public OsgNode {
 public:
 	OsgCluster(Model::Cluster* nodeCluster, DataMapping* dataMapping = NULL);

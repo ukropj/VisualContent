@@ -1,7 +1,3 @@
-/**
- *  SkyTransform.h
- *  Projekt 3DVisual
- */
 #ifndef VIEWER_SKY_TRANSFORM_DEF
 #define VIEWER_SKY_TRANSFORM_DEF 1
 

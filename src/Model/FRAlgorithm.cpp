@@ -7,6 +7,7 @@
 #include "Util/CameraHelper.h"
 #include "Viewer/OsgNode.h"
 #include <QDebug>
+#include <QTime>
 
 using namespace Model;
 
@@ -142,13 +143,16 @@ void FRAlgorithm::stop() {
 void FRAlgorithm::run() {
 	msleep(Util::Config::getValue("Layout.Thread.StartSleepTime").toLong());
 	isIterating = true;
+	QTime t;
 
 	if (this->graph != NULL) {
+		t.start();
 		while (notEnd) {
 			// slucka pozastavenia - ak je pauza
 			// alebo je graf zmrazeny (spravidla pocas editacie)
 			while (state != RUNNING || graph->isFrozen()) {
 				if (isIterating && graph->isFrozen()) {
+					qDebug() << "Time to freeze: " << t.elapsed() << "\n";
 					Window::CoreWindow::log(Window::CoreWindow::ALG, "FROZEN");
 //					qDebug() << "Frozen";
 				}
@@ -163,6 +167,7 @@ void FRAlgorithm::run() {
 			if (!isIterating) {
 				Window::CoreWindow::log(Window::CoreWindow::ALG, "RUNNING");
 //				qDebug() << "Running";
+				t.restart();
 			}
 //			QTime t = QTime::currentTime();
 			isIterating = true;
@@ -221,7 +226,7 @@ bool FRAlgorithm::iterate() {
 		}
 	}
 
-	// if true, iteration wil continue, if false, graph freezes
+	// if true, iteration will continue, if false, graph freezes
 	return changed;
 }
 
@@ -305,10 +310,6 @@ bool FRAlgorithm::applyForces(Node* node) {
 		node->setPosition(node->getPosition() + fv);
 		// save new velocity
 		node->setVelocity(fv * flexibility);
-
-		if (node->getId() == 1597) {
-//			QDebug() << node.
-		}
 		return true;
 	} else {
 		return false;
@@ -348,11 +349,12 @@ float FRAlgorithm::getMinProjDistance(Node* u, Node* v, osg::Vec3f pv) {
 	Vwr::OsgNode* ov = v->getOsgNode();
 //	double angle = acos(Util::CameraHelper::getUp() * pv);
 	float ideal = ou->getRadius() + ov->getRadius() + M;
-//	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle) // todo optimalize this
+//	float ideal = ou->getDistanceToEdge(osg::PI / 2.0f - angle)
 //			+ ov->getDistanceToEdge(-osg::PI / 2.0f - angle) + M;
 	return ideal;
 }
 
+/* Projective force formula */
 float FRAlgorithm::proj(double distance, double ideal) {
 	float f = -(4 * ideal * ideal / distance) + 2 * ideal;
 	if (f > 0)
@@ -360,14 +362,14 @@ float FRAlgorithm::proj(double distance, double ideal) {
 	return f;
 }
 
-/* Vzorec na vypocet odpudivej sily */
+/* Repulsive force formula */
 float FRAlgorithm::rep(double distance, double ideal) {
 	if (useMaxDistance && distance > MAX_DISTANCE)
 		return 0;
 	return (float) (-(ideal * ideal) / distance);
 }
 
-/* Vzorec na vypocet pritazlivej sily */
+/* Attractive force formula */
 float FRAlgorithm::attr(double distance, double ideal) {
 	return (float) ((distance * distance) / ideal);
 }

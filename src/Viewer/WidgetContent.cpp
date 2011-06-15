@@ -28,8 +28,8 @@ WidgetContent::~WidgetContent() {
 		widget->close();
 }
 
-// TODO refactor
 void WidgetContent::setWidget(QWidget* widget, float scale) {
+// TODO refactor
 	this->widget = widget;
 	widget->setAttribute(Qt::WA_DeleteOnClose);
 	osg::ref_ptr<QWidgetImage> widgetImage = new QWidgetImage(widget);

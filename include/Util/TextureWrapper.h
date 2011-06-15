@@ -1,7 +1,3 @@
-/**
- *  TextureWrapper.h
- *  Projekt 3DVisual
- */
 #ifndef VIEWER_TEXTURE_WRAPPER_DEF
 #define VIEWER_TEXTURE_WRAPPER_DEF 1
 
@@ -20,21 +16,13 @@ namespace Util {
  *  \class TextureWrapper
  *  \brief Texture operations wrapper
  *  \author Michal Paprcka
- *  \date 29. 4. 2010
  */
 class TextureWrapper {
 public:
-	/**
-	 * Nacita textury vo formate PNG.
-	 **/
+	/// Reads textures in PNG format.
 	static osg::ref_ptr<osg::Texture2D> readTextureFromFile(QString path, bool repeat = false);
 
-	/**
-	 *  \fn public static  createTexture
-	 *  \brief Creates texture from image
-	 *  \param      image    texture image
-	 *  \return osg::ref_ptr texture
-	 */
+	/// Creates texture from image
 	static osg::ref_ptr<osg::Texture2D> createTexture(osg::Image* image, bool repeat = false);
 
 	static osg::ref_ptr<osg::Texture2D> getNodeTexture();
@@ -43,10 +31,7 @@ public:
 	static osg::ref_ptr<osg::Texture2D> getDirectedEdgeTexture();
 	static osg::ref_ptr<osg::Texture2D> getEdgeTexture();
 
-	/**
-	 *  \fn public static  reloadTextures
-	 *  \brief Reloads all textures
-	 */
+	/// Reloads all textures
 	static void reloadTextures();
 
 	/**

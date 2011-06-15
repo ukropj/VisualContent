@@ -28,7 +28,6 @@ namespace Vwr{
 	*  \class CameraManipulator
 	*  \brief Camera manipulator class. Handles all camera movements.
 	*  \author Michal Paprcka
-	*  \date 29. 4. 2010
 	*
 	*	This class is basically extended TrackballManipulator class with new functionality.
 	*/

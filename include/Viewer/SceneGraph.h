@@ -1,7 +1,3 @@
-/**
- *  SceneGraph.h
- *  Projekt 3DVisual
- */
 #ifndef VIEWER_CORE_GRAPH_DEF
 #define VIEWER_CORE_GRAPH_DEF 1
 
@@ -33,11 +29,13 @@ namespace Vwr {
 class SceneElements;
 class DataMapping;
 
+/// Scene graph initializator and container.
 class SceneGraph {
 public:
 	SceneGraph();
 	~SceneGraph();
 
+	/// Creates visualization of graph.
 	void reload(Model::Graph* graph, int origNodeCount, QProgressDialog* pd);
 	void reloadConfig();
 
@@ -52,6 +50,7 @@ public:
 
 	void setEdgeLabelsVisible(bool visible);
 	void setNodeLabelsVisible(bool visible);
+	/// Freezes visualization.
 	void setFrozen(bool val);
 
 	void setDataMapping();

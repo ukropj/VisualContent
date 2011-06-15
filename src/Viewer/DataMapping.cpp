@@ -33,12 +33,15 @@ DataMapping::DataMapping(QList<QString> keys) {
 	if (keys.contains("img")) {
 		insertMapping(CONTENT, "img");
 		contentType = IMAGE;
-	} else if (keys.contains("url")) {
-		insertMapping(CONTENT, "url");
-		contentType = WEB;
+//	} else if (keys.contains("url")) {
+//		insertMapping(CONTENT, "url");
+//		contentType = WEB;
 	} else if (keys.contains("osg")) {
 		insertMapping(CONTENT, "osg");
 		contentType = OSG;
+	}
+	if (keys.contains("directed")) {
+		insertMapping(DIRECTION, "directed");
 	}
 }
 

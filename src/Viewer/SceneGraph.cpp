@@ -56,6 +56,8 @@ SceneGraph::SceneGraph() {
 	maxAllowedClusterSize = nodeCount = -1;
 	autoClustering = Util::Config::getValue(
 			"Viewer.Clustering.AutoClustering").toFloat() != 0;
+
+//	createExperiment();
 }
 
 SceneGraph::~SceneGraph() {
@@ -167,7 +169,6 @@ osg::ref_ptr<osg::Node> SceneGraph::createSkyBox() {
 	clearNode->setRequiresClear(false);
 	clearNode->addChild(transform);
 	clearNode->setName("skybox_background");
-
 	return clearNode;
 }
 

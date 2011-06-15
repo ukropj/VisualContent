@@ -183,7 +183,7 @@ void OsgNodeGroup::updateSizeAndPos() {
 	osg::Vec3f oldPos = getPosition();
 	osg::Vec3f oldSize = getSize();
 	float xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000,
-			zMin = 10000, zMax = -10000; //TODO
+			zMin = 10000, zMax = -10000; //TODO magic numbers
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {
 		AbstractNode* n = *i;
@@ -351,7 +351,7 @@ void OsgNodeGroup::childHidden(bool visible) {
 }
 
 void OsgNodeGroup::getProjRect(float &xMin, float &yMin, float &xMax, float &yMax) {
-	xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000; // TODO
+	xMin = 10000, yMin = 10000, xMax = -10000, yMax = -10000; // TODO magic numbers
 
 	NodeIterator i = nodes.constBegin();
 	while (i != nodes.constEnd()) {

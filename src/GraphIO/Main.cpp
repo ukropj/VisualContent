@@ -1,3 +1,13 @@
+/**
+* @mainpage DataViz
+*
+* 3D graph visualisation system designed to present visual content in nodes of graph.
+*
+* @author Jakub Ukrop
+*
+* https://github.com/ukropj/VisualContent
+*/
+
 #include <QApplication>
 #include "Window/CoreWindow.h"
 

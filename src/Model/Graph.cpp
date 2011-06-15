@@ -1,7 +1,3 @@
-/*!
- * Graph.cpp
- * Projekt 3DVisual
- */
 #include "Model/Graph.h"
 #include "Model/Type.h"
 #include "Model/Edge.h"
@@ -11,7 +7,6 @@
 using namespace Model;
 
 Graph::Graph(QString name, qlonglong ele_id_counter) {
-//	qDebug() << "Graph created " << name;
 	this->name = name;
 	this->ele_id_counter = ele_id_counter;
 	frozen = false;
@@ -185,74 +180,3 @@ bool Graph::areIncident(Node* u, Node* v) const {
 	Edge* e = v->getEdgeTo(u, true);
 	return e != NULL && !e->isIgnored();
 }
-
-/*
-int WHITE = 0, GRAY = 1, BLACK = 2;
-double flow[][], capacity[][], res_capacity[][];
-int parent[], color[];
-double min_capacity[];
-double max_flow;*/
-
-
-/*void Graph::maxFlow(Node* source, Node* sink) {
-	flow = new double[size][size];
-	res_capacity = new double[size][size];
-	parent = new int[size];
-	min_capacity = new double[size];
-	color = new int[size];
-	queue = new int[size];
-
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			res_capacity[i][j] = capacity[i][j];
-
-	while (BFS(source))
-	{
-		max_flow += min_capacity[sink];
-		int v = sink, u;
-		while (v != source)
-		{
-			u = parent[v];
-			flow[u][v] += min_capacity[sink];
-			flow[v][u] -= min_capacity[sink];
-			res_capacity[u][v] -= min_capacity[sink];
-			res_capacity[v][u] += min_capacity[sink];
-			v = u;
-		}
-	}
-}
-
-bool Graph::BFS(Node* source, Node* sink) {
-	int size = nodes.size();
-
-	for (int i = 0; i < size; i++) {
-		color[i] = WHITE;
-		min_capacity[i] = INT_MAX;
-	}
-
-	first = last = 0;
-//	queue[last++] = source;
-	color[source] = GRAY;
-	QQueue<Node*> queue;
-	queue.enqueue(source);
-
-	while (!queue.isEmpty()) {
-//	while (first != last) {
-		Node* v = queue.dequeue();
-//		int v = queue[first++];
-		for (NodeIt i = nodes->constBegin(); i != nodes->constEnd(); ++i) {
-			Node* u = i.value();
-//		for (int u = 0; u < size; u++)
-			if (color[u] == WHITE && res_capacity[v][u] > 0) {
-				min_capacity[u] = qMin(min_capacity[v], res_capacity[v][u]);
-				parent[u] = v;
-				color[u] = GRAY;
-				if (u->equals(sink))
-					return true;
-//				queue[last++] = u;
-				queue.enqueue(u);
-			}
-		}
-	}
-	return false;
-}*/

@@ -35,6 +35,7 @@ class OsgContent;
 class AbstractVisitor;
 class OsgCluster;
 
+/// Graphic representation of Node. Contains visual content.
 class OsgNode: public osg::AutoTransform, public AbstractNode {
 public:
 	OsgNode(Model::Node* modelNode, DataMapping* dataMapping = NULL);
@@ -107,7 +108,6 @@ public:
 	OsgContent* getVisualContent() const {return visualG;}
 	osg::Geode* getVisualBorder() const {return visualGBorder;}
 protected:
-//	OsgCluster* getParentCluster() const;
 	void setScale(float scale);
 	OsgCluster* parent;
 	osg::ref_ptr<OsgContent> visualG;

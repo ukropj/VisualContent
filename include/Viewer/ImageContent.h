@@ -1,10 +1,3 @@
-/*
- * ImageContent.h
- *
- *  Created on: 29.12.2010
- *      Author: jakub
- */
-
 #ifndef IMAGECONTENT_H_
 #define IMAGECONTENT_H_
 
@@ -12,6 +5,7 @@
 
 namespace Vwr {
 
+/// Content implementation for images.
 class ImageContent: public Vwr::OsgContent {
 public:
 	ImageContent(QString imagePath);

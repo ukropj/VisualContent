@@ -1,8 +1,3 @@
-/*!
- * Type.h
- * Projekt 3DVisual
- */
-
 #ifndef MODEL_TYPE_DEF
 #define MODEL_TYPE_DEF 1
 
@@ -18,9 +13,9 @@ class Graph;
 
 /**
  *  \class Type
- *  \brief Type object represents type of an Node or Edge in a Graph
+ *  \brief Type object represents type of an Node or Edge in a Graph.
  *  \author Aurel Paulovic
- *  \date 29. 4. 2010
+ *  \author Jakub Ukrop
  */
 class Type {
 public:

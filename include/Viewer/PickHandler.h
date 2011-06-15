@@ -1,7 +1,3 @@
-/**
- *  PickHandler.h
- *  Projekt 3DVisual
- */
 #ifndef PICKHANDLER_DEF
 #define PICKHANDLER_DEF 1
 
@@ -27,10 +23,7 @@ class OsgNode;
 class AbstractNode;
 class OsgEdge;
 
-/**
- *  \class PickHandler
- *  \brief Handles picking events
- */
+/// Handles picking events
 class PickHandler: public QObject, public osgGA::GUIEventHandler {
 Q_OBJECT
 

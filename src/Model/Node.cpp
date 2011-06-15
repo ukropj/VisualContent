@@ -1,10 +1,3 @@
-/*!
- * Node.cpp
- * Projekt 3DVisual
- *
- * TODO - reload configu sa da napisat aj efektivnejsie. Pri testoch na hranach priniesol vsak podobny prepis len male zvysenie vykonu. Teraz na to
- * nemam cas, takze sa raz k tomu vratim 8)
- */
 #include "Model/Node.h"
 #include "Model/Cluster.h"
 #include "Model/Edge.h"
@@ -154,7 +147,6 @@ void Node::setParent(Cluster* newParent) {
 		qWarning() << "Cannot set self as parent! (" << toString() << ")";
 		return;
 	}
-// TODO move this code
 	newParent->weight += this->weight;
 	newParent->children.insert(this);
 	parent = newParent;

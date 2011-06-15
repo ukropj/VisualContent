@@ -61,9 +61,6 @@ osg::ref_ptr<osg::Group> SceneElements::initNodes(
 	nodeGroup->setName("all_nodes");
 	nodeGroup->getOrCreateStateSet()->setRenderBinDetails(1, "DepthSortedBin");
 
-	//	if (Util::Config::getValue("Viewer.Display.NodesAlwaysOnTop").toInt())
-	//		nodeGroup->getOrCreateStateSet()->setRenderBinDetails(100, "RenderBin");
-
 	QMapIterator<qlonglong, Node*> i(*inNodes);
 	while (i.hasNext()) {
 		if (pd != NULL && pd->wasCanceled()) return nodeGroup;

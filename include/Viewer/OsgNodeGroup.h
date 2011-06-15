@@ -1,10 +1,3 @@
-/*
- * OsgNodeGroup.h
- *
- *  Created on: 8.1.2011
- *      Author: jakub
- */
-
 #ifndef OSGNODEGROUP_H_
 #define OSGNODEGROUP_H_
 
@@ -15,6 +8,7 @@
 namespace Vwr {
 class AbstractVisitor;
 
+/// Group of visual nodes.
 class OsgNodeGroup : public AbstractNode {
 	Q_OBJECT
 

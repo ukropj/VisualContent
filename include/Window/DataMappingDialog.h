@@ -18,13 +18,14 @@ class Type;
 }
 
 namespace Window {
-
+/// Dialog for data mapping selection.
 class DataMappingDialog : public QDialog {
 	Q_OBJECT
 private slots:
 	void keySelected(int index);
 	void typeSelected(int index);
 public:
+	/// Creates new dialog.
 	DataMappingDialog(QList<Model::Type*> types, QMap<qlonglong, Vwr::DataMapping*>* mappings, QWidget* parent = 0);
 private:
 	void createControls();

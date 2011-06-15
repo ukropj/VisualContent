@@ -285,7 +285,7 @@ osg::ref_ptr<osg::Geode> OsgNode::createLabel(QString text) {
 osg::ref_ptr<osg::StateSet> OsgNode::createStateSet() {
 	osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
 
-	stateSet->setDataVariance(osg::Object::STATIC);
+	stateSet->setDataVariance(osg::Object::DYNAMIC);
 	//	stateSet->setMode(GL_DEPTH_TEST,osg::StateAttribute::OFF);
 	return stateSet;
 }
@@ -355,7 +355,7 @@ void OsgNode::setColor(osg::Vec4 color) {
 }
 
 void OsgNode::setDimmed(bool flag) {
-	// TODO
+	// TODO implement
 }
 
 void OsgNode::setDrawableColor(osg::ref_ptr<osg::Geode> geode, int drawablePos,
@@ -448,7 +448,7 @@ void OsgNode::setFixed(bool flag) {
 }
 
 void OsgNode::reloadConfig() {
-	// TODO if needed at all
+	// implement
 }
 
 bool OsgNode::isPickable(osg::Geode* geode) const {
@@ -477,8 +477,6 @@ void OsgNode::updatePosition(float interpolationSpeed) {
 	} else {
 		targetPos = parent->getNode()->getPosition();
 	}
-
-	// TODO if moving to cluster, let parent set my position
 
 	float eps = 1;
 	if ((currentPos - targetPos).length() < eps) { // don't interpolate if distance is small

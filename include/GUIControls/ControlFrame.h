@@ -1,10 +1,3 @@
-/*
- * ControlFrame.h
- *
- *  Created on: 4.1.2011
- *      Author: jakub
- */
-
 #ifndef ControlFrame_H_
 #define ControlFrame_H_
 
@@ -24,10 +17,15 @@ class SceneGraph;
 class AbstractNode;
 }
 
+/// Vizual control elements
+/**
+ * \author Jakub Ukrop
+ */
 namespace Controls {
 class FrameButton;
 using namespace Vwr;
 
+/// Frame around selected Vwr::AbstractNode. Behaves as HUD. Contains control elements (buttons).
 class ControlFrame: public QObject, public osg::PositionAttitudeTransform {
 Q_OBJECT
 public slots:
